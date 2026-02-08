@@ -25,14 +25,46 @@ interface NetworkEntry {
 	type: string;
 	duration: number;
 	timestamp: string;
+	requestHeaders?: Record<string, string>;
+	requestBody?: string | null;
+	requestBodyTruncated?: boolean;
+	responseHeaders?: Record<string, string>;
+	responseBody?: string | null;
+	responseBodyTruncated?: boolean;
+	responseBodySkipped?: string;
+	responseContentType?: string;
 }
 
 const WEBNAV_MSG = "__webnav__";
 const MAX_ENTRIES = 100;
 const MAX_NETWORK_ENTRIES = 200;
+const MAX_NETWORK_BUFFER_BYTES = 512_000;
 const consoleLogs: ConsoleEntry[] = [];
 const errorLogs: ErrorEntry[] = [];
 const networkLogs: NetworkEntry[] = [];
+let networkBufferBytes = 0;
+
+function estimateEntrySize(entry: NetworkEntry): number {
+	let size = 200; // base overhead for fixed fields
+	size += (entry.url || "").length;
+	size += (entry.method || "").length;
+	size += (entry.statusText || "").length;
+	size += (entry.requestBody || "").length;
+	size += (entry.responseBody || "").length;
+	size += (entry.responseBodySkipped || "").length;
+	size += (entry.responseContentType || "").length;
+	if (entry.requestHeaders) {
+		for (const k in entry.requestHeaders) {
+			size += k.length + entry.requestHeaders[k].length;
+		}
+	}
+	if (entry.responseHeaders) {
+		for (const k in entry.responseHeaders) {
+			size += k.length + entry.responseHeaders[k].length;
+		}
+	}
+	return size;
+}
 
 // Receive captured entries from the MAIN world script
 window.addEventListener("message", (event) => {
@@ -57,7 +89,7 @@ window.addEventListener("message", (event) => {
 		});
 		if (errorLogs.length > MAX_ENTRIES) errorLogs.shift();
 	} else if (data.kind === "network") {
-		networkLogs.push({
+		const entry: NetworkEntry = {
 			method: data.method,
 			url: data.url,
 			status: data.status,
@@ -65,8 +97,31 @@ window.addEventListener("message", (event) => {
 			type: data.requestType,
 			duration: data.duration,
 			timestamp: data.timestamp,
-		});
-		if (networkLogs.length > MAX_NETWORK_ENTRIES) networkLogs.shift();
+		};
+		if (data.requestHeaders) entry.requestHeaders = data.requestHeaders;
+		if (data.requestBody != null) entry.requestBody = data.requestBody;
+		if (data.requestBodyTruncated) entry.requestBodyTruncated = true;
+		if (data.responseHeaders) entry.responseHeaders = data.responseHeaders;
+		if (data.responseBody != null) entry.responseBody = data.responseBody;
+		if (data.responseBodyTruncated) entry.responseBodyTruncated = true;
+		if (data.responseBodySkipped)
+			entry.responseBodySkipped = data.responseBodySkipped;
+		if (data.responseContentType)
+			entry.responseContentType = data.responseContentType;
+
+		const entrySize = estimateEntrySize(entry);
+		networkBufferBytes += entrySize;
+		networkLogs.push(entry);
+
+		// Evict oldest entries if over count or byte budget
+		while (
+			networkLogs.length > 1 &&
+			(networkLogs.length > MAX_NETWORK_ENTRIES ||
+				networkBufferBytes > MAX_NETWORK_BUFFER_BYTES)
+		) {
+			const evicted = networkLogs.shift()!;
+			networkBufferBytes -= estimateEntrySize(evicted);
+		}
 	}
 });
 
@@ -86,7 +141,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 	}
 	if (message.type === "getNetwork") {
 		const result = [...networkLogs];
-		if (message.clear) networkLogs.length = 0;
+		if (message.clear) {
+			networkLogs.length = 0;
+			networkBufferBytes = 0;
+		}
 		sendResponse({ requests: result });
 		return true;
 	}

@@ -296,6 +296,50 @@ export async function handleErrors(
 	return { errors: response.errors, count: response.errors.length };
 }
 
+const MAX_NATIVE_MSG_BYTES = 900_000; // headroom under 1MB Chrome limit
+
+function stripBodies(
+	requests: Record<string, unknown>[],
+): Record<string, unknown>[] {
+	let json = JSON.stringify({ requests, count: requests.length });
+	if (json.length <= MAX_NATIVE_MSG_BYTES) return requests;
+
+	// Pass 1: strip bodies from oldest entries first
+	for (
+		let i = 0;
+		i < requests.length && json.length > MAX_NATIVE_MSG_BYTES;
+		i++
+	) {
+		const r = requests[i];
+		if (r.requestBody != null || r.responseBody != null) {
+			r.requestBody = undefined;
+			r.requestBodyTruncated = undefined;
+			r.responseBody = undefined;
+			r.responseBodyTruncated = undefined;
+			if (!r.responseBodySkipped) {
+				r.responseBodySkipped = "[stripped: message size limit]";
+			}
+			json = JSON.stringify({ requests, count: requests.length });
+		}
+	}
+
+	// Pass 2: strip headers too if still over
+	for (
+		let i = 0;
+		i < requests.length && json.length > MAX_NATIVE_MSG_BYTES;
+		i++
+	) {
+		const r = requests[i];
+		if (r.requestHeaders || r.responseHeaders) {
+			r.requestHeaders = undefined;
+			r.responseHeaders = undefined;
+			json = JSON.stringify({ requests, count: requests.length });
+		}
+	}
+
+	return requests;
+}
+
 export async function handleNetwork(
 	payload: CommandPayload,
 ): Promise<Record<string, unknown>> {
@@ -304,7 +348,8 @@ export async function handleNetwork(
 		type: "getNetwork",
 		clear: payload.clear ?? false,
 	});
-	return { requests: response.requests, count: response.requests.length };
+	const requests = stripBodies(response.requests);
+	return { requests, count: requests.length };
 }
 
 export async function handleObserve(

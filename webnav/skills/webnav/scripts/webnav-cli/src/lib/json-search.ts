@@ -175,6 +175,8 @@ function matchesFilters(item: FlatItem, options: SearchOptions): boolean {
 			...(typeof item.method === "string" ? [item.method] : []),
 			...(typeof item.statusText === "string" ? [item.statusText] : []),
 			...(typeof item.type === "string" ? [item.type] : []),
+			...(typeof item.requestBody === "string" ? [item.requestBody] : []),
+			...(typeof item.responseBody === "string" ? [item.responseBody] : []),
 		];
 		const found = searchable.some(
 			(v) => typeof v === "string" && v.toLowerCase().includes(p),

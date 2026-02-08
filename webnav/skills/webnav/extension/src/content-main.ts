@@ -32,6 +32,50 @@ interface CapturedNetwork {
 	requestType: string;
 	duration: number;
 	timestamp: string;
+	requestHeaders?: Record<string, string>;
+	requestBody?: string | null;
+	requestBodyTruncated?: boolean;
+	responseHeaders?: Record<string, string>;
+	responseBody?: string | null;
+	responseBodyTruncated?: boolean;
+	responseBodySkipped?: string;
+	responseContentType?: string;
+}
+
+const MAX_BODY_SIZE = 32768;
+
+const TEXT_CONTENT_RE =
+	/^(text\/|application\/(json|xml|javascript|x-www-form-urlencoded|graphql|ld\+json))/i;
+
+function isTextContentType(ct: string | null): boolean {
+	if (!ct) return false;
+	return TEXT_CONTENT_RE.test(ct);
+}
+
+function truncateBody(body: string): { body: string; truncated: boolean } {
+	if (body.length <= MAX_BODY_SIZE) return { body, truncated: false };
+	return { body: body.slice(0, MAX_BODY_SIZE), truncated: true };
+}
+
+function headersToRecord(headers: Headers): Record<string, string> {
+	const result: Record<string, string> = {};
+	headers.forEach((value, key) => {
+		result[key] = value;
+	});
+	return result;
+}
+
+async function readRequestBody(
+	request: Request,
+): Promise<{ body: string | null; truncated: boolean }> {
+	try {
+		const clone = request.clone();
+		const text = await clone.text();
+		if (!text) return { body: null, truncated: false };
+		return truncateBody(text);
+	} catch {
+		return { body: null, truncated: false };
+	}
 }
 
 // Wrap console methods
@@ -118,8 +162,13 @@ window.fetch = async function (...args: Parameters<typeof fetch>) {
 	const req = new Request(...args);
 	const method = req.method;
 	const url = req.url;
+	const reqHeaders = headersToRecord(req.headers);
+	const reqBody = await readRequestBody(req);
 	try {
 		const response = await origFetch.apply(this, args);
+		const respHeaders = headersToRecord(response.headers);
+		const contentType = response.headers.get("content-type");
+
 		const msg: CapturedNetwork = {
 			type: WEBNAV_MSG,
 			kind: "network",
@@ -130,7 +179,29 @@ window.fetch = async function (...args: Parameters<typeof fetch>) {
 			requestType: "fetch",
 			duration: Date.now() - start,
 			timestamp: new Date().toISOString(),
+			requestHeaders: reqHeaders,
+			requestBody: reqBody.body,
+			requestBodyTruncated: reqBody.truncated || undefined,
+			responseHeaders: respHeaders,
+			responseContentType: contentType || undefined,
 		};
+
+		if (isTextContentType(contentType)) {
+			try {
+				const text = await response.clone().text();
+				const truncated = truncateBody(text);
+				msg.responseBody = truncated.body;
+				msg.responseBodyTruncated = truncated.truncated || undefined;
+			} catch {
+				msg.responseBodySkipped = "[error reading response body]";
+			}
+		} else if (contentType) {
+			// Binary or unknown content type — report size from content-length if available
+			const cl = response.headers.get("content-length");
+			const sizeLabel = cl ? `, ${cl} bytes` : "";
+			msg.responseBodySkipped = `[binary: ${contentType}${sizeLabel}]`;
+		}
+
 		window.postMessage(msg, "*");
 		return response;
 	} catch (err) {
@@ -144,6 +215,9 @@ window.fetch = async function (...args: Parameters<typeof fetch>) {
 			requestType: "fetch",
 			duration: Date.now() - start,
 			timestamp: new Date().toISOString(),
+			requestHeaders: reqHeaders,
+			requestBody: reqBody.body,
+			requestBodyTruncated: reqBody.truncated || undefined,
 		};
 		window.postMessage(msg, "*");
 		throw err;
@@ -153,15 +227,33 @@ window.fetch = async function (...args: Parameters<typeof fetch>) {
 // Wrap XMLHttpRequest to capture network requests
 const origXHROpen = XMLHttpRequest.prototype.open;
 const origXHRSend = XMLHttpRequest.prototype.send;
+const origXHRSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+
+interface XHRExtended extends XMLHttpRequest {
+	_wnMethod: string;
+	_wnUrl: string;
+	_wnReqHeaders: Record<string, string>;
+}
+
+XMLHttpRequest.prototype.setRequestHeader = function (
+	name: string,
+	value: string,
+) {
+	const xhr = this as XHRExtended;
+	if (!xhr._wnReqHeaders) xhr._wnReqHeaders = {};
+	xhr._wnReqHeaders[name.toLowerCase()] = value;
+	return origXHRSetHeader.apply(this, [name, value]);
+};
 
 XMLHttpRequest.prototype.open = function (
 	method: string,
 	url: string | URL,
 	...rest: unknown[]
 ) {
-	(this as XMLHttpRequest & { _wnMethod: string; _wnUrl: string })._wnMethod =
-		method;
-	(this as XMLHttpRequest & { _wnUrl: string })._wnUrl = String(url);
+	const xhr = this as XHRExtended;
+	xhr._wnMethod = method;
+	xhr._wnUrl = String(url);
+	xhr._wnReqHeaders = {};
 	return origXHROpen.apply(this, [method, url, ...rest] as Parameters<
 		typeof origXHROpen
 	>);
@@ -171,8 +263,38 @@ XMLHttpRequest.prototype.send = function (
 	...args: Parameters<typeof origXHRSend>
 ) {
 	const start = Date.now();
-	const xhr = this as XMLHttpRequest & { _wnMethod: string; _wnUrl: string };
+	const xhr = this as XHRExtended;
+
+	// Capture request body from send argument
+	let reqBody: string | null = null;
+	let reqBodyTruncated = false;
+	const sendArg = args[0];
+	if (sendArg != null) {
+		try {
+			const raw = typeof sendArg === "string" ? sendArg : String(sendArg);
+			const t = truncateBody(raw);
+			reqBody = t.body;
+			reqBodyTruncated = t.truncated;
+		} catch {
+			// ignore
+		}
+	}
+
 	xhr.addEventListener("loadend", () => {
+		// Parse response headers
+		const respHeaders: Record<string, string> = {};
+		const rawHeaders = xhr.getAllResponseHeaders();
+		if (rawHeaders) {
+			for (const line of rawHeaders.trim().split(/[\r\n]+/)) {
+				const idx = line.indexOf(": ");
+				if (idx > 0) {
+					respHeaders[line.slice(0, idx).toLowerCase()] = line.slice(idx + 2);
+				}
+			}
+		}
+
+		const contentType = respHeaders["content-type"] || null;
+
 		const msg: CapturedNetwork = {
 			type: WEBNAV_MSG,
 			kind: "network",
@@ -183,7 +305,45 @@ XMLHttpRequest.prototype.send = function (
 			requestType: "xhr",
 			duration: Date.now() - start,
 			timestamp: new Date().toISOString(),
+			requestHeaders:
+				Object.keys(xhr._wnReqHeaders || {}).length > 0
+					? xhr._wnReqHeaders
+					: undefined,
+			requestBody: reqBody,
+			requestBodyTruncated: reqBodyTruncated || undefined,
+			responseHeaders:
+				Object.keys(respHeaders).length > 0 ? respHeaders : undefined,
+			responseContentType: contentType || undefined,
 		};
+
+		// Read response body for text-like content types
+		if (isTextContentType(contentType)) {
+			try {
+				// responseText throws if responseType is not "" or "text"
+				const rt = xhr.responseType;
+				if (rt === "" || rt === "text") {
+					const t = truncateBody(xhr.responseText);
+					msg.responseBody = t.body;
+					msg.responseBodyTruncated = t.truncated || undefined;
+				} else if (rt === "json") {
+					const json = JSON.stringify(xhr.response);
+					if (json) {
+						const t = truncateBody(json);
+						msg.responseBody = t.body;
+						msg.responseBodyTruncated = t.truncated || undefined;
+					}
+				} else {
+					msg.responseBodySkipped = `[binary responseType: ${rt}]`;
+				}
+			} catch {
+				msg.responseBodySkipped = "[error reading XHR response]";
+			}
+		} else if (contentType) {
+			const cl = respHeaders["content-length"];
+			const sizeLabel = cl ? `, ${cl} bytes` : "";
+			msg.responseBodySkipped = `[binary: ${contentType}${sizeLabel}]`;
+		}
+
 		window.postMessage(msg, "*");
 	});
 	return origXHRSend.apply(this, args);
