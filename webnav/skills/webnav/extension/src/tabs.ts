@@ -9,6 +9,26 @@ import {
 } from "./state";
 
 // ============================================
+// Programmatic content script injection
+// ============================================
+
+export async function injectContentScripts(tabId: number) {
+	try {
+		await chrome.scripting.executeScript({
+			target: { tabId },
+			files: ["content-main.js"],
+			world: "MAIN",
+		});
+		await chrome.scripting.executeScript({
+			target: { tabId },
+			files: ["content.js"],
+		});
+	} catch {
+		// Fails silently for chrome://, edge://, about: pages, etc.
+	}
+}
+
+// ============================================
 // Event listeners for external mutations
 // ============================================
 
@@ -21,7 +41,21 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 	}
 });
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+	// Tab joined the webnav group → inject content scripts
+	if (
+		changeInfo.groupId !== undefined &&
+		changeInfo.groupId === webnavGroupId
+	) {
+		await injectContentScripts(tabId);
+	}
+
+	// Tab already in group navigated to a new page → re-inject
+	if (changeInfo.status === "loading" && tab.groupId === webnavGroupId) {
+		await injectContentScripts(tabId);
+	}
+
+	// Active tab removed from group → auto-select another
 	if (tabId === activeWebnavTabId && changeInfo.groupId !== undefined) {
 		if (changeInfo.groupId !== webnavGroupId) {
 			console.log(

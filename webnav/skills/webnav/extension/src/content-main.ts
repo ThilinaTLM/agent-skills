@@ -2,6 +2,11 @@
 // Relays captured entries to the content script (ISOLATED world) via window.postMessage.
 export {};
 
+// Double-injection guard: prevent stacked monkey-patches
+const w = window as unknown as Record<string, unknown>;
+if (w.__webnav_main_active__) throw new Error();
+w.__webnav_main_active__ = true;
+
 const WEBNAV_MSG = "__webnav__";
 
 interface CapturedConsole {

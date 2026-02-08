@@ -3,6 +3,11 @@
 // to extension queries via chrome.runtime.onMessage.
 export {};
 
+// Double-injection guard: prevent duplicate event listeners
+const w = window as unknown as Record<string, unknown>;
+if (w.__webnav_content_active__) throw new Error();
+w.__webnav_content_active__ = true;
+
 interface ConsoleEntry {
 	level: string;
 	text: string;
