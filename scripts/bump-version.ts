@@ -43,6 +43,31 @@ function replaceVersion(path: string, newVersion: string): void {
   writeFileSync(path, updated);
 }
 
+function updateMarketplaceVersion(
+  pluginName: string,
+  newVersion: string,
+): void {
+  const marketplace = readJson(MARKETPLACE_PATH);
+  const plugin = marketplace.plugins.find(
+    (p: { name: string }) => p.name === pluginName,
+  );
+  if (plugin) {
+    plugin.version = newVersion;
+  }
+  writeFileSync(MARKETPLACE_PATH, JSON.stringify(marketplace, null, 2) + "\n");
+}
+
+function maxVersion(versions: string[]): string {
+  return versions.reduce((max, v) => {
+    const [aMaj, aMin, aPat] = max.split(".").map(Number);
+    const [bMaj, bMin, bPat] = v.split(".").map(Number);
+    if (bMaj > aMaj) return v;
+    if (bMaj === aMaj && bMin > aMin) return v;
+    if (bMaj === aMaj && bMin === aMin && bPat > aPat) return v;
+    return max;
+  });
+}
+
 function bumpVersion(
   version: string,
   type: "patch" | "minor" | "major",
@@ -115,7 +140,11 @@ async function main() {
 
   // Show current versions across all files
   const versionFiles = getVersionFiles(pluginName);
-  const currentVersion = plugin.version;
+  const allVersions = [
+    plugin.version,
+    ...versionFiles.map((f) => readJson(f).version as string),
+  ];
+  const currentVersion = maxVersion(allVersions);
 
   console.log(`\nPlugin: ${pluginName}`);
   console.log(`Current version: ${currentVersion}\n`);
@@ -154,7 +183,7 @@ async function main() {
   console.log(`\nBumping ${pluginName}: ${currentVersion} -> ${newVersion}\n`);
 
   // Update marketplace.json
-  replaceVersion(MARKETPLACE_PATH, newVersion);
+  updateMarketplaceVersion(pluginName, newVersion);
   console.log("  Updated .claude-plugin/marketplace.json");
 
   // Update individual version files

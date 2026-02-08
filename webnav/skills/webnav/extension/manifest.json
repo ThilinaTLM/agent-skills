@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "WebNav - AI Browser Control",
-	"version": "1.7.0",
+	"version": "1.8.0",
 	"description": "Enables AI agents to navigate, interact with, and control browser tabs via native messaging",
 	"permissions": [
 		"activeTab",
