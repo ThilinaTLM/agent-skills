@@ -23,6 +23,7 @@ interface BrowserMeta {
 	paths: {
 		darwin: string[];
 		linux: string[];
+		win32: string;
 	};
 }
 
@@ -33,6 +34,7 @@ export const BROWSERS: Record<BrowserSlug, BrowserMeta> = {
 		paths: {
 			darwin: ["Google", "Chrome"],
 			linux: ["google-chrome"],
+			win32: "Google\\Chrome",
 		},
 	},
 	brave: {
@@ -41,6 +43,7 @@ export const BROWSERS: Record<BrowserSlug, BrowserMeta> = {
 		paths: {
 			darwin: ["BraveSoftware", "Brave-Browser"],
 			linux: ["BraveSoftware", "Brave-Browser"],
+			win32: "BraveSoftware\\Brave-Browser",
 		},
 	},
 	edge: {
@@ -49,6 +52,7 @@ export const BROWSERS: Record<BrowserSlug, BrowserMeta> = {
 		paths: {
 			darwin: ["Microsoft Edge"],
 			linux: ["microsoft-edge"],
+			win32: "Microsoft\\Edge",
 		},
 	},
 	chromium: {
@@ -57,12 +61,14 @@ export const BROWSERS: Record<BrowserSlug, BrowserMeta> = {
 		paths: {
 			darwin: ["Chromium"],
 			linux: ["chromium"],
+			win32: "Chromium",
 		},
 	},
 };
 
 /**
  * Resolve the NativeMessagingHosts directory for a given browser + platform.
+ * On Windows, manifests go to a shared per-user directory (registry points to them).
  */
 export function getNativeMessagingHostsDir(browser: BrowserSlug): string {
 	const os = platform();
@@ -85,9 +91,21 @@ export function getNativeMessagingHostsDir(browser: BrowserSlug): string {
 			"NativeMessagingHosts",
 		);
 	}
+	if (os === "win32") {
+		const localAppData =
+			process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local");
+		return join(localAppData, "WebNav", "NativeMessagingHosts");
+	}
 
-	// win32 and others — caller must handle
 	return "";
+}
+
+/**
+ * Return the Windows registry key for a browser's native messaging host.
+ */
+export function getNativeMessagingRegistryKey(browser: BrowserSlug): string {
+	const meta = BROWSERS[browser];
+	return `HKCU\\Software\\${meta.paths.win32}\\NativeMessagingHosts\\com.tlmtech.webnav`;
 }
 
 /**
@@ -111,8 +129,18 @@ export function parseBrowserSlug(value: string): BrowserSlug | undefined {
 
 /**
  * Return the list of browsers that currently have a manifest installed.
+ * On Windows, checks both the manifest file and registry entry.
  */
 export function getInstalledBrowsers(): BrowserSlug[] {
+	if (platform() === "win32") {
+		return BROWSER_SLUGS.filter((slug) => {
+			const p = getManifestPathForBrowser(slug);
+			if (!p || !existsSync(p)) return false;
+			const regKey = getNativeMessagingRegistryKey(slug);
+			const result = Bun.spawnSync(["reg", "query", regKey, "/ve"]);
+			return result.exitCode === 0;
+		});
+	}
 	return BROWSER_SLUGS.filter((slug) => {
 		const p = getManifestPathForBrowser(slug);
 		return p !== "" && existsSync(p);

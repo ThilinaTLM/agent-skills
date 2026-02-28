@@ -1,11 +1,13 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { platform } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineCommand } from "citty";
 import {
 	BROWSERS,
 	BROWSER_SLUGS,
 	getNativeMessagingHostsDir,
+	getNativeMessagingRegistryKey,
 	parseBrowserSlug,
 } from "../../lib/browsers";
 import {
@@ -14,14 +16,15 @@ import {
 } from "../../lib/errors";
 import { jsonError, jsonOk } from "../../lib/output";
 
+const IS_WINDOWS = platform() === "win32";
+
 function getHostWrapper(): string {
-	const os = platform();
-	return os === "win32" ? "webnav-host.ps1" : "webnav-host";
+	return IS_WINDOWS ? "webnav-host.bat" : "webnav-host";
 }
 
 // Get the CLI root directory (webnav-cli/)
 function getCliRoot(): string {
-	const currentFile = new URL(import.meta.url).pathname;
+	const currentFile = fileURLToPath(import.meta.url);
 	// Go up: commands/setup -> commands -> src -> webnav-cli
 	return resolve(dirname(currentFile), "..", "..", "..");
 }
@@ -72,18 +75,9 @@ export const installCommand = defineCommand({
 			);
 		}
 
-		const os = platform();
-		if (os === "win32") {
-			jsonError(
-				"Windows requires registry setup for native messaging",
-				"SETUP_FAILED",
-				"Please follow the manual setup instructions in SETUP.md",
-			);
-		}
-
 		const hostsDir = getNativeMessagingHostsDir(browserSlug);
 		if (!hostsDir) {
-			jsonError(`Unsupported platform: ${os}`, "SETUP_FAILED");
+			jsonError(`Unsupported platform: ${platform()}`, "SETUP_FAILED");
 		}
 
 		const cliRoot = getCliRoot();
@@ -115,6 +109,40 @@ export const installCommand = defineCommand({
 		// Write manifest
 		const manifestPath = join(hostsDir, "com.tlmtech.webnav.json");
 		writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+		// On Windows, register the manifest path in the registry
+		if (IS_WINDOWS) {
+			const registryKey = getNativeMessagingRegistryKey(browserSlug);
+			const result = Bun.spawnSync([
+				"reg",
+				"add",
+				registryKey,
+				"/ve",
+				"/t",
+				"REG_SZ",
+				"/d",
+				manifestPath,
+				"/f",
+			]);
+			if (result.exitCode !== 0) {
+				// Clean up the manifest we just wrote
+				if (existsSync(manifestPath)) {
+					unlinkSync(manifestPath);
+				}
+				jsonError(
+					"Failed to create registry entry for native messaging",
+					"SETUP_FAILED",
+					{
+						summary:
+							"The registry write failed. You may need to run this command from an elevated (Administrator) prompt.",
+						diagnostics: [
+							`Registry key: ${registryKey}`,
+							`Error: ${result.stderr.toString().trim()}`,
+						],
+					},
+				);
+			}
+		}
 
 		jsonOk({
 			action: "setup",

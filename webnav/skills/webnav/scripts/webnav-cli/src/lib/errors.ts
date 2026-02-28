@@ -4,7 +4,7 @@
  */
 
 import { existsSync } from "node:fs";
-import { homedir } from "node:os";
+import { homedir, platform } from "node:os";
 import { join, resolve } from "node:path";
 import type { ErrorCode, ErrorHint } from "../types";
 import {
@@ -14,7 +14,10 @@ import {
 	getManifestPathForBrowser,
 } from "./browsers";
 
-const SOCKET_PATH = join(homedir(), ".webnav", "webnav.sock");
+const IS_WINDOWS = platform() === "win32";
+const SOCKET_PATH = IS_WINDOWS
+	? "\\\\.\\pipe\\webnav"
+	: join(homedir(), ".webnav", "webnav.sock");
 const EXTENSION_DIST_PATH = resolve(
 	import.meta.dir,
 	"../../../../extension/dist",
@@ -90,9 +93,12 @@ export function manifestExists(): boolean {
 }
 
 /**
- * Check if the socket exists (indicates native host is running).
+ * Check if the IPC endpoint exists (indicates native host is running).
+ * On Windows, named pipes don't exist on the filesystem — we skip the check
+ * and let the connection attempt determine availability.
  */
 export function socketExists(): boolean {
+	if (IS_WINDOWS) return true;
 	return existsSync(SOCKET_PATH);
 }
 
@@ -166,10 +172,15 @@ export function getSetupRequiredHint(browser?: BrowserSlug): ErrorHint {
 			"Step 5: Verify",
 			"  - Run: webnav status",
 		],
-		diagnostics: [
-			"Check manifest: ls -la ~/.config/*/NativeMessagingHosts/ ~/Library/Application\\ Support/*/NativeMessagingHosts/ 2>/dev/null",
-			"Check socket: ls -la ~/.webnav/",
-		],
+		diagnostics: IS_WINDOWS
+			? [
+					'Check registry: reg query "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\com.tlmtech.webnav" /ve',
+					`Check manifest: dir "${process.env.LOCALAPPDATA || ""}\\WebNav\\NativeMessagingHosts\\"`,
+				]
+			: [
+					"Check manifest: ls -la ~/.config/*/NativeMessagingHosts/ ~/Library/Application\\ Support/*/NativeMessagingHosts/ 2>/dev/null",
+					"Check socket: ls -la ~/.webnav/",
+				],
 		context: `SETUP_REQUIRED: The AI agent MUST guide the user through setup. Do NOT skip any step.\n\n${freshInstallContext(extUrl)}`,
 	};
 }
@@ -217,9 +228,15 @@ export function getNotConnectedHint(browser?: BrowserSlug): ErrorHint {
 			"    - Run: webnav status",
 		],
 		diagnostics: [
-			"Check socket: ls -la ~/.webnav/",
+			...(IS_WINDOWS
+				? [
+						`Check registry: reg query "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\com.tlmtech.webnav" /ve`,
+					]
+				: ["Check socket: ls -la ~/.webnav/"]),
 			`Check extension errors: ${label} > ${extUrl} > WebNav > Errors`,
-			`Check extension dist exists: ls -la ${EXTENSION_DIST_PATH}`,
+			...(IS_WINDOWS
+				? [`Check extension dist exists: dir "${EXTENSION_DIST_PATH}"`]
+				: [`Check extension dist exists: ls -la ${EXTENSION_DIST_PATH}`]),
 			...(distExists
 				? []
 				: [
@@ -236,6 +253,26 @@ export function getNotConnectedHint(browser?: BrowserSlug): ErrorHint {
 export function getConnectionFailedHint(browser?: BrowserSlug): ErrorHint {
 	const label = browserLabel(browser);
 	const extUrl = extensionsUrl(browser);
+
+	if (IS_WINDOWS) {
+		return {
+			summary:
+				"Connection to WebNav failed. The native host may not be running or the extension is not connected.",
+			steps: [
+				"Step 1: Reload the extension",
+				`  - Open ${label}: ${extUrl}`,
+				"  - Find WebNav and click the reload icon",
+				"",
+				"Step 2: Verify connection",
+				"  - Run: webnav status",
+			],
+			diagnostics: [
+				`Check if ${label} is running: Get-Process chrome -ErrorAction SilentlyContinue`,
+				`Check registry: reg query "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\com.tlmtech.webnav" /ve`,
+			],
+			context: `CONNECTION_FAILED: The native host is not responding.\n\n${reloadAndVerifyContext()}\n\nIf webnav status still fails — the extension may be from an outdated path. Full reinstall:\n${reinstallContext(extUrl)}`,
+		};
+	}
 
 	return {
 		summary:
@@ -286,7 +323,7 @@ export function getExtensionDisconnectedHint(browser?: BrowserSlug): ErrorHint {
 		],
 		diagnostics: [
 			"Check native host logs: webnav native-host (run manually to see stderr)",
-			"Check socket: ls -la ~/.webnav/",
+			...(IS_WINDOWS ? [] : ["Check socket: ls -la ~/.webnav/"]),
 		],
 		context: `EXTENSION_DISCONNECTED: The native host is running but the extension is not responding.\n\n[USER action] Ask the user to check that WebNav is enabled on the extensions page (${extUrl})\n${reloadAndVerifyContext()}\n\nIf still not responding after reload, the extension may need a full reinstall:\n${reinstallContext(extUrl)}`,
 	};

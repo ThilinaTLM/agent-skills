@@ -1,2 +1,2 @@
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-& "$ScriptDir\webnav.ps1" native-host
+& bun run "$ScriptDir\src\index.ts" native-host

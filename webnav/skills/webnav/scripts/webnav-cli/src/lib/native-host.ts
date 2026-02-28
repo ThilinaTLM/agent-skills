@@ -11,11 +11,20 @@
 
 import { existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { type Socket, createServer } from "node:net";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { homedir, platform } from "node:os";
+import { dirname, join } from "node:path";
 
-const SOCKET_DIR = join(homedir(), ".webnav");
-const SOCKET_PATH = join(SOCKET_DIR, "webnav.sock");
+const IS_WINDOWS = platform() === "win32";
+
+/**
+ * Get the IPC path — named pipe on Windows, Unix socket elsewhere.
+ */
+function getIpcPath(): string {
+	if (IS_WINDOWS) return "\\\\.\\pipe\\webnav";
+	return join(homedir(), ".webnav", "webnav.sock");
+}
+
+const IPC_PATH = getIpcPath();
 
 // Track connected CLI clients
 const clients: Set<Socket> = new Set();
@@ -87,8 +96,9 @@ function cleanup(server: ReturnType<typeof createServer>): void {
 	}
 	clients.clear();
 	server.close();
-	if (existsSync(SOCKET_PATH)) {
-		unlinkSync(SOCKET_PATH);
+	// Named pipes self-cleanup on Windows; only remove socket file on Unix
+	if (!IS_WINDOWS && existsSync(IPC_PATH)) {
+		unlinkSync(IPC_PATH);
 	}
 }
 
@@ -96,17 +106,18 @@ function cleanup(server: ReturnType<typeof createServer>): void {
  * Start the native host relay server
  */
 export function startNativeHost(): void {
-	// Ensure socket directory exists
-	if (!existsSync(SOCKET_DIR)) {
-		mkdirSync(SOCKET_DIR, { recursive: true });
+	// On Unix, ensure socket directory exists and remove stale socket
+	if (!IS_WINDOWS) {
+		const socketDir = dirname(IPC_PATH);
+		if (!existsSync(socketDir)) {
+			mkdirSync(socketDir, { recursive: true });
+		}
+		if (existsSync(IPC_PATH)) {
+			unlinkSync(IPC_PATH);
+		}
 	}
 
-	// Remove stale socket file
-	if (existsSync(SOCKET_PATH)) {
-		unlinkSync(SOCKET_PATH);
-	}
-
-	// Create Unix socket server for CLI clients
+	// Create IPC server for CLI clients (Unix socket or Windows named pipe)
 	const server = createServer((socket: Socket) => {
 		clients.add(socket);
 
@@ -153,9 +164,9 @@ export function startNativeHost(): void {
 		process.exit(0);
 	});
 
-	server.listen(SOCKET_PATH, () => {
+	server.listen(IPC_PATH, () => {
 		// Signal ready by writing to stderr (Chrome ignores stderr)
-		console.error(`[native-host] Listening on ${SOCKET_PATH}`);
+		console.error(`[native-host] Listening on ${IPC_PATH}`);
 	});
 
 	server.on("error", (err) => {
@@ -172,5 +183,9 @@ export function startNativeHost(): void {
 	process.on("SIGTERM", () => {
 		cleanup(server);
 		process.exit(0);
+	});
+
+	process.on("exit", () => {
+		cleanup(server);
 	});
 }
