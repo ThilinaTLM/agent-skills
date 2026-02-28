@@ -44,7 +44,7 @@ export const generateCommand = defineCommand({
 			type: "string",
 			alias: "m",
 			description: "Model to use",
-			default: "gemini-2.0-flash-preview-image-generation",
+			default: "gemini-3.1-flash-image-preview",
 		},
 		"negative-prompt": {
 			type: "string",
@@ -67,7 +67,7 @@ export const generateCommand = defineCommand({
 		const aspectRatio = args["aspect-ratio"] || "";
 		const size = args.size || "1024";
 		const person = args.person || "";
-		const model = args.model || "gemini-2.0-flash-preview-image-generation";
+		const model = args.model || "gemini-3.1-flash-image-preview";
 		const negativePrompt = args["negative-prompt"] || "";
 
 		// Validate aspect ratio

@@ -55,7 +55,7 @@ imagegen gen "modern tech company logo, flat design" -o ./public/logo.png
 | `--aspect-ratio, -a`    | string                | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`                                   |
 | `--size, -s`            | string                | `256`, `512`, `1024` (default: `1024`)                                |
 | `--person, -p`          | string                | `dont_allow`, `allow_adult`, `allow_all`                              |
-| `--model, -m`           | string                | Model override (default: `gemini-2.0-flash-preview-image-generation`) |
+| `--model, -m`           | string                | Model override (default: `gemini-3.1-flash-image-preview`) |
 | `--negative-prompt, -n` | string                | What to exclude from the image                                        |
 
 **Success response:**

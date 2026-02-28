@@ -5,7 +5,7 @@
     "": {
       "name": "imagegen-cli",
       "dependencies": {
-        "@google/genai": "^1.0.0",
+        "@google/genai": "^1.43.0",
         "citty": "^0.1.6",
       },
       "devDependencies": {
