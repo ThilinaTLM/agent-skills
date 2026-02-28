@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check for bun
+if ! command -v bun &> /dev/null; then
+    echo '{"ok":false,"error":"Bun runtime not found","code":"PREREQ_MISSING","hint":"Install bun: https://bun.sh"}'
+    exit 1
+fi
+
+# Auto-install dependencies
+if [ ! -d "$SCRIPT_DIR/node_modules" ]; then
+    bun install --cwd "$SCRIPT_DIR" --silent
+fi
+
+# Run CLI
+exec bun run "$SCRIPT_DIR/src/index.ts" "$@"

@@ -1,0 +1,22 @@
+{
+	"name": "imagegen-cli",
+	"version": "1.0.0",
+	"type": "module",
+	"bin": {
+		"imagegen": "./src/index.ts"
+	},
+	"scripts": {
+		"dev": "bun run src/index.ts",
+		"lint": "biome check .",
+		"lint:fix": "biome check --fix .",
+		"format": "biome format --write ."
+	},
+	"dependencies": {
+		"@google/genai": "^1.0.0",
+		"citty": "^0.1.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.0",
+		"@types/bun": "latest"
+	}
+}

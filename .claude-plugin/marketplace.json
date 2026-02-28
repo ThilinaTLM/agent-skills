@@ -86,6 +86,26 @@
       "category": "automation",
       "repository": "https://github.com/ThilinaTLM/agent-skills",
       "homepage": "https://github.com/ThilinaTLM/agent-skills/tree/main/webnav"
+    },
+    {
+      "name": "imagegen",
+      "source": "./imagegen",
+      "description": "AI image generation via Google Gemini",
+      "version": "1.0.0",
+      "author": {
+        "name": "ThilinaTLM"
+      },
+      "license": "MIT",
+      "keywords": [
+        "image",
+        "generation",
+        "ai",
+        "gemini",
+        "artwork"
+      ],
+      "category": "media",
+      "repository": "https://github.com/ThilinaTLM/agent-skills",
+      "homepage": "https://github.com/ThilinaTLM/agent-skills/tree/main/imagegen"
     }
   ]
 }

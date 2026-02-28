@@ -1,0 +1,8 @@
+{
+  "name": "imagegen",
+  "version": "1.0.0",
+  "description": "AI image generation via Google Gemini",
+  "author": { "name": "ThilinaTLM" },
+  "license": "MIT",
+  "keywords": ["image", "generation", "ai", "gemini", "artwork"]
+}
