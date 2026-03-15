@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Claude Code plugins by ThilinaTLM",
-    "version": "1.7.0"
+    "version": "1.8.0"
   },
   "plugins": [
     {
@@ -106,6 +106,26 @@
       "category": "media",
       "repository": "https://github.com/ThilinaTLM/agent-skills",
       "homepage": "https://github.com/ThilinaTLM/agent-skills/tree/main/imagegen"
+    },
+    {
+      "name": "codex",
+      "source": "./codex",
+      "description": "OpenAI Codex CLI for research, review, and second opinions",
+      "version": "1.0.0",
+      "author": {
+        "name": "ThilinaTLM"
+      },
+      "license": "MIT",
+      "keywords": [
+        "codex",
+        "openai",
+        "research",
+        "review",
+        "second-opinion"
+      ],
+      "category": "productivity",
+      "repository": "https://github.com/ThilinaTLM/agent-skills",
+      "homepage": "https://github.com/ThilinaTLM/agent-skills/tree/main/codex"
     }
   ]
 }
