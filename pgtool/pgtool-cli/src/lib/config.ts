@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname } from "node:path";
 import type {
 	ErrorResponse,
@@ -66,6 +66,25 @@ export function loadFileConfig(
 			code: "CONFIG_NOT_FOUND",
 			hint: `Create a .pgtool.json file in your project root. Example:\n{\n  "profiles": {\n    "dev": {\n      "host": "localhost",\n      "port": 5432,\n      "database": "mydb",\n      "user": "postgres",\n      "passwordEnv": "PGPASSWORD"\n    }\n  },\n  "default": "dev"\n}`,
 		};
+	}
+
+	// Reject writable config files — credentials must be protected
+	try {
+		const stats = statSync(configPath);
+		const mode = stats.mode;
+		// Check if any write bit is set (owner, group, or others)
+		const isWritable = (mode & 0o222) !== 0;
+		if (isWritable) {
+			const octal = `0${(mode & 0o777).toString(8)}`;
+			return {
+				ok: false,
+				error: `.pgtool.json is writable (current permissions: ${octal}). Config files with credentials must be read-only.`,
+				code: "CONFIG_INSECURE",
+				hint: `Run: chmod 400 ${configPath}`,
+			};
+		}
+	} catch {
+		// If we can't stat the file, the subsequent readFileSync will catch it
 	}
 
 	let rawConfig: unknown;

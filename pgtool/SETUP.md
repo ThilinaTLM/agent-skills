@@ -4,6 +4,14 @@
 
 Create a `.pgtool.json` file in the project root.
 
+After creating the file, make it read-only to protect credentials:
+
+```bash
+chmod 400 .pgtool.json
+```
+
+pgtool will refuse to load a writable config file (`CONFIG_INSECURE` error).
+
 ### Multi-Profile Format (Recommended)
 
 ```json
@@ -169,6 +177,7 @@ All errors return JSON with `ok: false`:
 |------|-------------|
 | `CONFIG_NOT_FOUND` | `.pgtool.json` not found |
 | `CONFIG_INVALID` | Invalid config format or missing fields |
+| `CONFIG_INSECURE` | Config file is writable (security risk) |
 | `CONFIG_TAMPERED` | Config modified and change was rejected |
 | `CONNECTION_FAILED` | Cannot connect to database |
 | `QUERY_FAILED` | SQL error |

@@ -207,6 +207,7 @@ All errors return JSON with `ok: false`, an error code, and a helpful hint:
 |------|-------------|
 | `CONFIG_NOT_FOUND` | `.pgtool.json` not found |
 | `CONFIG_INVALID` | Invalid config format or missing fields |
+| `CONFIG_INSECURE` | `.pgtool.json` has insecure (writable) file permissions |
 | `CONFIG_TAMPERED` | Config modified while daemon running, change rejected |
 | `CONNECTION_FAILED` | Cannot connect to database |
 | `QUERY_FAILED` | SQL error |
@@ -220,6 +221,10 @@ All errors return JSON with `ok: false`, an error code, and a helpful hint:
 ### Handling `PROTECTED_DENIED`
 
 If you receive this error, it means the profile requires human approval. Ask the user to approve the connection — a dialog will appear on their screen. Then retry the command.
+
+### Handling `CONFIG_INSECURE`
+
+The `.pgtool.json` file has write permissions, which is a security risk since it contains database credentials. Ask the user to make it read-only by running `chmod 400 .pgtool.json` in their project directory, then retry.
 
 ### Handling `READ_ONLY`
 

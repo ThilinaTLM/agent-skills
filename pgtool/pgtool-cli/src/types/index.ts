@@ -63,6 +63,7 @@ export interface ResolvedConnection {
 export type ErrorCode =
 	| "CONFIG_NOT_FOUND"
 	| "CONFIG_INVALID"
+	| "CONFIG_INSECURE"
 	| "CONNECTION_FAILED"
 	| "QUERY_FAILED"
 	| "TABLE_NOT_FOUND"
