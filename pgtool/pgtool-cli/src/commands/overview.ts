@@ -1,7 +1,13 @@
 import { defineCommand } from "citty";
+import { globalArgs, initOptsFromArgs } from "../lib/args.ts";
 import { getDefaultSchema } from "../lib/config.ts";
 import { query } from "../lib/connection.ts";
-import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import {
+	handleError,
+	initDaemonConnection,
+	initPgTool,
+	registerCleanup,
+} from "../lib/init.ts";
 import { outputJson } from "../lib/output.ts";
 import type { OverviewResult, OverviewTable } from "../types";
 
@@ -16,20 +22,13 @@ export const overviewCommand = defineCommand({
 			description: "Schema name (default: from config or 'public')",
 			required: false,
 		},
-		root: {
-			type: "string",
-			alias: "r",
-			description: "Project root directory",
-		},
-		plain: {
-			type: "boolean",
-			description: "Human-readable output instead of JSON",
-		},
+		...globalArgs,
 	},
 	async run({ args }) {
 		const plain = args.plain ?? false;
-		const { config } = initPgTool(args.root, plain);
+		const { config } = initPgTool(initOptsFromArgs(args));
 		registerCleanup();
+		await initDaemonConnection();
 
 		const schema = args.schema || getDefaultSchema(config);
 

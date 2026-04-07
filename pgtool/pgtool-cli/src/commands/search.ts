@@ -1,6 +1,12 @@
 import { defineCommand } from "citty";
+import { globalArgs, initOptsFromArgs } from "../lib/args.ts";
 import { query } from "../lib/connection.ts";
-import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import {
+	handleError,
+	initDaemonConnection,
+	initPgTool,
+	registerCleanup,
+} from "../lib/init.ts";
 import { formatTable, outputJson } from "../lib/output.ts";
 import type { SearchResult } from "../types";
 
@@ -15,20 +21,13 @@ export const searchCommand = defineCommand({
 			description: "Search pattern (case-insensitive)",
 			required: true,
 		},
-		root: {
-			type: "string",
-			alias: "r",
-			description: "Project root directory",
-		},
-		plain: {
-			type: "boolean",
-			description: "Human-readable output instead of JSON",
-		},
+		...globalArgs,
 	},
 	async run({ args }) {
 		const plain = args.plain ?? false;
-		initPgTool(args.root, plain);
+		initPgTool(initOptsFromArgs(args));
 		registerCleanup();
+		await initDaemonConnection();
 
 		const pattern = `%${args.pattern}%`;
 

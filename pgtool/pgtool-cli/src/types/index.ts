@@ -1,12 +1,62 @@
 // Configuration types
-export interface PgToolConfig {
+
+/** Legacy single-connection config (backward compat) */
+export interface PgToolLegacyConfig {
 	host: string;
-	port: number;
+	port?: number;
 	database: string;
 	user: string;
 	password?: string;
 	passwordEnv?: string;
 	schema?: string;
+}
+
+/** Multi-profile config file structure */
+export interface PgToolFileConfig {
+	profiles: Record<string, PgToolProfileConfig>;
+	default?: string;
+}
+
+/** Individual profile config */
+export interface PgToolProfileConfig {
+	// Field-based connection (mutually exclusive with url)
+	host?: string;
+	port?: number;
+	database?: string;
+	user?: string;
+	password?: string;
+	passwordEnv?: string;
+
+	// URL-based connection (mutually exclusive with field-based)
+	url?: string;
+
+	// Common options
+	schema?: string;
+	ssl?: boolean | SslConfig;
+	readOnly?: boolean;
+	protected?: boolean;
+}
+
+export interface SslConfig {
+	rejectUnauthorized?: boolean;
+	ca?: string;
+	cert?: string;
+	key?: string;
+}
+
+/** Resolved config ready for connection (always has concrete values) */
+export interface ResolvedConnection {
+	host: string;
+	port: number;
+	database: string;
+	user: string;
+	password: string;
+	schema: string;
+	ssl?: boolean | SslConfig;
+	readOnly: boolean;
+	protected: boolean;
+	profileName: string;
+	url?: string;
 }
 
 // Error codes
@@ -18,7 +68,10 @@ export type ErrorCode =
 	| "TABLE_NOT_FOUND"
 	| "SCHEMA_NOT_FOUND"
 	| "PERMISSION_DENIED"
-	| "TIMEOUT";
+	| "TIMEOUT"
+	| "READ_ONLY"
+	| "PROTECTED_DENIED"
+	| "CONFIG_TAMPERED";
 
 // Base response types
 export interface SuccessResponse<T> {

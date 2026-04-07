@@ -1,6 +1,12 @@
 import { defineCommand } from "citty";
+import { globalArgs, initOptsFromArgs } from "../lib/args.ts";
 import { query } from "../lib/connection.ts";
-import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import {
+	handleError,
+	initDaemonConnection,
+	initPgTool,
+	registerCleanup,
+} from "../lib/init.ts";
 import { formatTable, outputJson } from "../lib/output.ts";
 import type { SchemaInfo, SchemasResult } from "../types";
 
@@ -10,20 +16,13 @@ export const schemasCommand = defineCommand({
 		description: "List all database schemas",
 	},
 	args: {
-		root: {
-			type: "string",
-			alias: "r",
-			description: "Project root directory",
-		},
-		plain: {
-			type: "boolean",
-			description: "Human-readable output instead of JSON",
-		},
+		...globalArgs,
 	},
 	async run({ args }) {
 		const plain = args.plain ?? false;
-		initPgTool(args.root, plain);
+		initPgTool(initOptsFromArgs(args));
 		registerCleanup();
+		await initDaemonConnection();
 
 		const result = await query<{ schema_name: string; owner: string }>(`
       SELECT

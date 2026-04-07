@@ -23,13 +23,51 @@ For setup instructions, see SETUP.md in this directory.
 - **Always use pgtool-cli** for all database operations. Do NOT use `psql` directly.
 - If pgtool-cli encounters an error or limitation, report the issue to the user and stop. Do not fall back to psql or other tools.
 - Always add `LIMIT` to SELECT queries to avoid fetching excessive data.
+- **Protected profiles** require human approval via a GUI dialog. If you receive a `PROTECTED_DENIED` error, ask the user to approve the connection dialog on their screen, then retry.
+- **Read-only profiles** will reject write operations. Check the profile's `readOnly` flag before attempting writes.
+
+## Global Options
+
+```bash
+pgtool <command> [OPTIONS]
+```
+
+**Options come after the command name** (citty framework requirement):
+
+| Option | Description |
+|--------|-------------|
+| `-r, --root <path>` | Project root directory (default: auto-detect) |
+| `--plain` | Human-readable output instead of JSON |
+| `-p, --profile <name>` | Connection profile name |
+| `--read-only` | Force read-only mode |
+| `--allow-writes` | Override read-only profile |
+
+```bash
+# ✅ Correct — options after command
+pgtool schemas -p dev
+pgtool tables --profile staging --plain
+
+# ❌ Wrong — options before command don't work
+pgtool -p dev schemas
+```
+
+Profile selection priority: `--profile` flag > `PGTOOL_PROFILE` env > config `"default"` > first profile.
 
 ## Commands
+
+### List Profiles
+
+```bash
+pgtool profiles
+```
+
+Output: `{"ok":true,"profiles":[{"name":"dev","host":"localhost","port":5432,"database":"myapp_dev","default":true,"readOnly":false,"protected":false}]}`
 
 ### List Schemas
 
 ```bash
 pgtool schemas
+pgtool -p staging schemas
 ```
 
 Output: `{"ok":true,"schemas":[{"name":"public","owner":"postgres"}]}`
@@ -40,8 +78,8 @@ Output: `{"ok":true,"schemas":[{"name":"public","owner":"postgres"}]}`
 # Tables in default schema
 pgtool tables
 
-# Tables in a specific schema
-pgtool tables auth
+# Tables in a specific schema with specific profile
+pgtool -p staging tables auth
 ```
 
 Output: `{"ok":true,"schema":"public","tables":[{"name":"users","type":"table","rowEstimate":1000,"sizeHuman":"256 KB"}]}`
@@ -51,10 +89,7 @@ Output: `{"ok":true,"schema":"public","tables":[{"name":"users","type":"table","
 Get column details with primary key and foreign key information.
 
 ```bash
-# Table in default schema
 pgtool describe users
-
-# Table in specific schema
 pgtool describe auth.users
 ```
 
@@ -103,16 +138,9 @@ Output: `{"ok":true,"rows":[...],"rowCount":5,"fields":["id","name","email"]}`
 
 ### Sample Table Rows
 
-Get sample data from a table quickly.
-
 ```bash
-# Default: 5 rows
 pgtool sample users
-
-# Custom limit
 pgtool sample users --limit 10
-
-# Specific schema
 pgtool sample auth.users
 ```
 
@@ -120,152 +148,93 @@ Output: `{"ok":true,"schema":"public","table":"users","rows":[...],"rowCount":5,
 
 ### Count Table Rows
 
-Get exact row count (not estimate).
-
 ```bash
 pgtool count users
-pgtool count auth.sessions
 ```
 
 Output: `{"ok":true,"schema":"public","table":"users","count":12345}`
 
-Plain: `public.users: 12,345 rows`
-
 ### Search Tables and Columns
-
-Find tables and columns matching a pattern.
 
 ```bash
 pgtool search email
-pgtool search user
 ```
 
-Output:
-
-```json
-{
-  "ok": true,
-  "pattern": "email",
-  "matches": {
-    "tables": [{ "schema": "public", "name": "emails" }],
-    "columns": [
-      {
-        "schema": "public",
-        "table": "users",
-        "column": "email",
-        "type": "varchar(255)"
-      },
-      {
-        "schema": "public",
-        "table": "contacts",
-        "column": "email_address",
-        "type": "text"
-      }
-    ]
-  }
-}
-```
+Output: `{"ok":true,"pattern":"email","matches":{"tables":[...],"columns":[...]}}`
 
 ### Schema Overview
-
-Compact ERD-like view showing tables, primary keys, and relationships.
 
 ```bash
 pgtool overview
 pgtool overview auth
 ```
 
-Output (plain):
-
-```
-Schema: public (3 tables)
-
-users (1.2k rows)
-  PK: id
-  → orders.user_id, profiles.user_id
-
-orders (45k rows)
-  PK: id
-  FK: user_id → users.id
-  → order_items.order_id
-
-products (500 rows)
-  PK: id
-```
+Compact ERD-like view showing tables, primary keys, and relationships.
 
 ### Explain Query Plan
 
-Analyze query execution plan.
-
 ```bash
-# With ANALYZE (executes query)
 pgtool explain "SELECT * FROM users WHERE email = 'x'"
-
-# Without ANALYZE (plan only)
 pgtool explain "SELECT * FROM users WHERE id = 1" --no-analyze
 ```
 
-Output: `{"ok":true,"query":"SELECT...","plan":["Seq Scan on users...","..."]}`
+Output: `{"ok":true,"query":"SELECT...","plan":["Seq Scan on users..."]}`
+
+### Daemon Management
+
+```bash
+pgtool daemon start    # Start or confirm daemon is running
+pgtool daemon stop     # Gracefully stop daemon
+pgtool daemon status   # Show status, uptime, active pools
+```
+
+The daemon auto-starts on the first CLI call and auto-stops after 5 minutes idle. It maintains persistent connection pools across CLI calls for faster queries.
 
 ## Error Responses
 
-All errors follow a consistent JSON format with `ok: false`, an error code, and a helpful hint:
-
-**Configuration not found:**
+All errors return JSON with `ok: false`, an error code, and a helpful hint:
 
 ```json
 {
   "ok": false,
   "error": "Configuration file not found",
   "code": "CONFIG_NOT_FOUND",
-  "hint": "Create a .pgtool.json file in your project root with database connection details."
+  "hint": "Create a .pgtool.json file..."
 }
 ```
 
-**Connection failed:**
+| Code | Description |
+|------|-------------|
+| `CONFIG_NOT_FOUND` | `.pgtool.json` not found |
+| `CONFIG_INVALID` | Invalid config format or missing fields |
+| `CONFIG_TAMPERED` | Config modified while daemon running, change rejected |
+| `CONNECTION_FAILED` | Cannot connect to database |
+| `QUERY_FAILED` | SQL error |
+| `TABLE_NOT_FOUND` | Table does not exist |
+| `SCHEMA_NOT_FOUND` | Schema does not exist |
+| `PERMISSION_DENIED` | Auth failed or insufficient privileges |
+| `TIMEOUT` | Query timed out |
+| `READ_ONLY` | Write blocked on read-only connection |
+| `PROTECTED_DENIED` | Protected profile not approved by human |
 
-```json
-{
-  "ok": false,
-  "error": "Could not connect to database server: connect ECONNREFUSED 127.0.0.1:5432",
-  "code": "CONNECTION_FAILED",
-  "hint": "Verify host and port in .pgtool.json and ensure PostgreSQL is running"
-}
-```
+### Handling `PROTECTED_DENIED`
 
-**Authentication failed:**
+If you receive this error, it means the profile requires human approval. Ask the user to approve the connection — a dialog will appear on their screen. Then retry the command.
 
-```json
-{
-  "ok": false,
-  "error": "Authentication failed",
-  "code": "PERMISSION_DENIED",
-  "hint": "Check your username and password in .pgtool.json"
-}
-```
+### Handling `READ_ONLY`
 
-**Table not found:**
-
-```json
-{
-  "ok": false,
-  "error": "relation \"nonexistent_table\" does not exist",
-  "code": "TABLE_NOT_FOUND",
-  "hint": "Check that the table exists and you have permission to access it"
-}
-```
-
-**Error codes:** `CONFIG_NOT_FOUND`, `CONFIG_INVALID`, `CONNECTION_FAILED`, `QUERY_FAILED`, `TABLE_NOT_FOUND`, `SCHEMA_NOT_FOUND`, `PERMISSION_DENIED`, `TIMEOUT`
+The profile or `--read-only` flag prevents write operations. Use a different profile or ask the user to adjust the config.
 
 ## Common Usage Patterns
 
 **Exploring a new database:**
 
-1. `pgtool schemas` - See available schemas
-2. `pgtool overview` - Quick view of tables and relationships
-3. `pgtool tables <schema>` - List tables with sizes
-4. `pgtool describe <table>` - Understand table structures
-5. `pgtool sample <table>` - See example data
+1. `pgtool profiles` - See available connection profiles
+2. `pgtool -p dev schemas` - See available schemas
+3. `pgtool overview` - Quick view of tables and relationships
+4. `pgtool tables <schema>` - List tables with sizes
+5. `pgtool describe <table>` - Understand table structures
+6. `pgtool sample <table>` - See example data
 
 **Finding data:**
 
@@ -286,3 +255,10 @@ All errors follow a consistent JSON format with `ok: false`, an error code, and 
 1. `pgtool overview` - Visual relationship map
 2. `pgtool relationships` - Get all FK relationships
 3. `pgtool constraints <table>` - See specific table constraints
+
+**Working with multiple environments:**
+
+1. `pgtool profiles` - List all available profiles
+2. `pgtool -p dev tables` - Explore dev database
+3. `pgtool -p staging tables` - Compare with staging
+4. `pgtool -p prod tables` - Access prod (will prompt for approval if protected)

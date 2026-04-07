@@ -1,6 +1,12 @@
 import { defineCommand } from "citty";
+import { globalArgs, initOptsFromArgs } from "../lib/args.ts";
 import { query } from "../lib/connection.ts";
-import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import {
+	handleError,
+	initDaemonConnection,
+	initPgTool,
+	registerCleanup,
+} from "../lib/init.ts";
 import { outputJson } from "../lib/output.ts";
 import type { ExplainResult } from "../types";
 
@@ -15,15 +21,7 @@ export const explainCommand = defineCommand({
 			description: "SQL query to explain",
 			required: true,
 		},
-		root: {
-			type: "string",
-			alias: "r",
-			description: "Project root directory",
-		},
-		plain: {
-			type: "boolean",
-			description: "Human-readable output instead of JSON",
-		},
+		...globalArgs,
 		"no-analyze": {
 			type: "boolean",
 			description: "Use EXPLAIN without ANALYZE (no execution)",
@@ -31,8 +29,9 @@ export const explainCommand = defineCommand({
 	},
 	async run({ args }) {
 		const plain = args.plain ?? false;
-		initPgTool(args.root, plain);
+		initPgTool(initOptsFromArgs(args));
 		registerCleanup();
+		await initDaemonConnection();
 
 		const noAnalyze = args["no-analyze"] ?? false;
 		const explainPrefix = noAnalyze ? "EXPLAIN" : "EXPLAIN ANALYZE";
