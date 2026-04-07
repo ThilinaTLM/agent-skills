@@ -2,9 +2,9 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonOk } from "../lib/output";
-import { dumpUIHierarchy } from "../lib/ui-hierarchy";
+import { ADB } from "../lib/adb.ts";
+import { jsonOk } from "../lib/output.ts";
+import { dumpUIHierarchy } from "../lib/ui-hierarchy.ts";
 
 export const screenshotCommand = defineCommand({
 	meta: {

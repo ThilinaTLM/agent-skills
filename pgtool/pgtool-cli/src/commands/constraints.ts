@@ -1,8 +1,8 @@
 import { defineCommand } from "citty";
-import { getDefaultSchema } from "../lib/config";
-import { query } from "../lib/connection";
-import { handleError, initPgTool, registerCleanup } from "../lib/init";
-import { formatTable, outputJson } from "../lib/output";
+import { getDefaultSchema } from "../lib/config.ts";
+import { query } from "../lib/connection.ts";
+import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import { formatTable, outputJson } from "../lib/output.ts";
 import type { ConstraintInfo, ConstraintsResult } from "../types";
 
 export const constraintsCommand = defineCommand({

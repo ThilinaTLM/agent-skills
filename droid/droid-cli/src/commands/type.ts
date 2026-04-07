@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonOk } from "../lib/output";
+import { ADB } from "../lib/adb.ts";
+import { jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
 
 export const typeCommand = defineCommand({
 	meta: {
@@ -28,7 +29,7 @@ export const typeCommand = defineCommand({
 		await adb.shell("input", "text", escaped);
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		jsonOk({ action: "type", text: args.text });

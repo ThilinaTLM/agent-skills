@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonOk } from "../lib/output";
+import { ADB } from "../lib/adb.ts";
+import { jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
 
 export const clearCommand = defineCommand({
 	meta: {
@@ -20,7 +21,7 @@ export const clearCommand = defineCommand({
 
 		// Move cursor to end of text first
 		await adb.shell("input", "keyevent", "123"); // KEYCODE_MOVE_END
-		await Bun.sleep(50);
+		await sleep(50);
 
 		// Delete all characters by sending multiple backspace keys
 		// Most text fields are < 200 chars, send 200 deletes to be safe
@@ -44,7 +45,7 @@ export const clearCommand = defineCommand({
 		}
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		jsonOk({ action: "clear" });

@@ -6,8 +6,9 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { XMLParser } from "fast-xml-parser";
-import type { ADB } from "./adb";
-import { UIElement } from "./ui-element";
+import type { ADB } from "./adb.ts";
+import { sleep } from "./sleep.ts";
+import { UIElement } from "./ui-element.ts";
 
 const REMOTE_PATH = "/sdcard/ui_dump.xml";
 const MAX_RETRIES = 3;
@@ -27,7 +28,7 @@ export async function dumpUIHierarchy(adb: ADB): Promise<UIElement[]> {
 
 		// Wait before retry - UI might not be idle
 		if (attempt < MAX_RETRIES - 1) {
-			await Bun.sleep(500);
+			await sleep(500);
 		}
 
 		// All retries failed

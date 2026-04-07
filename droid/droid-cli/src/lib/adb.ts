@@ -2,7 +2,11 @@
  * ADB wrapper class for executing Android Debug Bridge commands.
  */
 
-import { jsonError } from "./output";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { jsonError } from "./output.ts";
+
+const execFileAsync = promisify(execFile);
 
 export class ADB {
 	private _device: string | null = null;
@@ -13,16 +17,27 @@ export class ADB {
 	async run(
 		...args: string[]
 	): Promise<{ stdout: string; stderr: string; exitCode: number }> {
-		const proc = Bun.spawn(["adb", ...args], {
-			stdout: "pipe",
-			stderr: "pipe",
-		});
-
-		const stdout = await new Response(proc.stdout).text();
-		const stderr = await new Response(proc.stderr).text();
-		const exitCode = await proc.exited;
-
-		return { stdout, stderr, exitCode };
+		try {
+			const { stdout, stderr } = await execFileAsync("adb", args, {
+				maxBuffer: 10 * 1024 * 1024,
+			});
+			return { stdout: stdout ?? "", stderr: stderr ?? "", exitCode: 0 };
+		} catch (err: unknown) {
+			const e = err as {
+				code?: string;
+				stdout?: string;
+				stderr?: string;
+				status?: number;
+			};
+			if (e.code === "ENOENT") {
+				throw err;
+			}
+			return {
+				stdout: e.stdout ?? "",
+				stderr: e.stderr ?? "",
+				exitCode: e.status ?? 1,
+			};
+		}
 	}
 
 	/**
@@ -36,7 +51,8 @@ export class ADB {
 			}
 			return result.stdout.trim().replace(/\r/g, "");
 		} catch (error) {
-			if (error instanceof Error && error.message.includes("ENOENT")) {
+			const code = (error as { code?: string }).code;
+			if (error instanceof Error && code === "ENOENT") {
 				jsonError(
 					"ADB not found. Please install Android SDK platform-tools.",
 					"ADB_NOT_FOUND",

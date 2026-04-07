@@ -17,7 +17,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",
-		"@types/bun": "latest",
+		"@types/node": "^22",
 		"@types/pg": "^8.11.10"
 	}
 }

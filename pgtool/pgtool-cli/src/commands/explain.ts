@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
-import { query } from "../lib/connection";
-import { handleError, initPgTool, registerCleanup } from "../lib/init";
-import { outputJson } from "../lib/output";
+import { query } from "../lib/connection.ts";
+import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import { outputJson } from "../lib/output.ts";
 import type { ExplainResult } from "../types";
 
 export const explainCommand = defineCommand({

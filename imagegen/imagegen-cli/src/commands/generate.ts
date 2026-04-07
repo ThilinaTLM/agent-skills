@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { GoogleGenAI } from "@google/genai";
 import { defineCommand } from "citty";
-import { jsonError, jsonOk } from "../lib/output";
+import { jsonError, jsonOk } from "../lib/output.ts";
 
 const VALID_ASPECT_RATIOS = ["1:1", "16:9", "9:16", "4:3", "3:4"];
 const VALID_SIZES = ["256", "512", "1024"];

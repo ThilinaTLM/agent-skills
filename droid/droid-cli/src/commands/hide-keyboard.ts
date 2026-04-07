@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonOk } from "../lib/output";
+import { ADB } from "../lib/adb.ts";
+import { jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
 
 export const hideKeyboardCommand = defineCommand({
 	meta: {
@@ -22,7 +23,7 @@ export const hideKeyboardCommand = defineCommand({
 		await adb.shell("input", "keyevent", "111");
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		jsonOk({ action: "hide_keyboard" });

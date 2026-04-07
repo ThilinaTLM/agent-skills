@@ -3,9 +3,9 @@
  */
 
 import type { ErrorResponse, PgToolConfig } from "../types";
-import { loadConfig } from "./config";
-import { closeConnection, initConnection } from "./connection";
-import { formatError, outputError } from "./output";
+import { loadConfig } from "./config.ts";
+import { closeConnection, initConnection } from "./connection.ts";
+import { formatError, outputError } from "./output.ts";
 
 interface InitResult {
 	config: PgToolConfig;

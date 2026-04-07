@@ -1,7 +1,8 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonError, jsonOk } from "../lib/output";
-import { dumpUIHierarchy } from "../lib/ui-hierarchy";
+import { ADB } from "../lib/adb.ts";
+import { jsonError, jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
+import { dumpUIHierarchy } from "../lib/ui-hierarchy.ts";
 
 export const fillCommand = defineCommand({
 	meta: {
@@ -50,11 +51,11 @@ export const fillCommand = defineCommand({
 
 		// Tap the element
 		await adb.shell("input", "tap", String(elem.x), String(elem.y));
-		await Bun.sleep(300);
+		await sleep(300);
 
 		// Clear (move to end, then delete all)
 		await adb.shell("input", "keyevent", "123"); // KEYCODE_MOVE_END
-		await Bun.sleep(50);
+		await sleep(50);
 		for (let i = 0; i < 20; i++) {
 			await adb.shell(
 				"input",
@@ -75,13 +76,13 @@ export const fillCommand = defineCommand({
 		// Type the value
 		const escaped = args.value.replace(/ /g, "%s");
 		await adb.shell("input", "text", escaped);
-		await Bun.sleep(100);
+		await sleep(100);
 
 		// Hide keyboard
 		await adb.shell("input", "keyevent", "111"); // ESCAPE
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		jsonOk({

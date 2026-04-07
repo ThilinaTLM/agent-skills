@@ -1,5 +1,6 @@
 import { defineCommand } from "citty";
-import { jsonOk } from "../lib/output";
+import { jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
 
 export const waitCommand = defineCommand({
 	meta: {
@@ -15,7 +16,7 @@ export const waitCommand = defineCommand({
 	},
 	async run({ args }) {
 		const ms = Number.parseInt(args.ms, 10);
-		await Bun.sleep(ms);
+		await sleep(ms);
 		jsonOk({ action: "wait", ms });
 	},
 });

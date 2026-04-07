@@ -1,21 +1,20 @@
-#!/usr/bin/env bun
 import { defineCommand, runMain } from "citty";
-import pkg from "../package.json";
-import { clearCommand } from "./commands/clear";
-import { currentCommand } from "./commands/current";
-import { fillCommand } from "./commands/fill";
-import { hideKeyboardCommand } from "./commands/hide-keyboard";
-import { infoCommand } from "./commands/info";
-import { keyCommand } from "./commands/key";
-import { launchCommand } from "./commands/launch";
-import { longpressCommand } from "./commands/longpress";
-import { screenshotCommand } from "./commands/screenshot";
-import { selectAllCommand } from "./commands/select-all";
-import { swipeCommand } from "./commands/swipe";
-import { tapCommand } from "./commands/tap";
-import { typeCommand } from "./commands/type";
-import { waitCommand } from "./commands/wait";
-import { waitForCommand } from "./commands/wait-for";
+import pkg from "../package.json" with { type: "json" };
+import { clearCommand } from "./commands/clear.ts";
+import { currentCommand } from "./commands/current.ts";
+import { fillCommand } from "./commands/fill.ts";
+import { hideKeyboardCommand } from "./commands/hide-keyboard.ts";
+import { infoCommand } from "./commands/info.ts";
+import { keyCommand } from "./commands/key.ts";
+import { launchCommand } from "./commands/launch.ts";
+import { longpressCommand } from "./commands/longpress.ts";
+import { screenshotCommand } from "./commands/screenshot.ts";
+import { selectAllCommand } from "./commands/select-all.ts";
+import { swipeCommand } from "./commands/swipe.ts";
+import { tapCommand } from "./commands/tap.ts";
+import { typeCommand } from "./commands/type.ts";
+import { waitForCommand } from "./commands/wait-for.ts";
+import { waitCommand } from "./commands/wait.ts";
 
 const main = defineCommand({
 	meta: {

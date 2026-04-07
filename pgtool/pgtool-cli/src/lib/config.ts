@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import type { ErrorResponse, PgToolConfig } from "../types";
-import { getConfigPath } from "./project-root";
+import { getConfigPath } from "./project-root.ts";
 
 interface ConfigResult {
 	ok: true;

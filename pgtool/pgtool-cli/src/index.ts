@@ -1,18 +1,17 @@
-#!/usr/bin/env bun
 import { defineCommand, runMain } from "citty";
-import pkg from "../package.json";
-import { constraintsCommand } from "./commands/constraints";
-import { countCommand } from "./commands/count";
-import { describeCommand } from "./commands/describe";
-import { explainCommand } from "./commands/explain";
-import { indexesCommand } from "./commands/indexes";
-import { overviewCommand } from "./commands/overview";
-import { queryCommand } from "./commands/query";
-import { relationshipsCommand } from "./commands/relationships";
-import { sampleCommand } from "./commands/sample";
-import { schemasCommand } from "./commands/schemas";
-import { searchCommand } from "./commands/search";
-import { tablesCommand } from "./commands/tables";
+import pkg from "../package.json" with { type: "json" };
+import { constraintsCommand } from "./commands/constraints.ts";
+import { countCommand } from "./commands/count.ts";
+import { describeCommand } from "./commands/describe.ts";
+import { explainCommand } from "./commands/explain.ts";
+import { indexesCommand } from "./commands/indexes.ts";
+import { overviewCommand } from "./commands/overview.ts";
+import { queryCommand } from "./commands/query.ts";
+import { relationshipsCommand } from "./commands/relationships.ts";
+import { sampleCommand } from "./commands/sample.ts";
+import { schemasCommand } from "./commands/schemas.ts";
+import { searchCommand } from "./commands/search.ts";
+import { tablesCommand } from "./commands/tables.ts";
 
 const main = defineCommand({
 	meta: {

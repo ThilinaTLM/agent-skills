@@ -1,7 +1,8 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonError, jsonOk } from "../lib/output";
-import { dumpUIHierarchy } from "../lib/ui-hierarchy";
+import { ADB } from "../lib/adb.ts";
+import { jsonError, jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
+import { dumpUIHierarchy } from "../lib/ui-hierarchy.ts";
 
 export const longpressCommand = defineCommand({
 	meta: {
@@ -97,7 +98,7 @@ export const longpressCommand = defineCommand({
 		);
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		const result: Record<string, unknown> = {

@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
-import { query } from "../lib/connection";
-import { handleError, initPgTool, registerCleanup } from "../lib/init";
-import { formatTable, outputJson } from "../lib/output";
+import { query } from "../lib/connection.ts";
+import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import { formatTable, outputJson } from "../lib/output.ts";
 
 export const queryCommand = defineCommand({
 	meta: {

@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonOk } from "../lib/output";
+import { ADB } from "../lib/adb.ts";
+import { jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
 
 export const selectAllCommand = defineCommand({
 	meta: {
@@ -42,7 +43,7 @@ export const selectAllCommand = defineCommand({
 		}
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		jsonOk({ action: "select_all" });

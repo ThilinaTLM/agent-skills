@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonError, jsonOk } from "../lib/output";
+import { ADB } from "../lib/adb.ts";
+import { jsonError, jsonOk } from "../lib/output.ts";
 
 export const currentCommand = defineCommand({
 	meta: {

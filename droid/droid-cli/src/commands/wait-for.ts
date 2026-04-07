@@ -1,7 +1,8 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonOk } from "../lib/output";
-import { dumpUIHierarchy } from "../lib/ui-hierarchy";
+import { ADB } from "../lib/adb.ts";
+import { jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
+import { dumpUIHierarchy } from "../lib/ui-hierarchy.ts";
 
 export const waitForCommand = defineCommand({
 	meta: {
@@ -44,7 +45,7 @@ export const waitForCommand = defineCommand({
 				});
 			}
 
-			await Bun.sleep(pollInterval);
+			await sleep(pollInterval);
 		}
 
 		// Timeout - include searched text for debugging

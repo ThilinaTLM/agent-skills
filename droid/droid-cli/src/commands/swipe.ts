@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { jsonError, jsonOk } from "../lib/output";
+import { ADB } from "../lib/adb.ts";
+import { jsonError, jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
 
 export const swipeCommand = defineCommand({
 	meta: {
@@ -80,7 +81,7 @@ export const swipeCommand = defineCommand({
 		);
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		jsonOk({ action: "swipe", direction });

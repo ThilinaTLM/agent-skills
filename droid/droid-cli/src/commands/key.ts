@@ -1,7 +1,8 @@
 import { defineCommand } from "citty";
-import { ADB } from "../lib/adb";
-import { KEY_CODES } from "../lib/keycodes";
-import { jsonError, jsonOk } from "../lib/output";
+import { ADB } from "../lib/adb.ts";
+import { KEY_CODES } from "../lib/keycodes.ts";
+import { jsonError, jsonOk } from "../lib/output.ts";
+import { sleep } from "../lib/sleep.ts";
 
 export const keyCommand = defineCommand({
 	meta: {
@@ -41,7 +42,7 @@ export const keyCommand = defineCommand({
 		await adb.shell("input", "keyevent", String(keycode));
 
 		if (args.wait) {
-			await Bun.sleep(Number.parseInt(args.wait, 10));
+			await sleep(Number.parseInt(args.wait, 10));
 		}
 
 		jsonOk({ action: "key", key: args.key, keycode });

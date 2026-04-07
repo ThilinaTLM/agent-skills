@@ -1,8 +1,8 @@
 import { defineCommand } from "citty";
-import { getDefaultSchema } from "../lib/config";
-import { query } from "../lib/connection";
-import { handleError, initPgTool, registerCleanup } from "../lib/init";
-import { outputJson } from "../lib/output";
+import { getDefaultSchema } from "../lib/config.ts";
+import { query } from "../lib/connection.ts";
+import { handleError, initPgTool, registerCleanup } from "../lib/init.ts";
+import { outputJson } from "../lib/output.ts";
 import type { OverviewResult, OverviewTable } from "../types";
 
 export const overviewCommand = defineCommand({
