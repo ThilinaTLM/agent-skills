@@ -167,7 +167,26 @@ export function mapPgError(error: Error & { code?: string }): ErrorResponse {
 		};
 	}
 
-	if (error.code === "28P01" || error.code === "28000") {
+	if (error.code === "28P01") {
+		return {
+			ok: false,
+			error: "Authentication failed",
+			code: "PERMISSION_DENIED",
+			hint: "Check your username and password in .pgtool.json",
+		};
+	}
+
+	if (error.code === "28000") {
+		const msg = error.message || "";
+		const isSSL = msg.includes("no encryption") || msg.includes("SSL");
+		if (isSSL) {
+			return {
+				ok: false,
+				error: "SSL connection required by server",
+				code: "CONNECTION_FAILED",
+				hint: 'The server requires SSL. Add "ssl": { "rejectUnauthorized": false } to your profile in .pgtool.json (or "ssl": true if using a trusted CA)',
+			};
+		}
 		return {
 			ok: false,
 			error: "Authentication failed",
