@@ -9,14 +9,12 @@ Unified Android testing tool with **JSON output** for LLM-friendly automation.
 
 ## CLI Discovery
 
-The CLI is located at `./scripts/droid-cli/` relative to this SKILL.md file.
+The CLI is located at `./droid-cli/` relative to this SKILL.md file.
 
 | Platform         | Script       |
 | ---------------- | ------------ |
 | Unix/Linux/macOS | `droid`      |
 | Windows          | `droid.ps1`  |
-
-**Claude Code:** Use `${CLAUDE_PLUGIN_ROOT}/skills/droid/scripts/droid-cli/droid` (or `droid.ps1` on Windows).
 
 ## Prerequisites
 

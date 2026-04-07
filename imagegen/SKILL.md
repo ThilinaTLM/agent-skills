@@ -9,13 +9,11 @@ AI image generation tool with **JSON output** for LLM-friendly automation. Uses 
 
 ## CLI Discovery
 
-The CLI is located at `./scripts/imagegen-cli/` relative to this SKILL.md file.
+The CLI is located at `./imagegen-cli/` relative to this SKILL.md file.
 
 | Platform         | Script     |
 | ---------------- | ---------- |
 | Unix/Linux/macOS | `imagegen` |
-
-**Claude Code:** Use `${CLAUDE_PLUGIN_ROOT}/skills/imagegen/scripts/imagegen-cli/imagegen`
 
 ## Prerequisites
 

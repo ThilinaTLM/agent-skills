@@ -4,68 +4,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Claude Code plugin marketplace (`tlmtech`) containing multiple plugins.
+A collection of reusable AI agent skills.
 
-| Plugin | Purpose |
-|--------|---------|
-| `specdev/` | Specification-driven development workflow with skill and CLI |
+| Skill | Purpose |
+|-------|---------|
 | `droid/` | Android device automation via ADB (TypeScript CLI) |
 | `pgtool/` | PostgreSQL database exploration and debugging |
-| `webnav/` | Browser automation via Chrome extension and native messaging |
+| `imagegen/` | AI image generation via Google Gemini |
 
-## Plugin Structure
+## Skill Structure
 
 ```
-.claude-plugin/marketplace.json  # Root marketplace manifest (versions must sync with plugin.json)
-plugin-name/
-├── .claude-plugin/plugin.json   # Plugin manifest with version
-├── skills/plugin-name/
-│   ├── SKILL.md                 # Skill definition
-│   └── scripts/plugin-name-cli/ # CLI tool (Bun + citty)
-└── README.md                    # User documentation
+skill-name/
+├── SKILL.md              # Skill definition
+├── skill-name-cli/       # CLI tool (Bun + citty)
+│   ├── src/
+│   │   ├── index.ts      # Entry point (citty framework)
+│   │   ├── commands/     # Command definitions
+│   │   ├── lib/          # Core libraries
+│   │   └── types/        # TypeScript types
+│   ├── package.json
+│   ├── biome.json
+│   └── skill-name        # Shell entry script
+├── references/           # (droid only) extra docs
+└── SETUP.md              # (pgtool only) setup guide
 ```
 
-## Local Development
+## CLI Development
 
-Test plugins locally:
-```bash
-/plugin marketplace add /path/to/claude-plugins
-/plugin install specdev@tlmtech
-```
-
-## CLI Tools
-
-All four CLIs (`specdev-cli`, `pgtool-cli`, `droid-cli`, `webnav-cli`) follow the same development pattern:
+All three CLIs follow the same pattern:
 
 ```bash
-cd specdev/skills/specdev/scripts/specdev-cli && bun install  # specdev-cli
-cd pgtool/skills/pgtool/scripts/pgtool-cli && bun install     # pgtool-cli
-cd droid/skills/droid/scripts/droid-cli && bun install        # droid-cli
-cd webnav/skills/webnav/scripts/webnav-cli && bun install     # webnav-cli
+cd droid/droid-cli && bun install       # droid-cli
+cd pgtool/pgtool-cli && bun install     # pgtool-cli
+cd imagegen/imagegen-cli && bun install  # imagegen-cli
 bun run dev [command]           # Run in development
 bun run lint                    # Check with Biome
 bun run lint:fix                # Auto-fix lint issues
 bun run format                  # Format with Biome
 ```
-
-Testing (specdev-cli only):
-```bash
-bun test                        # Run all tests
-bun test --watch                # Watch mode
-```
-
-### Releasing specdev-cli
-
-Push a semantic version tag to trigger GitHub Action release:
-```bash
-git tag v1.0.0 && git push origin v1.0.0
-```
-
-### Version Management
-
-Plugin versions appear in two places that must stay in sync:
-- `.claude-plugin/marketplace.json` (root) - marketplace listing
-- `{plugin}/.claude-plugin/plugin.json` - plugin manifest
 
 ## CLI Global Options
 
@@ -74,38 +51,38 @@ All CLIs output JSON by default. Common options:
 - `--root, -r <path>` - Project root directory (default: auto-detect)
 - `--quiet, -q` - Minimal output (available on most commands)
 
-## specdev-cli Commands
+## droid-cli Commands
 
 | Command | Description |
 |---------|-------------|
-| `specdev init` | Initialize `.specs/` structure |
-| `specdev new {name}` | Create new spec with templates |
-| `specdev list` | List all active specs and progress |
-| `specdev context {spec}` | Show spec context (--level min\|standard\|full) |
-| `specdev path {spec}` | Analyze task dependencies |
-| `specdev archive {spec}` | Move completed spec to `.specs/archived/` |
-| `specdev validate {path}` | Check spec completeness |
-| `specdev hook {event}` | Hook handlers for Claude Code integration |
+| `droid screenshot` | Capture screenshot + UI elements |
+| `droid tap` | Tap by text or coordinates |
+| `droid fill <field> <text>` | Fill text field |
+| `droid wait-for -t <text>` | Wait for element |
+| `droid clear` | Clear focused field |
+| `droid type <text>` | Type into focused field |
+| `droid key <keyname>` | Send key event |
+| `droid swipe <direction>` | Swipe gesture |
+| `droid longpress` | Long press |
+| `droid launch <package>` | Launch app |
+| `droid current` | Current activity |
+| `droid info` | Device info |
+| `droid wait <ms>` | Wait milliseconds |
+| `droid select-all` | Select text |
+| `droid hide-keyboard` | Dismiss keyboard |
 
-### specdev-cli Architecture
+### droid-cli Architecture
 
 **Entry:** `src/index.ts` uses citty framework.
 
 **Commands (`src/commands/`):** Each file exports a citty command definition.
 
 **Core Libraries (`src/lib/`):**
-- `project-root.ts` - Finds `.specs/` directory
-- `spec-parser.ts` - Parses YAML tasks into Phase[]
-- `spec-lookup.ts` - Resolves spec names to paths
-- `validator.ts` - Validates spec completeness
-- `progress.ts` - Calculates task completion
-- `dependency-graph.ts` - Task dependency analysis
-- `checkpoint-parser.ts` - Parses checkpoint.md files
-- `safe-io.ts` - Safe file I/O operations
-- `args.ts` - Argument parsing utilities
-- `diff.ts` - Diff generation utilities
-
-**Other (`src/`):** `templates/` (spec templates), `types/` (TypeScript types), `ui/output.ts` (JSON/plain formatting)
+- `adb.ts` - ADB command execution
+- `ui-hierarchy.ts` - UI dump parsing
+- `ui-element.ts` - Element finding and matching
+- `keycodes.ts` - Android keycode mappings
+- `output.ts` - JSON output formatting
 
 ## pgtool-cli Commands
 
@@ -137,106 +114,23 @@ Requires `.pgtool.json` config file with connection details.
 - `output.ts` - JSON/plain formatting
 - `init.ts` - Initialization utilities
 
-## droid-cli Commands
+## imagegen-cli Commands
 
-Requires ADB in PATH and connected Android device/emulator.
+Requires `GEMINI_API_KEY` environment variable.
 
 | Command | Description |
 |---------|-------------|
-| `droid screenshot` | Capture screenshot + UI elements |
-| `droid tap` | Tap by text or coordinates |
-| `droid fill <field> <text>` | Fill text field |
-| `droid wait-for -t <text>` | Wait for element |
-| `droid clear` | Clear focused field |
-| `droid type <text>` | Type into focused field |
-| `droid key <keyname>` | Send key event |
-| `droid swipe <direction>` | Swipe gesture |
-| `droid longpress` | Long press |
-| `droid launch <package>` | Launch app |
-| `droid current` | Current activity |
-| `droid info` | Device info |
-| `droid wait <ms>` | Wait milliseconds |
-| `droid select-all` | Select text |
-| `droid hide-keyboard` | Dismiss keyboard |
+| `imagegen generate <prompt>` | Generate image from text prompt |
+| `imagegen gen <prompt>` | Alias for generate |
 
-### droid-cli Architecture
+Options: `--output/-o`, `--aspect-ratio/-a`, `--size/-s`, `--negative-prompt/-n`, `--model/-m`
+
+### imagegen-cli Architecture
 
 **Entry:** `src/index.ts` uses citty framework.
 
 **Core Libraries (`src/lib/`):**
-- `adb.ts` - ADB command execution
-- `ui-hierarchy.ts` - UI dump parsing
-- `ui-element.ts` - Element finding and matching
-- `keycodes.ts` - Android keycode mappings
 - `output.ts` - JSON output formatting
 
-## webnav-cli Commands
-
-Requires Chrome extension installed and native host running.
-
-| Command | Description |
-|---------|-------------|
-| `webnav setup install` | Install native host manifest for browser |
-| `webnav setup uninstall` | Remove native host manifest |
-| `webnav native-host` | [internal] Native messaging relay (spawned by browser) |
-| `webnav status` | Check connection to extension |
-| `webnav info` | Current tab info |
-| `webnav goto <url>` | Navigate to URL |
-| `webnav screenshot` | Capture page screenshot |
-| `webnav click` | Click element by text or selector |
-| `webnav type <text>` | Type into focused element |
-| `webnav fill <selector> <text>` | Fill specific field |
-| `webnav key <key>` | Send key event |
-| `webnav wait-for` | Wait for element to appear |
-| `webnav elements` | List interactive elements |
-| `webnav history` | Show command history |
-| `webnav tab new [url]` | Open new tab (optional URL) |
-| `webnav tab list` | List managed tabs |
-| `webnav tab switch <tabId>` | Switch active tab |
-| `webnav tab close <tabId>` | Close tab |
-
-### webnav Architecture
-
-Unlike other plugins, webnav uses a 3-layer architecture:
-
-```
-CLI (webnav) → Unix Socket → Native Host → Chrome Native Messaging → Extension
-```
-
-- **CLI (`src/commands/`)** - User-facing commands that connect via Unix socket
-- **Native Host (`src/lib/native-host.ts`)** - Relay process that bridges socket server and Chrome's native messaging protocol (4-byte length-prefixed JSON)
-- **Chrome Extension (`skills/webnav/extension/`)** - MV3 service worker built from TypeScript sources (`extension/src/`) into `dist/background.js` and `dist/content.js`
-- **Socket Client (`src/lib/client.ts`)** - Sends commands to the native host and receives responses
-
-**Other key files:**
-- `src/lib/browsers.ts` - Multi-browser support (Chrome, Edge, Brave, Vivaldi) and manifest path resolution
-- `src/lib/errors.ts` - Centralized error codes and self-documenting error hints
-- `src/types/index.ts` - Shared TypeScript types
-- `src/commands/setup/` - Install/uninstall subcommands for native host manifest registration
-
-### webnav Extension (Chrome)
-
-The extension source is TypeScript in `webnav/skills/webnav/extension/src/`, built to `background.js` and `content.js` which are tracked in git.
-
-```bash
-cd webnav/skills/webnav/extension && bun install  # Install dev deps
-bun run build                       # Build TS → JS
-bun run build:watch                 # Watch mode
-bun run typecheck                   # Type check
-bun run lint                        # Check with Biome
-bun run lint:fix                    # Auto-fix lint issues
-bun run format                      # Format with Biome
-```
-
-**Extension source structure (`extension/src/`):**
-- `index.ts` - Entry point: restoreState → connectToNativeHost
-- `types.ts` - TypeScript interfaces
-- `state.ts` - Constants, global state, persistState/restoreState
-- `native-messaging.ts` - Native host connection, message handling
-- `history.ts` - Command history recording and sanitization
-- `tabs.ts` - Tab group helpers, event listeners, getActiveTab
-- `commands/router.ts` - Command dispatcher
-- `commands/navigation.ts` - screenshot, goto, info, status handlers
-- `commands/interaction.ts` - click, type, key, fill, wait-for, elements handlers
-- `commands/groups.ts` - Tab group and history handlers
-- `injected/` - Functions injected into page context via `chrome.scripting.executeScript`
+**Commands (`src/commands/`):**
+- `generate.ts` - Single command for image generation via Gemini API

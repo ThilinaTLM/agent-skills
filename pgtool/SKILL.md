@@ -9,14 +9,12 @@ A CLI tool for exploring and debugging PostgreSQL databases with JSON-first outp
 
 ## CLI Discovery
 
-The CLI is located at `./scripts/pgtool-cli/` relative to this SKILL.md file.
+The CLI is located at `./pgtool-cli/` relative to this SKILL.md file.
 
 | Platform         | Script       |
 | ---------------- | ------------ |
 | Unix/Linux/macOS | `pgtool`     |
 | Windows          | `pgtool.ps1` |
-
-**Claude Code:** Use `${CLAUDE_PLUGIN_ROOT}/skills/pgtool/scripts/pgtool-cli/pgtool` (or `pgtool.ps1` on Windows).
 
 For setup instructions, see SETUP.md in this directory.
 
