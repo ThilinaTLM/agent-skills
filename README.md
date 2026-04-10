@@ -9,6 +9,7 @@ Reusable AI agent skills — drop a skill directory into your project and your a
 | [droid](./droid) | Android device automation via ADB |
 | [pgtool](./pgtool) | PostgreSQL database exploration and debugging |
 | [imagegen](./imagegen) | AI image generation via Google Gemini |
+| [playbook](./playbook) | Create and refine repo-specific `AGENTS.md` files |
 
 ## Installation
 
@@ -25,6 +26,7 @@ Or use the skills CLI:
 npx skills add ThilinaTLM/agent-skills/droid
 npx skills add ThilinaTLM/agent-skills/pgtool
 npx skills add ThilinaTLM/agent-skills/imagegen
+npx skills add ThilinaTLM/agent-skills/playbook
 ```
 
 Each skill directory contains a `SKILL.md` with full usage instructions.

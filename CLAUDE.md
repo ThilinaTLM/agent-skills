@@ -11,13 +11,14 @@ A collection of reusable AI agent skills.
 | `droid/` | Android device automation via ADB (TypeScript CLI) |
 | `pgtool/` | PostgreSQL database exploration and debugging |
 | `imagegen/` | AI image generation via Google Gemini |
+| `playbook/` | Create and refine repo-specific `AGENTS.md` files |
 
 ## Skill Structure
 
 ```
 skill-name/
 ├── SKILL.md              # Skill definition
-├── skill-name-cli/       # CLI tool (Bun + citty)
+├── skill-name-cli/       # Optional CLI tool (Bun + citty)
 │   ├── src/
 │   │   ├── index.ts      # Entry point (citty framework)
 │   │   ├── commands/     # Command definitions
@@ -26,13 +27,15 @@ skill-name/
 │   ├── package.json
 │   ├── biome.json
 │   └── skill-name        # Shell entry script
-├── references/           # (droid only) extra docs
-└── SETUP.md              # (pgtool only) setup guide
+├── references/           # Optional extra docs
+└── SETUP.md              # Optional setup guide
 ```
+
+Some skills are documentation-only and only need `SKILL.md` (for example `playbook/`).
 
 ## CLI Development
 
-All three CLIs follow the same pattern:
+CLI-backed skills follow the same pattern:
 
 ```bash
 cd droid/droid-cli && bun install       # droid-cli
