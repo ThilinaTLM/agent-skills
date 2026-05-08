@@ -119,7 +119,7 @@ Requires `.pgtool.json` config file with connection details.
 
 ## imagegen-cli Commands
 
-Requires `GEMINI_API_KEY` environment variable. Targets the Gemini Nano Banana 2 family (`gemini-3.1-flash-image-preview` by default).
+Requires a Gemini API key, resolved in order: `GEMINI_API_KEY` env var → `.gemini-key` file walked up from CWD → `~/.gemini-key`. Targets the Gemini Nano Banana 2 family (`gemini-3.1-flash-image-preview` by default).
 
 | Command | Description |
 |---------|-------------|
@@ -136,6 +136,7 @@ Options: `--output/-o`, `--image/-i` (repeatable), `--aspect-ratio/-a`, `--size/
 - `output.ts` - JSON output formatting
 - `models.ts` - Per-model capability matrix (sizes, aspect ratios, thinking, max input images)
 - `inputs.ts` - Reads & base64-encodes local image files for editing/composition
+- `api-key.ts` - Resolves the Gemini API key from env, project `.gemini-key` (walked up from CWD), or `~/.gemini-key`
 
 **Commands (`src/commands/`):**
 - `generate.ts` - Unified text-to-image and image-edit command

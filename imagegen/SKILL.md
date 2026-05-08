@@ -13,9 +13,15 @@ Text-to-image and image-editing CLI backed by Google Gemini's Nano Banana 2 fami
 - Subcommands: `generate` (alias `gen`). Pass `--image <path>` (repeatable) to edit, restyle, or compose existing images instead of generating from scratch.
 - Always run `imagegen generate --help` to discover current flags and defaults. Do not memorize flag values — they evolve with the API.
 
-## Prerequisite
+## API key
 
-`GEMINI_API_KEY` must be set. If missing, the CLI returns `code: "API_KEY_MISSING"` with a recovery hint pointing to <https://aistudio.google.com/apikey>.
+The CLI looks for the key in this order:
+
+1. `GEMINI_API_KEY` environment variable.
+2. `.gemini-key` file (raw key, no quotes) found by walking up from the current working directory — project-local override. Add `.gemini-key` to `.gitignore`.
+3. `~/.gemini-key` in the user's home directory — machine-wide default.
+
+If none is found, the CLI returns `code: "API_KEY_MISSING"` with a recovery hint. Get a key at <https://aistudio.google.com/apikey>.
 
 ## Models
 

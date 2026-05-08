@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { GoogleGenAI } from "@google/genai";
 import { defineCommand } from "citty";
+import { resolveApiKey } from "../lib/api-key.ts";
 import { InputError, type InputImage, readInputImage } from "../lib/inputs.ts";
 import { getCapabilities } from "../lib/models.ts";
 import { jsonError, jsonOk } from "../lib/output.ts";
@@ -62,14 +63,15 @@ export const generateCommand = defineCommand({
 		},
 	},
 	async run({ args }) {
-		const apiKey = process.env.GEMINI_API_KEY;
-		if (!apiKey) {
+		const resolved = await resolveApiKey();
+		if (!resolved) {
 			jsonError(
-				"GEMINI_API_KEY environment variable is not set",
+				"Gemini API key not found",
 				"API_KEY_MISSING",
-				"Get your API key at https://aistudio.google.com/apikey and set it: export GEMINI_API_KEY=your_key",
+				"Set GEMINI_API_KEY env var, or write the key to '.gemini-key' in the project root (gitignore it) or '~/.gemini-key' for machine-wide use. Get a key at https://aistudio.google.com/apikey.",
 			);
 		}
+		const apiKey = resolved.key;
 
 		const prompt = args.prompt;
 		const aspectRatio = args["aspect-ratio"] || "";
