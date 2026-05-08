@@ -1,144 +1,56 @@
 ---
 name: imagegen
-description: This skill should be used when the user asks to "generate an image", "create a cover image", "make an illustration", "generate artwork", "create a hero image", "generate a logo", "make a banner", "create an image for", "generate a thumbnail", "make an icon", "create visual content", or needs AI-generated images for their project. Provides a CLI with JSON output optimized for LLM consumption.
+description: This skill should be used when the user asks to "generate an image", "create a cover image", "make an illustration", "generate artwork", "create a hero image", "generate a logo", "make a banner", "create an image for", "generate a thumbnail", "make an icon", "create visual content", "edit this image", "restyle this image", "compose these images", or needs AI-generated or AI-edited images for their project. Provides a CLI with JSON output optimized for LLM consumption.
 ---
 
-# ImageGen
+# imagegen
 
-AI image generation tool with **JSON output** for LLM-friendly automation. Uses Google Gemini to generate images from text prompts.
+Text-to-image and image-editing CLI backed by Google Gemini's Nano Banana 2 family. JSON output.
 
-## CLI Discovery
+## CLI
 
-The CLI is located at `./imagegen-cli/` relative to this SKILL.md file.
+- Path: `./imagegen-cli/imagegen` (relative to this SKILL.md).
+- Subcommands: `generate` (alias `gen`). Pass `--image <path>` (repeatable) to edit, restyle, or compose existing images instead of generating from scratch.
+- Always run `imagegen generate --help` to discover current flags and defaults. Do not memorize flag values — they evolve with the API.
 
-| Platform         | Script     |
-| ---------------- | ---------- |
-| Unix/Linux/macOS | `imagegen` |
+## Prerequisite
 
-## Prerequisites
+`GEMINI_API_KEY` must be set. If missing, the CLI returns `code: "API_KEY_MISSING"` with a recovery hint pointing to <https://aistudio.google.com/apikey>.
 
-- Bun runtime (https://bun.sh)
-- `GEMINI_API_KEY` environment variable set with a valid Google AI Studio API key
+## Models
 
-If the API key is not set, instruct the user to:
+The `--model` choice gates which other flags work. Pick the cheapest that meets the need.
 
-1. Get a key at https://aistudio.google.com/apikey
-2. Add `export GEMINI_API_KEY=your_key` to their shell profile (`~/.bashrc` or `~/.zshrc`)
-3. Restart their terminal or run `source ~/.bashrc`
+| Model                              | Sizes (`--size`)        | Aspect ratios (`--aspect-ratio`)                                            | `--thinking`             | Max `--image` inputs |
+| ---------------------------------- | ----------------------- | --------------------------------------------------------------------------- | ------------------------ | -------------------- |
+| `gemini-3.1-flash-image-preview` (default) | `512`, `1K`, `2K`, `4K` | `1:1, 1:4, 1:8, 2:3, 3:2, 3:4, 4:1, 4:3, 4:5, 5:4, 8:1, 9:16, 16:9, 21:9`   | `minimal` (def.) / `high` | 14 |
+| `gemini-3-pro-image-preview`       | `1K`, `2K`, `4K`        | `1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9`                       | always on, not user-set  | 14 |
+| `gemini-2.5-flash-image`           | not configurable        | `1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9`                       | n/a                      | 3  |
 
-## Important Rules
+Use the default for almost everything. Switch to `gemini-3-pro-image-preview` for high-stakes assets (legible long text, complex multi-element compositions). Switch to `gemini-2.5-flash-image` only for cost reasons on simple prompts.
 
-- **Always use `--output`** to place generated images in the project's assets directory (e.g. `src/assets/`, `public/images/`)
-- **Verify the generated image** by reading it with the Read tool after generation
-- **Use descriptive filenames** that match the image content (e.g. `hero-banner.png`, `logo-dark.png`)
-- **Never generate images** with copyrighted characters, real people's likenesses, or harmful content
+## Prompting (these are thinking, creative models)
 
-## Commands
+These models reason about composition and fill creative gaps on their own. Provide intent and context — not exhaustive specs.
 
-### generate (alias: gen)
+- Give what only the user knows: brand, audience, where the asset goes, mood, must-include elements, must-avoid elements.
+- Let the model choose lens, lighting, palette, and layout unless the user specified them.
+- One narrative sentence beats a tag list. Describe the scene, not keywords.
+- For exclusions, prefer rewriting the prompt positively (e.g. "an empty street" instead of `--negative-prompt "people, cars"`). Use `--negative-prompt` only as a last resort.
+- Iterate by saving the output and re-invoking with `--image <previous-output>` plus a small directive (e.g. "warmer lighting, keep everything else").
 
-Generate an image from a text prompt.
+## Output rules
 
-```bash
-imagegen generate "a minimalist blue gradient background" --output ./src/assets/hero-bg.png
-imagegen gen "modern tech company logo, flat design" -o ./public/logo.png
-```
+- Always pass `--output <path>` and place the file in a project-appropriate assets directory (e.g. `src/assets/`, `public/images/`). Use a descriptive filename matching the content.
+- After the call returns `ok:true`, use the Read tool on the produced `file` path to confirm the image landed and looks right.
+- Never generate copyrighted characters, real people's likenesses, or harmful content.
 
-**Arguments:**
+## Editing / composition
 
-| Arg                     | Flag                  | Description                                                           |
-| ----------------------- | --------------------- | --------------------------------------------------------------------- |
-| `prompt`                | positional (required) | Text description of the image                                         |
-| `--output, -o`          | string                | Output file path (default: `generated_{timestamp}.png`)               |
-| `--aspect-ratio, -a`    | string                | `1:1`, `16:9`, `9:16`, `4:3`, `3:4`                                   |
-| `--size, -s`            | string                | `256`, `512`, `1024` (default: `1024`)                                |
-| `--person, -p`          | string                | `dont_allow`, `allow_adult`, `allow_all`                              |
-| `--model, -m`           | string                | Model override (default: `gemini-3.1-flash-image-preview`) |
-| `--negative-prompt, -n` | string                | What to exclude from the image                                        |
+Pass `--image <path>` one or more times in addition to the prompt. Same `generate` command. Examples of when to use it:
 
-**Success response:**
-
-```json
-{
-  "ok": true,
-  "file": "/absolute/path/to/image.png",
-  "mimeType": "image/png",
-  "size": 245760,
-  "prompt": "a minimalist blue gradient background"
-}
-```
-
-**Error responses:**
-
-```json
-{
-  "ok": false,
-  "error": "GEMINI_API_KEY environment variable is not set",
-  "code": "API_KEY_MISSING",
-  "hint": "Get your API key at https://aistudio.google.com/apikey and set it: export GEMINI_API_KEY=your_key"
-}
-```
-
-```json
-{
-  "ok": false,
-  "error": "Invalid aspect ratio: 2:1. Valid values: 1:1, 16:9, 9:16, 4:3, 3:4",
-  "code": "INVALID_PARAMS"
-}
-```
-
-```json
-{
-  "ok": false,
-  "error": "API response did not contain an image",
-  "code": "API_ERROR"
-}
-```
-
-## Workflows
-
-### Hero Image for Website
-
-```bash
-imagegen generate "modern abstract gradient background, purple and blue tones, subtle geometric shapes, professional" \
-  --output ./src/assets/hero-bg.png \
-  --aspect-ratio 16:9 \
-  --size 1024
-```
-
-### Logo Variations
-
-```bash
-imagegen gen "minimalist tech startup logo, letter M, flat design, white background" \
-  -o ./public/images/logo-light.png -a 1:1 -s 1024
-
-imagegen gen "minimalist tech startup logo, letter M, flat design, dark background" \
-  -o ./public/images/logo-dark.png -a 1:1 -s 1024
-```
-
-### Iterative Refinement with Negative Prompts
-
-```bash
-imagegen generate "watercolor landscape, rolling hills, sunset" \
-  --output ./assets/landscape.png \
-  --negative-prompt "people, buildings, text, watermark"
-```
-
-### Social Media Banner
-
-```bash
-imagegen gen "abstract tech conference banner, neon accents, dark theme" \
-  -o ./public/og-image.png -a 16:9
-```
-
-## Error Handling
-
-All errors return JSON with `"ok":false`:
-
-| Code              | Meaning                          |
-| ----------------- | -------------------------------- |
-| `API_KEY_MISSING` | `GEMINI_API_KEY` env var not set |
-| `API_ERROR`       | Gemini API call failed           |
-| `INVALID_PARAMS`  | Bad argument value               |
-| `OUTPUT_ERROR`    | Could not write output file      |
-| `PREREQ_MISSING`  | Bun runtime not found            |
+- Add or remove elements from an existing image.
+- Apply a style transfer.
+- Compose a scene from multiple references (e.g. a model + a garment).
+- Maintain character consistency across renders.
+- Refine a previous generation.

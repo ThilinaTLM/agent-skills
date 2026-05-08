@@ -119,14 +119,14 @@ Requires `.pgtool.json` config file with connection details.
 
 ## imagegen-cli Commands
 
-Requires `GEMINI_API_KEY` environment variable.
+Requires `GEMINI_API_KEY` environment variable. Targets the Gemini Nano Banana 2 family (`gemini-3.1-flash-image-preview` by default).
 
 | Command | Description |
 |---------|-------------|
-| `imagegen generate <prompt>` | Generate image from text prompt |
+| `imagegen generate <prompt>` | Generate or edit an image (pass `--image` to edit/compose) |
 | `imagegen gen <prompt>` | Alias for generate |
 
-Options: `--output/-o`, `--aspect-ratio/-a`, `--size/-s`, `--negative-prompt/-n`, `--model/-m`
+Options: `--output/-o`, `--image/-i` (repeatable), `--aspect-ratio/-a`, `--size/-s` (`512`/`1K`/`2K`/`4K`), `--thinking/-t` (`minimal`/`high`), `--negative-prompt/-n`, `--model/-m`. Run `imagegen generate --help` for current values; flag validity is model-dependent.
 
 ### imagegen-cli Architecture
 
@@ -134,6 +134,8 @@ Options: `--output/-o`, `--aspect-ratio/-a`, `--size/-s`, `--negative-prompt/-n`
 
 **Core Libraries (`src/lib/`):**
 - `output.ts` - JSON output formatting
+- `models.ts` - Per-model capability matrix (sizes, aspect ratios, thinking, max input images)
+- `inputs.ts` - Reads & base64-encodes local image files for editing/composition
 
 **Commands (`src/commands/`):**
-- `generate.ts` - Single command for image generation via Gemini API
+- `generate.ts` - Unified text-to-image and image-edit command

@@ -2,21 +2,23 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { GoogleGenAI } from "@google/genai";
 import { defineCommand } from "citty";
+import { InputError, type InputImage, readInputImage } from "../lib/inputs.ts";
+import { getCapabilities } from "../lib/models.ts";
 import { jsonError, jsonOk } from "../lib/output.ts";
 
-const VALID_ASPECT_RATIOS = ["1:1", "16:9", "9:16", "4:3", "3:4"];
-const VALID_SIZES = ["256", "512", "1024"];
-const VALID_PERSON_MODES = ["dont_allow", "allow_adult", "allow_all"];
+const DEFAULT_MODEL = "gemini-3.1-flash-image-preview";
 
 export const generateCommand = defineCommand({
 	meta: {
 		name: "generate",
-		description: "Generate an image from a text prompt",
+		description:
+			"Generate or edit an image with Gemini. Pass --image one or more times to edit, restyle, or compose existing images.",
 	},
 	args: {
 		prompt: {
 			type: "positional",
-			description: "Text description of the image to generate",
+			description:
+				"Describe the desired image. Provide intent and context; let the model handle creative details.",
 			required: true,
 		},
 		output: {
@@ -24,32 +26,39 @@ export const generateCommand = defineCommand({
 			alias: "o",
 			description: "Output file path (default: generated_{timestamp}.png)",
 		},
+		image: {
+			type: "string",
+			alias: "i",
+			description:
+				"Input image path (PNG/JPEG/WEBP/GIF). Repeat for multiple references.",
+		},
 		"aspect-ratio": {
 			type: "string",
 			alias: "a",
-			description: "Aspect ratio: 1:1, 16:9, 9:16, 4:3, 3:4",
+			description: "Aspect ratio (model-validated, e.g. 1:1, 16:9, 21:9)",
 		},
 		size: {
 			type: "string",
 			alias: "s",
-			description: "Image size: 256, 512, 1024",
-			default: "1024",
+			description: "Image size: 512, 1K, 2K, 4K (model-dependent)",
 		},
-		person: {
+		thinking: {
 			type: "string",
-			alias: "p",
-			description: "Person generation: dont_allow, allow_adult, allow_all",
+			alias: "t",
+			description:
+				"Thinking level: minimal | high. Only honored by gemini-3.1-flash-image-preview.",
 		},
 		model: {
 			type: "string",
 			alias: "m",
-			description: "Model to use",
-			default: "gemini-3.1-flash-image-preview",
+			description: "Model id (default: gemini-3.1-flash-image-preview)",
+			default: DEFAULT_MODEL,
 		},
 		"negative-prompt": {
 			type: "string",
 			alias: "n",
-			description: "What to exclude from the image",
+			description:
+				"Things to exclude. Prefer rewriting the prompt positively when possible.",
 		},
 	},
 	async run({ args }) {
@@ -60,104 +69,167 @@ export const generateCommand = defineCommand({
 				"API_KEY_MISSING",
 				"Get your API key at https://aistudio.google.com/apikey and set it: export GEMINI_API_KEY=your_key",
 			);
-			return;
 		}
 
 		const prompt = args.prompt;
 		const aspectRatio = args["aspect-ratio"] || "";
-		const size = args.size || "1024";
-		const person = args.person || "";
-		const model = args.model || "gemini-3.1-flash-image-preview";
+		const size = args.size || "";
+		const thinking = (args.thinking || "").toLowerCase();
+		const model = args.model || DEFAULT_MODEL;
 		const negativePrompt = args["negative-prompt"] || "";
 
-		// Validate aspect ratio
-		if (aspectRatio && !VALID_ASPECT_RATIOS.includes(aspectRatio)) {
-			jsonError(
-				`Invalid aspect ratio: ${aspectRatio}. Valid values: ${VALID_ASPECT_RATIOS.join(", ")}`,
-				"INVALID_PARAMS",
+		// citty yields an array when a flag repeats; coerce to string[].
+		const rawImage = args.image as string | string[] | undefined;
+		const imagePaths: string[] = rawImage
+			? Array.isArray(rawImage)
+				? rawImage
+				: [rawImage]
+			: [];
+
+		// --- Capability-driven validation -----------------------------------
+		const caps = getCapabilities(model);
+		if (!caps) {
+			console.error(
+				`[imagegen] Warning: unknown model '${model}'. Skipping capability validation; the API may reject the call.`,
 			);
-			return;
 		}
 
-		// Validate size
-		if (!VALID_SIZES.includes(size)) {
+		if (caps && aspectRatio && !caps.aspectRatios.includes(aspectRatio)) {
 			jsonError(
-				`Invalid size: ${size}. Valid values: ${VALID_SIZES.join(", ")}`,
+				`Invalid aspect ratio '${aspectRatio}' for model '${model}'. Valid: ${caps.aspectRatios.join(", ")}`,
 				"INVALID_PARAMS",
 			);
-			return;
 		}
 
-		// Validate person mode
-		if (person && !VALID_PERSON_MODES.includes(person)) {
+		if (caps && size) {
+			if (caps.imageSizes === null) {
+				jsonError(
+					`Model '${model}' does not accept --size. Omit the flag or switch to a model that supports it (e.g. gemini-3.1-flash-image-preview).`,
+					"INVALID_PARAMS",
+				);
+			} else if (!caps.imageSizes.includes(size)) {
+				jsonError(
+					`Invalid size '${size}' for model '${model}'. Valid: ${caps.imageSizes.join(", ")}`,
+					"INVALID_PARAMS",
+				);
+			}
+		}
+
+		if (caps && thinking) {
+			if (caps.thinkingLevels === null) {
+				jsonError(
+					`Model '${model}' does not accept --thinking. Omit the flag or use gemini-3.1-flash-image-preview.`,
+					"INVALID_PARAMS",
+				);
+			} else if (!caps.thinkingLevels.includes(thinking)) {
+				jsonError(
+					`Invalid thinking level '${thinking}' for model '${model}'. Valid: ${caps.thinkingLevels.join(", ")}`,
+					"INVALID_PARAMS",
+				);
+			}
+		}
+
+		if (caps && imagePaths.length > caps.maxInputImages) {
 			jsonError(
-				`Invalid person mode: ${person}. Valid values: ${VALID_PERSON_MODES.join(", ")}`,
+				`Too many input images (${imagePaths.length}) for model '${model}'. Max: ${caps.maxInputImages}.`,
 				"INVALID_PARAMS",
 			);
-			return;
 		}
 
-		// Resolve output path
-		const outputPath = resolve(args.output || `generated_${Date.now()}.png`);
+		// --- Load input images ----------------------------------------------
+		let inputImages: InputImage[] = [];
+		try {
+			inputImages = await Promise.all(imagePaths.map(readInputImage));
+		} catch (err) {
+			if (err instanceof InputError) {
+				jsonError(`${err.message} (${err.path})`, "INPUT_ERROR");
+			}
+			throw err;
+		}
 
-		// Build the full prompt
+		// --- Build request --------------------------------------------------
 		const fullPrompt = negativePrompt
-			? `${prompt}. Avoid: ${negativePrompt}`
+			? `${prompt}. Do not include: ${negativePrompt}.`
 			: prompt;
 
-		// Call Gemini API
+		const parts: Array<
+			{ text: string } | { inlineData: { mimeType: string; data: string } }
+		> = [{ text: fullPrompt }];
+		for (const img of inputImages) {
+			parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } });
+		}
+
+		const imageConfig: Record<string, string> = {};
+		if (aspectRatio) imageConfig.aspectRatio = aspectRatio;
+		if (size) imageConfig.imageSize = size;
+
+		const config: Record<string, unknown> = {
+			responseModalities: ["IMAGE"],
+		};
+		if (Object.keys(imageConfig).length > 0) {
+			config.imageConfig = imageConfig;
+		}
+		if (thinking) {
+			// SDK enum is upper-case (MINIMAL | HIGH). Normalize.
+			config.thinkingConfig = { thinkingLevel: thinking.toUpperCase() };
+		}
+
+		const outputPath = resolve(args.output || `generated_${Date.now()}.png`);
+
+		// --- Call API -------------------------------------------------------
 		try {
 			const ai = new GoogleGenAI({ apiKey });
-
-			const imageConfig: Record<string, string> = {};
-			if (aspectRatio) imageConfig.aspectRatio = aspectRatio;
-			if (size) imageConfig.imageSize = size;
-			if (person) imageConfig.personGeneration = person;
-
 			const response = await ai.models.generateContent({
 				model,
-				contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
-				config: {
-					responseModalities: ["IMAGE"],
-					...(Object.keys(imageConfig).length > 0 && {
-						imageConfig,
-					}),
-				},
+				contents: [{ role: "user", parts }],
+				config,
 			});
 
-			// Extract image data from response
-			const parts = response.candidates?.[0]?.content?.parts;
-			if (!parts || parts.length === 0) {
-				jsonError("No image data in API response", "API_ERROR");
-				return;
+			const responseParts = response.candidates?.[0]?.content?.parts;
+			if (!responseParts || responseParts.length === 0) {
+				jsonError("No content in API response", "API_ERROR");
 			}
 
-			const imagePart = parts.find((part) =>
-				part.inlineData?.mimeType?.startsWith("image/"),
+			// Pick the final image: prefer the last non-thought image part;
+			// fall back to the last image part if all are thoughts.
+			const imageParts = responseParts.filter((p) =>
+				p.inlineData?.mimeType?.startsWith("image/"),
 			);
-			if (!imagePart?.inlineData) {
+			if (imageParts.length === 0) {
 				jsonError("API response did not contain an image", "API_ERROR");
-				return;
+			}
+			const nonThought = imageParts.filter((p) => !p.thought);
+			const finalPart = (nonThought.length > 0 ? nonThought : imageParts).at(
+				-1,
+			);
+			const inline = finalPart?.inlineData;
+			if (!inline?.data || !inline.mimeType) {
+				jsonError("Image data missing from API response", "API_ERROR");
 			}
 
-			const { data, mimeType } = imagePart.inlineData;
-			if (!data || !mimeType) {
-				jsonError("Image data is missing from response", "API_ERROR");
-				return;
+			const buffer = Buffer.from(inline.data, "base64");
+			try {
+				await mkdir(dirname(outputPath), { recursive: true });
+				await writeFile(outputPath, buffer);
+			} catch (err) {
+				const reason = err instanceof Error ? err.message : "unknown error";
+				jsonError(`Could not write output file: ${reason}`, "OUTPUT_ERROR");
 			}
 
-			// Decode and write
-			const buffer = Buffer.from(data, "base64");
-
-			await mkdir(dirname(outputPath), { recursive: true });
-			await writeFile(outputPath, buffer);
-
-			jsonOk({
+			const result: Record<string, unknown> = {
 				file: outputPath,
-				mimeType,
+				mimeType: inline.mimeType,
 				size: buffer.length,
 				prompt,
-			});
+				model,
+			};
+			if (aspectRatio) result.aspectRatio = aspectRatio;
+			if (size) result.imageSize = size;
+			if (thinking) result.thinkingLevel = thinking;
+			if (inputImages.length > 0) {
+				result.inputImages = inputImages.map((i) => i.absolutePath);
+			}
+			jsonOk(result);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : "Unknown API error";
 			jsonError(message, "API_ERROR");

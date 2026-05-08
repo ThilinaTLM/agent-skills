@@ -4,6 +4,7 @@ export type ErrorCode =
 	| "API_ERROR"
 	| "INVALID_PARAMS"
 	| "OUTPUT_ERROR"
+	| "INPUT_ERROR"
 	| "PREREQ_MISSING";
 
 // Base response types
@@ -27,4 +28,9 @@ export interface GenerateResult {
 	mimeType: string;
 	size: number;
 	prompt: string;
+	model: string;
+	aspectRatio?: string;
+	imageSize?: string;
+	thinkingLevel?: string;
+	inputImages?: string[];
 }
