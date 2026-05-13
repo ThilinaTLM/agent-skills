@@ -1,0 +1,61 @@
+rd-checklist {
+	display: block;
+	margin: 0 0 var(--rd-space-4);
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: var(--rd-bg-elev);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius);
+}
+rd-task {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--rd-space-3);
+	padding: var(--rd-space-2) 0;
+	border-bottom: 1px solid var(--rd-border);
+}
+rd-task:last-child {
+	border-bottom: 0;
+}
+rd-task > ._rd-task-box {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border: 1.5px solid var(--rd-border-strong);
+	border-radius: 4px;
+	font-size: 0.78rem;
+	font-weight: 700;
+	color: var(--rd-bg-elev);
+	background: var(--rd-bg);
+	margin-top: 0.15em;
+}
+rd-task[data-done] > ._rd-task-box {
+	background: var(--rd-success);
+	border-color: var(--rd-success);
+	color: var(--rd-bg-elev);
+}
+rd-task > ._rd-task-body {
+	flex: 1 1 auto;
+	color: var(--rd-fg);
+}
+rd-task[data-done] > ._rd-task-body {
+	color: var(--rd-fg-muted);
+	text-decoration: line-through;
+	text-decoration-color: var(--rd-fg-subtle);
+}
+rd-task ._rd-task-meta {
+	display: inline-flex;
+	gap: var(--rd-space-3);
+	margin-left: var(--rd-space-3);
+	font-size: 0.82rem;
+	color: var(--rd-fg-muted);
+	font-variant-numeric: tabular-nums;
+}
+rd-task[data-done] ._rd-task-meta {
+	text-decoration: none;
+}
+rd-task ._rd-task-meta-item {
+	display: inline-block;
+}

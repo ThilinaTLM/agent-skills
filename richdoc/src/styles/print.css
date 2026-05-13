@@ -1,0 +1,49 @@
+/* Print: flatten interactive components, hide chrome, drop shadows. */
+
+@media print {
+	body {
+		background: #fff;
+		color: #000;
+	}
+	rd-page {
+		max-width: none;
+		padding: 0;
+	}
+	rd-card,
+	rd-callout,
+	rd-kv,
+	rd-compare,
+	rd-code,
+	rd-mermaid,
+	rd-toc,
+	rd-tabs,
+	rd-stat,
+	rd-figure,
+	rd-quote,
+	rd-detail {
+		box-shadow: none;
+		break-inside: avoid;
+	}
+	rd-tabs > ._rd-tab-strip {
+		display: none;
+	}
+	rd-tab[hidden] {
+		display: block;
+	}
+	rd-tab + rd-tab {
+		border-top: 1px solid #ccc;
+	}
+	rd-toc {
+		display: none;
+	}
+	rd-code ._rd-code-copy {
+		display: none;
+	}
+	rd-detail > details {
+		/* expanded in print so readers see the content */
+	}
+	a {
+		color: #000;
+		text-decoration: underline;
+	}
+}

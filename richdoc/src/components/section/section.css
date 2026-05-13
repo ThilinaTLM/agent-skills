@@ -1,0 +1,16 @@
+rd-section {
+	display: block;
+	margin-bottom: var(--rd-space-6);
+}
+rd-section > ._rd-section-title {
+	font-size: 1.5rem;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+	line-height: 1.25;
+	margin: var(--rd-space-6) 0 var(--rd-space-3);
+	padding-bottom: var(--rd-space-2);
+	border-bottom: 1px solid var(--rd-border);
+}
+rd-section:first-child > ._rd-section-title {
+	margin-top: 0;
+}

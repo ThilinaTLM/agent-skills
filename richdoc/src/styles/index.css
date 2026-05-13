@@ -1,0 +1,34 @@
+/* richdoc.css — bundle entry.
+ *
+ * @import order is cascade order:
+ *   1. tokens     — CSS variables (light + dark themes)
+ *   2. reset      — body + box-sizing
+ *   3. typography — plain prose inside <rd-page>
+ *   4. components — each tag's appearance, scoped under its tag selector
+ *   5. print      — print overrides, must come last
+ */
+
+@import "./tokens.css";
+@import "./reset.css";
+@import "./typography.css";
+
+@import "../components/page/page.css";
+@import "../components/section/section.css";
+@import "../components/cols/cols.css";
+@import "../components/card/card.css";
+@import "../components/callout/callout.css";
+@import "../components/kv/kv.css";
+@import "../components/badge/badge.css";
+@import "../components/compare/compare.css";
+@import "../components/code/code.css";
+@import "../components/tabs/tabs.css";
+@import "../components/timeline/timeline.css";
+@import "../components/mermaid/mermaid.css";
+@import "../components/toc/toc.css";
+@import "../components/quote/quote.css";
+@import "../components/detail/detail.css";
+@import "../components/stat/stat.css";
+@import "../components/figure/figure.css";
+@import "../components/checklist/checklist.css";
+
+@import "./print.css";

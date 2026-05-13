@@ -12,6 +12,7 @@ A collection of reusable AI agent skills.
 | `pgtool/` | PostgreSQL database exploration and debugging |
 | `imagegen/` | AI image generation via Google Gemini |
 | `playbook/` | Create and refine repo-specific `AGENTS.md` files |
+| `richdoc/` | Framework for AI-authored HTML documents — fixed `rd-*` web-component vocabulary, modular sources, build pipeline |
 
 ## Skill Structure
 
@@ -41,6 +42,7 @@ CLI-backed skills follow the same pattern:
 cd droid/droid-cli && bun install       # droid-cli
 cd pgtool/pgtool-cli && bun install     # pgtool-cli
 cd imagegen/imagegen-cli && bun install  # imagegen-cli
+cd richdoc/richdoc-cli && bun install    # richdoc-cli
 bun run dev [command]           # Run in development
 bun run lint                    # Check with Biome
 bun run lint:fix                # Auto-fix lint issues
@@ -140,3 +142,68 @@ Options: `--output/-o`, `--image/-i` (repeatable), `--aspect-ratio/-a`, `--size/
 
 **Commands (`src/commands/`):**
 - `generate.ts` - Unified text-to-image and image-edit command
+
+## richdoc framework
+
+Documents are plain `.html` files that link two shipped assets (`richdoc.css`, `richdoc.js`) and use the `rd-*` web-component vocabulary. Source is modular (one folder per component), built into a single minified CSS/JS bundle plus a generated `schema.json`.
+
+### Layout
+
+```
+richdoc/
+├── SKILL.md, AUTHORING.md
+├── src/                          # framework source
+│   ├── lib/{base,types}.ts
+│   ├── styles/{tokens,reset,typography,print,index}.css
+│   ├── components/<name>/{<name>.ts, <name>.css, <name>.schema.ts}
+│   ├── registry.ts                # browser-side component registrations
+│   └── schema-registry.ts         # pure schema, no DOM (Node-safe)
+├── build.ts                       # bun-powered bundler
+├── assets/                        # GENERATED, committed
+│   ├── richdoc.css, richdoc.js     # minified bundles + .map
+│   ├── schema.json                 # vocabulary, consumed by CLI lint
+│   └── version.txt                 # bundle hash + build timestamp
+├── templates/                     # plan, research, comparison
+├── examples/                      # showcase, status-onepager
+└── richdoc-cli/
+```
+
+### Build pipeline
+
+```bash
+cd richdoc
+bun install
+bun run build              # production: minified, source maps
+bun run build:dev          # unminified
+```
+
+The build emits `assets/{richdoc.js, richdoc.css, schema.json, version.txt}`, then sanity-checks `examples/showcase.html` against the freshly generated schema. Builds are reproducible: same source produces byte-identical `richdoc.js`, `richdoc.css`, and `schema.json` (only `version.txt`'s timestamp varies).
+
+Adding a new component: drop `src/components/<name>/{<name>.ts, <name>.css, <name>.schema.ts}`, edit `src/registry.ts`, `src/schema-registry.ts`, and `src/styles/index.css` (one line each), run `bun run build`. See `richdoc/AUTHORING.md`.
+
+### richdoc-cli Commands
+
+| Command | Description |
+|---------|-------------|
+| `richdoc new <output>` | Scaffold from a template (`--template plan\|research\|comparison`) |
+| `richdoc init [dir]` | Copy `richdoc.css` and `richdoc.js` into a directory |
+| `richdoc lint <file>` | Validate against the rd-* schema (loads `assets/schema.json`) |
+| `richdoc components [--tag <name>] [--plain]` | List the vocabulary from the live schema |
+| `richdoc build [--dev]` | Rebuild the bundle (wraps `bun run build`) |
+
+### richdoc-cli Architecture
+
+**Entry:** `src/index.ts` uses citty framework.
+
+**Core Libraries (`src/lib/`):**
+- `output.ts` - JSON output formatting
+- `assets.ts` - Resolves shipped `assets/richdoc.css` and `assets/richdoc.js`
+- `templates.ts` - Resolves shipped `templates/*.html`
+- `schema.ts` - Loads `assets/schema.json` at runtime; single source of truth for the rd-* tag vocabulary
+
+**Commands (`src/commands/`):**
+- `new.ts` - Scaffold from template
+- `init.ts` - Copy assets into a target dir
+- `lint.ts` - Parse HTML and validate against the loaded schema
+- `components.ts` - Print the vocabulary (JSON or `--plain` table)
+- `build.ts` - Spawn `bun run build.ts` from the framework root

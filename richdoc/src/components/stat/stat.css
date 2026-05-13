@@ -1,0 +1,51 @@
+rd-stat {
+	display: block;
+	background: var(--rd-bg-elev);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius);
+	box-shadow: var(--rd-shadow-sm);
+	padding: var(--rd-space-4) var(--rd-space-5);
+	margin: 0 0 var(--rd-space-4);
+}
+rd-cols > rd-stat {
+	margin: 0;
+	height: 100%;
+}
+rd-stat > ._rd-stat-label {
+	font-size: 0.78rem;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--rd-fg-muted);
+	font-weight: 600;
+	margin-bottom: var(--rd-space-2);
+}
+rd-stat > ._rd-stat-value {
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--rd-fg);
+	font-variant-numeric: tabular-nums;
+}
+rd-stat > ._rd-stat-meta {
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-1);
+	margin-top: var(--rd-space-2);
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--rd-fg-muted);
+}
+rd-stat > ._rd-stat-meta > ._rd-stat-trend {
+	display: inline-block;
+	font-weight: 700;
+}
+rd-stat[data-tone="positive"] > ._rd-stat-meta {
+	color: var(--rd-success);
+}
+rd-stat[data-tone="negative"] > ._rd-stat-meta {
+	color: var(--rd-danger);
+}
+rd-stat[data-tone="neutral"] > ._rd-stat-meta {
+	color: var(--rd-fg-muted);
+}

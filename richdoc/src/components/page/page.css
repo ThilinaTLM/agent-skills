@@ -1,0 +1,12 @@
+rd-page {
+	display: block;
+	max-width: var(--rd-max-width);
+	margin: 0 auto;
+	padding: var(--rd-space-7) var(--rd-space-5) var(--rd-space-8);
+}
+
+@media (max-width: 640px) {
+	rd-page {
+		padding: var(--rd-space-5) var(--rd-space-4) var(--rd-space-6);
+	}
+}

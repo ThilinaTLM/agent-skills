@@ -1,0 +1,31 @@
+rd-figure {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	padding: var(--rd-space-4);
+	background: var(--rd-bg-elev);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius);
+	text-align: center;
+}
+rd-figure > img,
+rd-figure > rd-mermaid,
+rd-figure > svg {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	margin: 0 auto;
+}
+rd-figure > rd-mermaid {
+	background: transparent;
+	border: 0;
+	padding: 0;
+	margin: 0 auto;
+}
+rd-figure > ._rd-figure-cap {
+	display: block;
+	text-align: center;
+	margin-top: var(--rd-space-3);
+	font-size: 0.88rem;
+	color: var(--rd-fg-muted);
+	font-style: italic;
+}

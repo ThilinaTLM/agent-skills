@@ -1,0 +1,39 @@
+rd-quote {
+	display: block;
+	margin: 0 0 var(--rd-space-4);
+	padding: var(--rd-space-4) var(--rd-space-5);
+	background: var(--rd-bg-elev);
+	border-left: 4px solid var(--rd-accent);
+	border-radius: var(--rd-radius-sm);
+	color: var(--rd-fg);
+	font-size: 1.05rem;
+	line-height: 1.55;
+	font-style: italic;
+	position: relative;
+}
+rd-quote > :first-child::before {
+	content: "\201C";
+	color: var(--rd-fg-subtle);
+	font-size: 1.6em;
+	line-height: 0.6;
+	vertical-align: -0.3em;
+	margin-right: 0.1em;
+}
+rd-quote > ._rd-quote-attrib {
+	display: block;
+	margin-top: var(--rd-space-3);
+	font-style: normal;
+	font-size: 0.9rem;
+	color: var(--rd-fg-muted);
+}
+rd-quote ._rd-quote-author {
+	font-weight: 600;
+	color: var(--rd-fg);
+}
+rd-quote ._rd-quote-cite {
+	font-style: italic;
+}
+rd-quote ._rd-quote-cite a {
+	color: inherit;
+	text-decoration: underline;
+}

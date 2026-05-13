@@ -1,0 +1,27 @@
+rd-kv {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: var(--rd-space-2) var(--rd-space-4);
+	margin: 0 0 var(--rd-space-4);
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: var(--rd-bg-sunken);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius);
+}
+rd-kv > rd-row {
+	display: contents;
+}
+rd-kv > rd-row > ._rd-kv-key {
+	color: var(--rd-fg-muted);
+	font-size: 0.88rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-weight: 600;
+	padding-top: 0.1em;
+}
+rd-kv > rd-row > ._rd-kv-value {
+	color: var(--rd-fg);
+}
+rd-kv > rd-row > ._rd-kv-value > :last-child {
+	margin-bottom: 0;
+}

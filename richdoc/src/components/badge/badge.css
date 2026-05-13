@@ -1,0 +1,35 @@
+rd-badge {
+	display: inline-block;
+	padding: 0.15em 0.6em;
+	border-radius: 999px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.4;
+	background: var(--rd-bg-sunken);
+	color: var(--rd-fg-muted);
+	border: 1px solid var(--rd-border);
+	vertical-align: 0.1em;
+}
+rd-badge[variant="info"] {
+	background: var(--rd-info-soft);
+	color: var(--rd-info);
+	border-color: transparent;
+}
+rd-badge[variant="success"] {
+	background: var(--rd-success-soft);
+	color: var(--rd-success);
+	border-color: transparent;
+}
+rd-badge[variant="warn"] {
+	background: var(--rd-warn-soft);
+	color: var(--rd-warn);
+	border-color: transparent;
+}
+rd-badge[variant="danger"] {
+	background: var(--rd-danger-soft);
+	color: var(--rd-danger);
+	border-color: transparent;
+}
+rd-badge[variant="muted"] {
+	color: var(--rd-fg-subtle);
+}

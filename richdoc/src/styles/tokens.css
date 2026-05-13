@@ -1,0 +1,112 @@
+/* Tokens — colors, spacing, type, shadows. All themable via CSS variables. */
+
+:root {
+	--rd-bg: #fbfaf7;
+	--rd-bg-elev: #ffffff;
+	--rd-bg-sunken: #f3f1ec;
+	--rd-fg: #1c1a17;
+	--rd-fg-muted: #6a655d;
+	--rd-fg-subtle: #908a80;
+	--rd-border: #e6e2d8;
+	--rd-border-strong: #cfc9bb;
+
+	--rd-accent: #b25a18;
+	--rd-accent-fg: #ffffff;
+	--rd-accent-soft: #f5e6d6;
+
+	--rd-info: #1f6feb;
+	--rd-info-soft: #e3edfc;
+	--rd-success: #1f8a4c;
+	--rd-success-soft: #e0f1e5;
+	--rd-warn: #b8860b;
+	--rd-warn-soft: #faf0d1;
+	--rd-danger: #c2362b;
+	--rd-danger-soft: #fae3e1;
+	--rd-note: #6f42c1;
+	--rd-note-soft: #ede4fa;
+
+	--rd-radius: 10px;
+	--rd-radius-sm: 6px;
+	--rd-radius-lg: 16px;
+
+	--rd-space-1: 4px;
+	--rd-space-2: 8px;
+	--rd-space-3: 12px;
+	--rd-space-4: 16px;
+	--rd-space-5: 24px;
+	--rd-space-6: 32px;
+	--rd-space-7: 48px;
+	--rd-space-8: 64px;
+
+	--rd-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+		"Helvetica Neue", Arial, sans-serif;
+	--rd-font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+	--rd-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+		"Liberation Mono", monospace;
+
+	--rd-max-width: 960px;
+	--rd-shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.04),
+		0 1px 1px rgba(20, 18, 14, 0.03);
+	--rd-shadow: 0 2px 6px rgba(20, 18, 14, 0.06),
+		0 1px 2px rgba(20, 18, 14, 0.04);
+}
+
+[data-theme="dark"] {
+	--rd-bg: #14130f;
+	--rd-bg-elev: #1c1a16;
+	--rd-bg-sunken: #0f0e0b;
+	--rd-fg: #eee8da;
+	--rd-fg-muted: #a8a294;
+	--rd-fg-subtle: #7a7466;
+	--rd-border: #2c2924;
+	--rd-border-strong: #3d3932;
+
+	--rd-accent: #e08a3c;
+	--rd-accent-fg: #14130f;
+	--rd-accent-soft: #3a2614;
+
+	--rd-info: #7aa7f0;
+	--rd-info-soft: #1a2640;
+	--rd-success: #6ec083;
+	--rd-success-soft: #142a1c;
+	--rd-warn: #d9b25a;
+	--rd-warn-soft: #2e2614;
+	--rd-danger: #e88078;
+	--rd-danger-soft: #321714;
+	--rd-note: #b09ce0;
+	--rd-note-soft: #221a36;
+
+	--rd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+	--rd-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--rd-bg: #14130f;
+		--rd-bg-elev: #1c1a16;
+		--rd-bg-sunken: #0f0e0b;
+		--rd-fg: #eee8da;
+		--rd-fg-muted: #a8a294;
+		--rd-fg-subtle: #7a7466;
+		--rd-border: #2c2924;
+		--rd-border-strong: #3d3932;
+
+		--rd-accent: #e08a3c;
+		--rd-accent-fg: #14130f;
+		--rd-accent-soft: #3a2614;
+
+		--rd-info: #7aa7f0;
+		--rd-info-soft: #1a2640;
+		--rd-success: #6ec083;
+		--rd-success-soft: #142a1c;
+		--rd-warn: #d9b25a;
+		--rd-warn-soft: #2e2614;
+		--rd-danger: #e88078;
+		--rd-danger-soft: #321714;
+		--rd-note: #b09ce0;
+		--rd-note-soft: #221a36;
+
+		--rd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+		--rd-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	}
+}

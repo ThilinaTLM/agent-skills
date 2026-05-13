@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Comparison — TODO decision</title>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<h1>TODO: decision title</h1>
+
+	<rd-kv>
+		<rd-row key="Decision needed by">TODO YYYY-MM-DD</rd-row>
+		<rd-row key="Owner">TODO</rd-row>
+		<rd-row key="Stakeholders">TODO</rd-row>
+	</rd-kv>
+
+	<rd-callout type="info" title="Context">
+		TODO: what triggered this comparison and what's at stake.
+	</rd-callout>
+
+	<rd-section title="Criteria">
+		<p>TODO: what we care about, in priority order.</p>
+		<ol>
+			<li>TODO most important criterion.</li>
+			<li>TODO next.</li>
+			<li>TODO next.</li>
+		</ol>
+	</rd-section>
+
+	<rd-section title="Comparison">
+		<rd-compare headers="Criterion,Option A,Option B,Option C">
+			<rd-row-cells label="TODO criterion 1">
+				<rd-cell tone="positive">TODO</rd-cell>
+				<rd-cell tone="neutral">TODO</rd-cell>
+				<rd-cell tone="negative">TODO</rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="TODO criterion 2">
+				<rd-cell>TODO</rd-cell>
+				<rd-cell>TODO</rd-cell>
+				<rd-cell>TODO</rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="TODO criterion 3">
+				<rd-cell>TODO</rd-cell>
+				<rd-cell>TODO</rd-cell>
+				<rd-cell>TODO</rd-cell>
+			</rd-row-cells>
+		</rd-compare>
+	</rd-section>
+
+	<rd-section title="Trade-offs at a glance">
+		<rd-cols n="3">
+			<rd-card title="Option A" accent="info">
+				<p><strong>Pros:</strong> TODO.</p>
+				<p><strong>Cons:</strong> TODO.</p>
+			</rd-card>
+			<rd-card title="Option B" accent="info">
+				<p><strong>Pros:</strong> TODO.</p>
+				<p><strong>Cons:</strong> TODO.</p>
+			</rd-card>
+			<rd-card title="Option C" accent="info">
+				<p><strong>Pros:</strong> TODO.</p>
+				<p><strong>Cons:</strong> TODO.</p>
+			</rd-card>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Recommendation">
+		<rd-callout type="success" title="Recommended: TODO">
+			TODO: rationale that ties back to the criteria.
+		</rd-callout>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

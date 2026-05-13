@@ -1,0 +1,44 @@
+rd-callout {
+	display: block;
+	border-left: 4px solid var(--rd-info);
+	background: var(--rd-info-soft);
+	border-radius: var(--rd-radius-sm);
+	padding: var(--rd-space-3) var(--rd-space-4);
+	margin: 0 0 var(--rd-space-4);
+	position: relative;
+}
+rd-callout > ._rd-callout-title {
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-2);
+	margin-bottom: var(--rd-space-1);
+	color: var(--rd-fg);
+}
+rd-callout > ._rd-callout-title > ._rd-callout-icon {
+	font-size: 1rem;
+	flex: 0 0 auto;
+}
+rd-callout > :last-child {
+	margin-bottom: 0;
+}
+rd-callout[type="info"] {
+	border-left-color: var(--rd-info);
+	background: var(--rd-info-soft);
+}
+rd-callout[type="success"] {
+	border-left-color: var(--rd-success);
+	background: var(--rd-success-soft);
+}
+rd-callout[type="warn"] {
+	border-left-color: var(--rd-warn);
+	background: var(--rd-warn-soft);
+}
+rd-callout[type="danger"] {
+	border-left-color: var(--rd-danger);
+	background: var(--rd-danger-soft);
+}
+rd-callout[type="note"] {
+	border-left-color: var(--rd-note);
+	background: var(--rd-note-soft);
+}

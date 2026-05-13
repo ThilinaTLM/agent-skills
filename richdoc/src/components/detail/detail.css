@@ -1,0 +1,49 @@
+rd-detail {
+	display: block;
+	margin: 0 0 var(--rd-space-4);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius);
+	background: var(--rd-bg-elev);
+	overflow: hidden;
+}
+rd-detail > details {
+	display: block;
+}
+rd-detail > details > ._rd-detail-summary {
+	cursor: pointer;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	font-weight: 600;
+	color: var(--rd-fg);
+	background: var(--rd-bg-sunken);
+	user-select: none;
+	list-style: none;
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-2);
+}
+rd-detail > details > ._rd-detail-summary::-webkit-details-marker {
+	display: none;
+}
+rd-detail > details > ._rd-detail-summary::before {
+	content: "\25B6";
+	display: inline-block;
+	font-size: 0.7em;
+	color: var(--rd-fg-muted);
+	transition: transform 0.15s ease;
+	width: 0.9em;
+}
+rd-detail > details[open] > ._rd-detail-summary::before {
+	transform: rotate(90deg);
+}
+rd-detail > details > ._rd-detail-summary:hover {
+	background: var(--rd-bg-elev);
+}
+rd-detail > details > :not(._rd-detail-summary) {
+	padding: 0 var(--rd-space-4);
+}
+rd-detail > details > ._rd-detail-summary + * {
+	padding-top: var(--rd-space-3);
+}
+rd-detail > details > :last-child:not(._rd-detail-summary) {
+	padding-bottom: var(--rd-space-3);
+}

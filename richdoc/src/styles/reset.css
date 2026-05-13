@@ -1,0 +1,21 @@
+/* Tiny reset — box-sizing and base body. */
+
+html {
+	box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+	box-sizing: inherit;
+}
+
+body {
+	margin: 0;
+	background: var(--rd-bg);
+	color: var(--rd-fg);
+	font-family: var(--rd-font-sans);
+	font-size: 16px;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}

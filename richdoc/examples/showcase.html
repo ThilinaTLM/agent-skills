@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>richdoc — component showcase</title>
+	<link rel="stylesheet" href="../assets/richdoc.css">
+	<script src="../assets/richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<h1>richdoc — component showcase</h1>
+	<p>
+		Every component in the v0.2 vocabulary, used the way an agent should use it.
+		Open this file in any browser — no server required. If it renders cleanly, the framework is healthy.
+	</p>
+
+	<rd-kv>
+		<rd-row key="Version">v0.2.0</rd-row>
+		<rd-row key="Status"><rd-badge variant="success">stable</rd-badge></rd-row>
+		<rd-row key="Audience">AI agents authoring HTML deliverables for humans</rd-row>
+		<rd-row key="Vocabulary">24 tags · 18 components</rd-row>
+	</rd-kv>
+
+	<rd-toc></rd-toc>
+
+	<rd-section title="Callouts">
+		<p>Five callout types, each with an automatically inserted icon and title.</p>
+		<rd-callout type="info" title="What this is">
+			Use callouts to break out short asides — context, caveats, or pointers — that you don't want buried in a paragraph.
+		</rd-callout>
+		<rd-callout type="success" title="Recommended">
+			Prefer callouts to bold-italic emphasis for anything more than a few words.
+		</rd-callout>
+		<rd-callout type="warn" title="Heads up">
+			<code>rd-cols</code> collapses to a single column under ~720px. Don't put more than 4 columns or content will become unreadable on tablets.
+		</rd-callout>
+		<rd-callout type="danger" title="Don't">
+			Never invent new <code>rd-*</code> tags. The linter will fail and the rendered doc will show empty boxes.
+		</rd-callout>
+		<rd-callout type="note">
+			Title is optional. Without one, the callout uses the type name as a fallback heading.
+		</rd-callout>
+	</rd-section>
+
+	<rd-section title="Cards in columns">
+		<p>Use <code>rd-cols</code> with <code>n="2"</code>, <code>"3"</code>, or <code>"4"</code> for parallel content. Cards are the natural child.</p>
+
+		<h3>Three cards, no accents</h3>
+		<rd-cols n="3">
+			<rd-card title="Discovery">
+				Find out what exists. Read code, run small probes, talk to whoever knows the system.
+			</rd-card>
+			<rd-card title="Design">
+				Decide what to change. Resolve trade-offs explicitly. Write them down.
+			</rd-card>
+			<rd-card title="Delivery">
+				Execute the plan in reviewable units. Keep changes small and traceable.
+			</rd-card>
+		</rd-cols>
+
+		<h3>Four cards with accent colors</h3>
+		<rd-cols n="4">
+			<rd-card title="Info" accent="info">
+				<p>Neutral context, links, references.</p>
+			</rd-card>
+			<rd-card title="Success" accent="success">
+				<p>Positive outcomes, recommendations.</p>
+			</rd-card>
+			<rd-card title="Warn" accent="warn">
+				<p>Things to watch out for, fragile areas.</p>
+			</rd-card>
+			<rd-card title="Danger" accent="danger">
+				<p>Hard blockers, breaking changes.</p>
+			</rd-card>
+		</rd-cols>
+
+		<h3>Muted card for de-emphasized content</h3>
+		<rd-card accent="muted">
+			<p>No title, muted background. Useful for footnotes, appendices, or supplementary context.</p>
+		</rd-card>
+	</rd-section>
+
+	<rd-section title="Stats">
+		<p>Use <code>rd-stat</code> for dashboard tiles. Combine with <code>rd-cols</code> for status one-pagers.</p>
+		<rd-cols n="4">
+			<rd-stat label="Requests / day" value="42.6K" trend="up" delta="+8.2%" tone="positive"></rd-stat>
+			<rd-stat label="p95 latency" value="184 ms" trend="down" delta="-12 ms" tone="positive"></rd-stat>
+			<rd-stat label="Error rate" value="0.31%" trend="up" delta="+0.04 pp" tone="negative"></rd-stat>
+			<rd-stat label="Open incidents" value="3" trend="flat" delta="no change" tone="neutral"></rd-stat>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Comparison tables">
+		<p>For decision matrices. Tone shades the cell.</p>
+		<rd-compare headers="Aspect,Markdown,Pure HTML,richdoc">
+			<rd-row-cells label="Layout primitives">
+				<rd-cell tone="negative">No multi-column, no cards</rd-cell>
+				<rd-cell tone="neutral">Possible, verbose</rd-cell>
+				<rd-cell tone="positive">Built in</rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="Authoring vocabulary">
+				<rd-cell tone="positive">Tiny, universal</rd-cell>
+				<rd-cell tone="negative">Unbounded — drifts</rd-cell>
+				<rd-cell tone="positive">Closed, linted</rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="LLM authoring reliability">
+				<rd-cell tone="neutral">Good</rd-cell>
+				<rd-cell tone="negative">Drifts under load</rd-cell>
+				<rd-cell tone="positive">Validated at write time</rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="Render anywhere">
+				<rd-cell tone="positive">Yes — GitHub renders it</rd-cell>
+				<rd-cell tone="positive">Yes — any browser</rd-cell>
+				<rd-cell tone="neutral">Browser only</rd-cell>
+			</rd-row-cells>
+		</rd-compare>
+	</rd-section>
+
+	<rd-section title="Key/value metadata">
+		<p>Use <code>rd-kv</code> for short status blocks at the top of a doc.</p>
+		<rd-kv>
+			<rd-row key="Owner">platform team</rd-row>
+			<rd-row key="Status"><rd-badge variant="warn">in progress</rd-badge></rd-row>
+			<rd-row key="Priority"><rd-badge variant="danger">P0</rd-badge></rd-row>
+			<rd-row key="Tags">
+				<rd-badge>infra</rd-badge>
+				<rd-badge>auth</rd-badge>
+				<rd-badge variant="info">security</rd-badge>
+			</rd-row>
+			<rd-row key="Notes">Values can contain inline HTML, badges, links — anything inline.</rd-row>
+		</rd-kv>
+	</rd-section>
+
+	<rd-section title="Code blocks">
+		<p>Code lives in <code>rd-code</code>, which adds a header bar with the language and a copy button. Preserves whitespace; common indentation is stripped automatically.</p>
+		<rd-code lang="typescript" title="auth.ts">
+			export async function signToken(payload: TokenPayload): Promise&lt;string&gt; {
+				const key = await loadSigningKey();
+				return jwt.sign(payload, key, { algorithm: "EdDSA" });
+			}
+		</rd-code>
+
+		<rd-code lang="bash">
+			# Initialize a richdoc next to your file
+			cd docs/
+			richdoc init .
+			richdoc new plan.html --template plan
+		</rd-code>
+	</rd-section>
+
+	<rd-section title="Tabs">
+		<p>Lazy alternative content. First tab is active by default; arrow keys navigate.</p>
+		<rd-tabs>
+			<rd-tab label="Overview">
+				<p>Tabs are good for the same content rendered three ways: language variants, before/after, examples by stack.</p>
+				<p>They are <strong>not</strong> for hiding important decisions — humans scanning the doc will miss whatever isn't on the active tab.</p>
+			</rd-tab>
+			<rd-tab label="When to use">
+				<ul>
+					<li>Same example in multiple languages.</li>
+					<li>Before / after code comparisons.</li>
+					<li>Optional deep dives that interrupt the main flow.</li>
+				</ul>
+			</rd-tab>
+			<rd-tab label="When NOT to use">
+				<ul>
+					<li>Hiding important steps. Use sections instead.</li>
+					<li>Long content. Tabs cap at a screenful of comfortable reading.</li>
+					<li>Search-critical content (only the active tab is visible to Ctrl+F on first load).</li>
+				</ul>
+			</rd-tab>
+		</rd-tabs>
+	</rd-section>
+
+	<rd-section title="Timeline">
+		<p>For sequenced events: release history, project milestones, incident postmortems.</p>
+		<rd-timeline>
+			<rd-event date="2026-05-14" title="v0.1 PoC">
+				Initial vocabulary (17 tags), three templates, smoke-tested CLI.
+			</rd-event>
+			<rd-event date="2026-05-15" title="v0.2 framework refactor">
+				Modular source tree, build pipeline, schema co-located with each component,
+				five new tags (<code>rd-quote</code>, <code>rd-detail</code>, <code>rd-stat</code>, <code>rd-figure</code>, <code>rd-checklist</code>).
+			</rd-event>
+			<rd-event date="TBD" title="v0.3 themes">
+				<code>--theme</code> flag on <code>richdoc init</code> for alternate token palettes.
+			</rd-event>
+			<rd-event date="TBD" title="v1.0 multi-doc sites">
+				<code>richdoc site</code> for static collections with sidebar nav and search.
+			</rd-event>
+		</rd-timeline>
+	</rd-section>
+
+	<rd-section title="Mermaid diagrams">
+		<p>Lazy-loaded from CDN on first encounter. If offline, the source falls back to a code block.</p>
+		<rd-mermaid>
+			flowchart LR
+				A[Agent writes .html] --> B{richdoc lint}
+				B -- OK --> C[Open in browser]
+				B -- errors --> D[Fix and re-run]
+				D --> B
+				C --> E[Human review]
+		</rd-mermaid>
+	</rd-section>
+
+	<rd-section title="Figures">
+		<p>Wrap an image, SVG, or diagram with a centered caption. Works well around <code>rd-mermaid</code>.</p>
+		<rd-figure caption="Document lifecycle: author, validate, render, review.">
+			<rd-mermaid>
+				flowchart TB
+					Plan --> Draft --> Validate --> Publish
+					Validate -- fail --> Draft
+			</rd-mermaid>
+		</rd-figure>
+	</rd-section>
+
+	<rd-section title="Quotes">
+		<p>For attributed quotations. Author and citation render as a footer; if you pass <code>source-url</code>, the citation becomes a link.</p>
+		<rd-quote author="Donald Knuth" cite="Literate Programming, 1984" source-url="https://en.wikipedia.org/wiki/Literate_programming">
+			<p>Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.</p>
+		</rd-quote>
+	</rd-section>
+
+	<rd-section title="Collapsible details">
+		<p>Use <code>rd-detail</code> for content that's relevant but not on the main path — appendices, full error logs, derivations. Native <code>&lt;details&gt;</code> under the hood, so it works without JS and remains keyboard-accessible.</p>
+		<rd-detail summary="Why a fixed vocabulary instead of free-form HTML?">
+			<p>Free-form HTML lets agents drift. One doc invents <code>&lt;callout&gt;</code>, the next uses <code>&lt;note&gt;</code>, the third leaves it as bold-italic prose. The reader experience fragments and the agent has no way to verify their output.</p>
+			<p>A closed vocabulary plus a validator makes both ends of the loop reliable: the agent always knows what's allowed, and the reader always sees the same components.</p>
+		</rd-detail>
+		<rd-detail summary="Open by default" open>
+			<p>Pass the <code>open</code> attribute to start expanded.</p>
+		</rd-detail>
+	</rd-section>
+
+	<rd-section title="Checklists">
+		<p>For action items with optional assignee and due date. Mark items <code>done</code> as work progresses.</p>
+		<rd-checklist>
+			<rd-task done assignee="dana" due="2026-05-10">Land v0.1 PoC</rd-task>
+			<rd-task done assignee="dana" due="2026-05-13">Split sources into per-component folders</rd-task>
+			<rd-task done assignee="dana" due="2026-05-14">Add build pipeline + schema.json</rd-task>
+			<rd-task assignee="kim" due="2026-05-20">Author <code>rd-flow</code> for state diagrams (v0.3)</rd-task>
+			<rd-task assignee="kim" due="2026-05-25">Static-site mode for multi-doc collections</rd-task>
+		</rd-checklist>
+	</rd-section>
+
+	<rd-section title="Badges">
+		<p>
+			Inline status pills:
+			<rd-badge>default</rd-badge>
+			<rd-badge variant="info">info</rd-badge>
+			<rd-badge variant="success">success</rd-badge>
+			<rd-badge variant="warn">warn</rd-badge>
+			<rd-badge variant="danger">danger</rd-badge>
+			<rd-badge variant="muted">muted</rd-badge>
+		</p>
+	</rd-section>
+
+	<rd-section title="Plain prose, lists, and HTML">
+		<p>You can still use everyday semantic HTML inside any component or directly inside <code>rd-page</code>:</p>
+		<ul>
+			<li><strong>Bold</strong>, <em>italic</em>, <code>code</code>, and <a href="https://example.com">links</a> all work.</li>
+			<li>Standard <code>&lt;ul&gt;</code> and <code>&lt;ol&gt;</code> lists are styled to match.</li>
+			<li>Block quotes get a left-border treatment.</li>
+		</ul>
+		<blockquote>
+			"The best documentation is the kind you actually read." — anonymous
+		</blockquote>
+		<hr>
+		<p>Horizontal rules separate sections of free-form prose where <code>rd-section</code> would feel heavy.</p>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

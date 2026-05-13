@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Auth service — weekly status</title>
+	<link rel="stylesheet" href="../assets/richdoc.css">
+	<script src="../assets/richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<h1>Auth service — weekly status</h1>
+	<p>Week ending <strong>2026-05-12</strong>. Owner: platform team. <rd-badge variant="success">on track</rd-badge></p>
+
+	<rd-kv>
+		<rd-row key="On-call">@dana (primary), @kim (secondary)</rd-row>
+		<rd-row key="Region">us-east-1, eu-west-1</rd-row>
+		<rd-row key="SLO target">99.95% monthly</rd-row>
+		<rd-row key="Last incident">2026-05-04 (12m, post-mortem complete)</rd-row>
+	</rd-kv>
+
+	<rd-section title="Health snapshot">
+		<rd-cols n="4">
+			<rd-stat label="Requests / day" value="42.6K" trend="up" delta="+8.2%" tone="positive"></rd-stat>
+			<rd-stat label="p95 latency" value="184 ms" trend="down" delta="-12 ms" tone="positive"></rd-stat>
+			<rd-stat label="Error rate" value="0.31%" trend="up" delta="+0.04 pp" tone="negative"></rd-stat>
+			<rd-stat label="SLO budget" value="92.1%" trend="flat" delta="of monthly" tone="neutral"></rd-stat>
+		</rd-cols>
+		<rd-cols n="4">
+			<rd-stat label="Tokens issued" value="1.2M" trend="up" delta="+14%" tone="positive"></rd-stat>
+			<rd-stat label="Refresh failures" value="412" trend="up" delta="+27%" tone="negative"></rd-stat>
+			<rd-stat label="Active sessions" value="48.9K" trend="flat" delta="±0.5%" tone="neutral"></rd-stat>
+			<rd-stat label="Auth attempts blocked" value="3,841" trend="up" delta="+62%" tone="positive"></rd-stat>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="What shipped this week">
+		<rd-checklist>
+			<rd-task done assignee="dana" due="2026-05-08">EdDSA key rotation runbook tested in staging</rd-task>
+			<rd-task done assignee="kim" due="2026-05-09">Refresh-token reuse detection (RFC 6749 §10.4)</rd-task>
+			<rd-task done assignee="dana" due="2026-05-10">Move /auth/login to the new rate limiter</rd-task>
+			<rd-task done assignee="kim" due="2026-05-12">Add p99 latency dashboard</rd-task>
+		</rd-checklist>
+	</rd-section>
+
+	<rd-section title="In progress">
+		<rd-checklist>
+			<rd-task assignee="dana" due="2026-05-15">Refresh-failure spike investigation (see callout below)</rd-task>
+			<rd-task assignee="kim" due="2026-05-17">Webauthn support behind a feature flag</rd-task>
+			<rd-task assignee="dana" due="2026-05-20">Migrate session store to Postgres 16</rd-task>
+		</rd-checklist>
+
+		<rd-callout type="warn" title="Refresh-failure spike">
+			<p>Refresh failures climbed from ~320/day to 412/day this week (+27%). Early signal: about 60% of failures share a small set of UA strings consistent with one mobile build that's caching tokens past expiry.</p>
+			<p><strong>Plan:</strong> reach out to the mobile lead, gather build numbers, and decide whether to ship a server-side mitigation or wait for the next mobile release.</p>
+		</rd-callout>
+	</rd-section>
+
+	<rd-section title="Risks">
+		<rd-cols n="2">
+			<rd-card title="Key-rotation downtime window" accent="warn">
+				<p>Production rotation is scheduled for 2026-05-21 03:00 UTC. JWKS cache TTL is 5 min; we expect a ≤5min window where some clients still trust the old key. Mitigation: pre-warm the new key at JWKS for 24h ahead.</p>
+			</rd-card>
+			<rd-card title="Postgres 16 migration" accent="info">
+				<p>Cutover is dual-write for 48h then primary switch. Rollback path: flip a single DSN and replay the WAL.</p>
+			</rd-card>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Decisions logged">
+		<rd-detail summary="Refresh-token rotation: opaque vs JWT">
+			<p>We picked <strong>opaque</strong> refresh tokens stored server-side. Reasoning: refresh tokens get reused, replayed, and revoked far more than access tokens; the size and signature cost of JWT buys us nothing for that role.</p>
+			<p>Access tokens remain JWT (EdDSA) so service-to-service paths stay stateless.</p>
+		</rd-detail>
+		<rd-detail summary="Why we deferred OAuth device flow">
+			<p>One first-party client requested device flow for a CLI tool. We deferred — the use case is satisfied by a long-lived API token with scope restrictions, which is simpler and already supported. Revisit in Q3 if a second client asks.</p>
+		</rd-detail>
+	</rd-section>
+
+	<rd-section title="Next two weeks">
+		<rd-timeline>
+			<rd-event date="2026-05-15" title="Refresh-failure mitigation decided">
+				Either ship server-side fix or commit to mobile-only fix and accept the spike.
+			</rd-event>
+			<rd-event date="2026-05-17" title="Webauthn behind flag">
+				Internal users only. Public flip targeted for the following sprint.
+			</rd-event>
+			<rd-event date="2026-05-20" title="Postgres 16 dual-write begins">
+				48h soak. Cutover the morning of 2026-05-22.
+			</rd-event>
+			<rd-event date="2026-05-21 03:00 UTC" title="Key rotation in production">
+				JWKS pre-warmed since 2026-05-20.
+			</rd-event>
+		</rd-timeline>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

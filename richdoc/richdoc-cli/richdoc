@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Determine runtime: prefer bun, fall back to node >= 22
+RUNTIME=""
+if command -v bun &> /dev/null; then
+    RUNTIME="bun"
+elif command -v node &> /dev/null; then
+    NODE_MAJOR=$(node -v | sed 's/v\([0-9]*\).*/\1/')
+    if [ "$NODE_MAJOR" -ge 22 ]; then
+        RUNTIME="node"
+    fi
+fi
+
+if [ -z "$RUNTIME" ]; then
+    echo '{"ok":false,"error":"No compatible runtime found","code":"PREREQ_MISSING","hint":"Install bun (https://bun.sh) or Node.js >= 22 (https://nodejs.org)"}'
+    exit 1
+fi
+
+# Auto-install dependencies
+if [ ! -d "$SCRIPT_DIR/node_modules" ]; then
+    if [ "$RUNTIME" = "bun" ]; then
+        bun install --cwd "$SCRIPT_DIR" --silent
+    else
+        npm install --prefix "$SCRIPT_DIR" --loglevel=silent 2>/dev/null
+    fi
+fi
+
+# Run CLI
+if [ "$RUNTIME" = "bun" ]; then
+    exec bun run "$SCRIPT_DIR/src/index.ts" "$@"
+else
+    exec node --experimental-strip-types --no-warnings "$SCRIPT_DIR/src/index.ts" "$@"
+fi

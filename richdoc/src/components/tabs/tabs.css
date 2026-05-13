@@ -1,0 +1,47 @@
+rd-tabs {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius);
+	overflow: hidden;
+	background: var(--rd-bg-elev);
+}
+rd-tabs > ._rd-tab-strip {
+	display: flex;
+	gap: 0;
+	background: var(--rd-bg-sunken);
+	border-bottom: 1px solid var(--rd-border);
+	overflow-x: auto;
+}
+rd-tabs > ._rd-tab-strip > button {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	font-size: 0.92rem;
+	font-weight: 500;
+	color: var(--rd-fg-muted);
+	cursor: pointer;
+	font-family: inherit;
+	white-space: nowrap;
+	transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+rd-tabs > ._rd-tab-strip > button:hover {
+	color: var(--rd-fg);
+}
+rd-tabs > ._rd-tab-strip > button[aria-selected="true"] {
+	color: var(--rd-accent);
+	border-bottom-color: var(--rd-accent);
+	background: var(--rd-bg-elev);
+}
+rd-tab {
+	display: block;
+	padding: var(--rd-space-4) var(--rd-space-5);
+}
+rd-tab[hidden] {
+	display: none;
+}
+rd-tab > :last-child {
+	margin-bottom: 0;
+}

@@ -1,0 +1,42 @@
+rd-card {
+	display: block;
+	background: var(--rd-bg-elev);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius);
+	box-shadow: var(--rd-shadow-sm);
+	padding: var(--rd-space-4) var(--rd-space-5);
+	margin: 0 0 var(--rd-space-4);
+	position: relative;
+	overflow: hidden;
+}
+rd-cols > rd-card {
+	margin: 0;
+	height: 100%;
+}
+rd-card > ._rd-card-header {
+	font-weight: 600;
+	font-size: 1.05rem;
+	color: var(--rd-fg);
+	margin: 0 0 var(--rd-space-3);
+	padding-bottom: var(--rd-space-2);
+	border-bottom: 1px solid var(--rd-border);
+}
+rd-card > :last-child {
+	margin-bottom: 0;
+}
+rd-card[accent="info"] {
+	border-top: 3px solid var(--rd-info);
+}
+rd-card[accent="success"] {
+	border-top: 3px solid var(--rd-success);
+}
+rd-card[accent="warn"] {
+	border-top: 3px solid var(--rd-warn);
+}
+rd-card[accent="danger"] {
+	border-top: 3px solid var(--rd-danger);
+}
+rd-card[accent="muted"] {
+	background: var(--rd-bg-sunken);
+	box-shadow: none;
+}

@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"strict": true,
+		"noUncheckedIndexedAccess": false,
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true,
+		"isolatedModules": true,
+		"resolveJsonModule": true,
+		"types": ["bun-types"]
+	},
+	"include": ["src/**/*", "build.ts"],
+	"exclude": ["node_modules", "richdoc-cli", "assets"]
+}
