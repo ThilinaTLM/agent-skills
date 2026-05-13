@@ -53,8 +53,8 @@ The CLI reads `assets/schema.json` — there is no second copy of the vocabulary
 
 ## CLI
 
-- Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Auto-installs deps on first run.
-- Output is JSON by default. All commands return `{ ok: true, ... }` or `{ ok: false, error, code, hint }`.
+- Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https://docs.astral.sh/uv/); the first call provisions the Python environment automatically.
+- Output is JSON only — designed for AI agents. All commands return `{ ok: true, ... }` or `{ ok: false, error, code, hint }`.
 - Run `richdoc --help` or `richdoc <command> --help` for current flags.
 
 | Command | Description |
@@ -62,8 +62,9 @@ The CLI reads `assets/schema.json` — there is no second copy of the vocabulary
 | `richdoc new <output> [-t plan\|research\|comparison]` | Scaffold a new `.html` from a template. |
 | `richdoc init [dir]` | Copy `richdoc.css` and `richdoc.js` into a directory. |
 | `richdoc lint <file>` | Validate a `.html` file against the rd-* schema. |
-| `richdoc components [--tag <name>] [--plain]` | List the vocabulary (always in sync with the schema). |
-| `richdoc build [--dev]` | Rebuild the bundle from `src/`. Used when developing the framework itself, not when authoring docs. |
+| `richdoc components [--tag <name>]` | List the vocabulary (always in sync with the schema). |
+
+Framework asset rebuilds (regenerating `richdoc.js`/`richdoc.css`/`schema.json` from `src/`) are not part of the CLI; run `bun run build` directly from the `richdoc/` root. That's a framework-developer task, not an authoring one.
 
 ### Typical authoring flow
 
@@ -99,7 +100,7 @@ When writing a richdoc, the agent **must**:
 
 ## Tag reference
 
-All custom tags use the `rd-` prefix. Required attributes are marked **bold**. Run `richdoc components --plain` to print the current table from the live schema.
+All custom tags use the `rd-` prefix. Required attributes are marked **bold**. Run `richdoc components` to print the JSON spec from the live schema.
 
 ### Structure
 
@@ -197,7 +198,7 @@ Scaffold with `richdoc new <output> --template <name>`.
 
 ## Extending the framework
 
-See `AUTHORING.md`. The short version: each component is one folder under `src/components/<name>/` with three files (`*.ts`, `*.css`, `*.schema.ts`). Add the import to `src/registry.ts`, `src/schema-registry.ts`, and `src/styles/index.css`, then run `richdoc build` (or `bun run build`). The CLI picks up the new tag automatically because it reads the regenerated `assets/schema.json`.
+See `AUTHORING.md`. The short version: each component is one folder under `src/components/<name>/` with three files (`*.ts`, `*.css`, `*.schema.ts`). Add the import to `src/registry.ts`, `src/schema-registry.ts`, and `src/styles/index.css`, then run `bun run build` from the `richdoc/` root. The CLI picks up the new tag automatically because it reads the regenerated `assets/schema.json`.
 
 ## Limitations
 

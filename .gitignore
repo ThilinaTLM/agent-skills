@@ -2,6 +2,11 @@
 node_modules/
 package-lock.json
 
+# Python / uv
+__pycache__/
+*.py[cod]
+.venv/
+
 # Build outputs
 dist/
 
