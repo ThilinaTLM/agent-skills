@@ -6,8 +6,9 @@ rd-quote {
 	border-left: 4px solid var(--rd-accent);
 	border-radius: var(--rd-radius-sm);
 	color: var(--rd-fg);
-	font-size: 1.05rem;
-	line-height: 1.55;
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-md);
+	line-height: var(--rd-leading-relaxed);
 	font-style: italic;
 	position: relative;
 }
@@ -22,12 +23,13 @@ rd-quote > :first-child::before {
 rd-quote > ._rd-quote-attrib {
 	display: block;
 	margin-top: var(--rd-space-3);
+	font-family: var(--rd-font-body);
 	font-style: normal;
-	font-size: 0.9rem;
+	font-size: var(--rd-text-sm);
 	color: var(--rd-fg-muted);
 }
 rd-quote ._rd-quote-author {
-	font-weight: 600;
+	font-weight: var(--rd-weight-semibold);
 	color: var(--rd-fg);
 }
 rd-quote ._rd-quote-cite {

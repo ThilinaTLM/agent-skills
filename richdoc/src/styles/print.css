@@ -1,6 +1,21 @@
-/* Print: flatten interactive components, hide chrome, drop shadows. */
+/* Print: flatten interactive components, hide chrome, drop shadows.
+ * Always render against the light palette — printing a dark-mode doc
+ * burns ink and the contrast inverts wrong on paper. */
 
 @media print {
+	:root {
+		--rd-bg: #ffffff;
+		--rd-bg-elev: #ffffff;
+		--rd-bg-sunken: #f3f1ec;
+		--rd-fg: #1c1a17;
+		--rd-fg-muted: #6a655d;
+		--rd-fg-subtle: #908a80;
+		--rd-border: #e6e2d8;
+		--rd-border-strong: #cfc9bb;
+		--rd-accent: #a8501a;
+		--rd-accent-fg: #ffffff;
+		--rd-accent-soft: #f4e3cf;
+	}
 	body {
 		background: #fff;
 		color: #000;

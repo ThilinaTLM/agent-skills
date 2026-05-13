@@ -2,9 +2,9 @@ rd-badge {
 	display: inline-block;
 	padding: 0.15em 0.6em;
 	border-radius: 999px;
-	font-size: 0.8rem;
-	font-weight: 600;
-	line-height: 1.4;
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	line-height: var(--rd-leading-snug);
 	background: var(--rd-bg-sunken);
 	color: var(--rd-fg-muted);
 	border: 1px solid var(--rd-border);

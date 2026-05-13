@@ -13,9 +13,15 @@ body {
 	margin: 0;
 	background: var(--rd-bg);
 	color: var(--rd-fg);
-	font-family: var(--rd-font-sans);
-	font-size: 16px;
-	line-height: 1.6;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-base);
+	line-height: var(--rd-leading-normal);
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 2px;
+	border-radius: var(--rd-radius-sm);
 }

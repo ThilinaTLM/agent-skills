@@ -2,17 +2,17 @@ rd-toc {
 	display: block;
 	background: var(--rd-bg-sunken);
 	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius);
+	border-radius: var(--rd-radius-md);
 	padding: var(--rd-space-3) var(--rd-space-4);
 	margin: 0 0 var(--rd-space-5);
-	font-size: 0.95rem;
+	font-size: var(--rd-text-sm);
 }
 rd-toc > ._rd-toc-title {
-	font-weight: 600;
+	font-weight: var(--rd-weight-semibold);
 	color: var(--rd-fg-muted);
-	font-size: 0.85rem;
+	font-size: var(--rd-text-xs);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rd-tracking-wide);
 	margin-bottom: var(--rd-space-2);
 }
 rd-toc ul {

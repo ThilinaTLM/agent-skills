@@ -105,7 +105,7 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 
 | Tag | Attributes | Notes |
 | --- | --- | --- |
-| `<rd-page>` | `theme?` (`light\|dark\|auto`) | Outer container. Exactly one per doc, directly under `<body>`. |
+| `<rd-page>` | `theme?` (`editorial-warm`), `mode?` (`light\|dark\|auto`) | Outer container. Exactly one per doc, directly under `<body>`. `theme` picks the palette family; `mode` picks light/dark. Both default to inherited / auto. |
 | `<rd-section>` | `title?`, `id?` | Titled section with vertical rhythm. Title renders as `<h2>`. |
 | `<rd-cols>` | **`n`** (`2\|3\|4`) | Responsive grid. Collapses to one column under ~720px. |
 | `<rd-card>` | `title?`, `accent?` (`info\|success\|warn\|danger\|muted`) | Bordered/elevated block. |
@@ -206,4 +206,5 @@ See `AUTHORING.md`. The short version: each component is one folder under `src/c
 - **Mermaid requires internet** on first render (CDN load). Falls back to showing the raw diagram source if offline.
 - **No Shadow DOM.** Embedding a richdoc fragment inside an unrelated page may leak styles. The framework assumes the richdoc occupies the whole page.
 - **Browser-only consumer.** Use markdown if the doc must render on GitHub, in plaintext email, or in a CLI pager.
-- **Theme override.** Set `<html data-theme="light">` or `data-theme="dark"`, or `<rd-page theme="…">`. Auto follows system preference.
+- **Theming.** The default theme is `editorial-warm` (warm paper, terracotta accent, Fraunces + Inter). Mode follows the system unless overridden. Override at the document level with `<rd-page theme="editorial-warm" mode="dark">`, or globally with `<html data-theme="…" data-mode="…">`. To add another theme, see `AUTHORING.md` → *Adding a theme*.
+- **Fonts.** Fraunces (display) and Inter (body) are loaded from Google Fonts at render time. Offline docs fall back to a system serif + sans stack — still readable, but not the editorial look. Self-hosting is intentionally not the default; the framework's promise of "one HTML file plus two assets" stays intact.

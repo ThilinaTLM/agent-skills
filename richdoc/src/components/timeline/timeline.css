@@ -41,13 +41,13 @@ rd-event > ._rd-event-meta {
 }
 rd-event > ._rd-event-meta > ._rd-event-date {
 	font-family: var(--rd-font-mono);
-	font-size: 0.82rem;
+	font-size: var(--rd-text-sm);
 	color: var(--rd-fg-muted);
-	font-weight: 600;
-	letter-spacing: 0.02em;
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-snug);
 }
 rd-event > ._rd-event-meta > ._rd-event-title {
-	font-weight: 600;
+	font-weight: var(--rd-weight-semibold);
 	color: var(--rd-fg);
 }
 rd-event > :last-child {

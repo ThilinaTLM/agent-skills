@@ -2,7 +2,7 @@ rd-mermaid {
 	display: block;
 	background: var(--rd-bg-elev);
 	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius);
+	border-radius: var(--rd-radius-md);
 	padding: var(--rd-space-4);
 	margin: 0 0 var(--rd-space-4);
 	overflow-x: auto;
@@ -15,7 +15,7 @@ rd-mermaid svg {
 rd-mermaid > ._rd-mermaid-fallback {
 	text-align: left;
 	font-family: var(--rd-font-mono);
-	font-size: 0.85rem;
+	font-size: var(--rd-text-sm);
 	color: var(--rd-fg-muted);
 	white-space: pre-wrap;
 }

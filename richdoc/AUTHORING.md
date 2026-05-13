@@ -89,7 +89,7 @@ If a component contributes multiple custom elements (e.g. `rd-tabs` + `rd-tab`),
 
 ### `card.css` — styles
 
-Everything must be scoped under the tag selector. No global classes. No `*` selectors. Internal classes start with `_rd-`. Use CSS variables from `src/styles/tokens.css` — never literal colors or hard-coded pixel sizes for spacing.
+Everything must be scoped under the tag selector. No global classes. No `*` selectors. Internal classes start with `_rd-`. **Read tokens from `src/styles/tokens.css` only** — no literal colors, no literal `font-size`/`font-weight`/`line-height`/`letter-spacing`, no literal spacing or radius numbers. Em-relative values (`0.7em`, `1.6em`) are fine where the size must scale with surrounding text (icons, ornaments). Every other size must come from a `--rd-*` token. This is what makes themes work.
 
 ```css
 rd-card {
@@ -133,6 +133,41 @@ That's it. Run `bun run build` (or `richdoc build`). The build:
 - Regenerates `assets/schema.json` from the schema-registry.
 - Rewrites `assets/version.txt` with the new bundle hash.
 - Validates `examples/showcase.html` against the new schema and fails if it regressed.
+
+## Adding a theme
+
+Themes are pure data. Adding one does not require any JS or component changes.
+
+1. Append two blocks to `src/styles/tokens.css` under the existing `editorial-warm` blocks:
+
+   ```css
+   /* my-theme — LIGHT */
+   :root[data-theme="my-theme"],
+   :root[data-theme="my-theme"][data-mode="light"] {
+     --rd-bg: …;
+     /* full color + shadow palette — mirror the structure of editorial-warm */
+   }
+
+   /* my-theme — DARK */
+   :root[data-theme="my-theme"][data-mode="dark"] {
+     /* full dark palette */
+   }
+   ```
+
+   You must provide **every** color token (`--rd-bg`, `--rd-fg`, all status colors with `*-fg` and `*-soft` variants, etc.). Missing tokens fall through to the default `:root` block (editorial-warm light), producing visual inconsistency.
+
+2. Add the theme name to the `theme` enum in `src/components/page/page.schema.ts`:
+
+   ```ts
+   enums: {
+     theme: ["editorial-warm", "my-theme"],
+     mode:  ["light", "dark", "auto"],
+   },
+   ```
+
+3. Run `bun run build`. Authors can now opt in with `<rd-page theme="my-theme">` or `<html data-theme="my-theme">`.
+
+Typography tokens (font stacks, sizes, weights, leadings, trackings) and structural tokens (spacing, radius, layout widths) are theme-agnostic. If you want a theme with different fonts, override `--rd-font-display` and `--rd-font-body` inside the theme's block alongside the colors. Update the top-of-file Google Fonts `@import` if the new family isn't loaded yet.
 
 ## Updating an existing component
 

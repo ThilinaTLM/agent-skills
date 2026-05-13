@@ -4,7 +4,7 @@ rd-figure {
 	padding: var(--rd-space-4);
 	background: var(--rd-bg-elev);
 	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius);
+	border-radius: var(--rd-radius-md);
 	text-align: center;
 }
 rd-figure > img,
@@ -25,7 +25,8 @@ rd-figure > ._rd-figure-cap {
 	display: block;
 	text-align: center;
 	margin-top: var(--rd-space-3);
-	font-size: 0.88rem;
+	font-size: var(--rd-text-sm);
 	color: var(--rd-fg-muted);
 	font-style: italic;
+	font-family: var(--rd-font-display);
 }

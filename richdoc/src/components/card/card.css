@@ -2,7 +2,7 @@ rd-card {
 	display: block;
 	background: var(--rd-bg-elev);
 	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius);
+	border-radius: var(--rd-radius-md);
 	box-shadow: var(--rd-shadow-sm);
 	padding: var(--rd-space-4) var(--rd-space-5);
 	margin: 0 0 var(--rd-space-4);
@@ -14,8 +14,8 @@ rd-cols > rd-card {
 	height: 100%;
 }
 rd-card > ._rd-card-header {
-	font-weight: 600;
-	font-size: 1.05rem;
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-lg);
 	color: var(--rd-fg);
 	margin: 0 0 var(--rd-space-3);
 	padding-bottom: var(--rd-space-2);

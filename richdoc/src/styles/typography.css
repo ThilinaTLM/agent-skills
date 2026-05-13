@@ -1,4 +1,12 @@
-/* Typography for plain prose inside an <rd-page>. */
+/* Typography for plain prose inside an <rd-page>.
+ *
+ * Headings use --rd-font-display (Fraunces). Body, lists, tables, and code
+ * pick up --rd-font-body via inheritance from <body> (set in reset.css),
+ * except <code>/<pre>/<th> which override.
+ *
+ * Every size, weight, leading and tracking flows from a token. Component
+ * CSS may reference the same tokens but must not introduce new literals.
+ */
 
 rd-page h1,
 rd-page h2,
@@ -6,30 +14,44 @@ rd-page h3,
 rd-page h4,
 rd-page h5,
 rd-page h6 {
-	font-weight: 650;
-	line-height: 1.25;
-	letter-spacing: -0.01em;
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	line-height: var(--rd-leading-tight);
+	letter-spacing: var(--rd-tracking-snug);
 	margin: var(--rd-space-6) 0 var(--rd-space-3);
 	color: var(--rd-fg);
 }
 rd-page h1 {
-	font-size: 2.25rem;
+	font-size: var(--rd-text-4xl);
+	letter-spacing: var(--rd-tracking-tight);
 	margin-top: 0;
-	letter-spacing: -0.02em;
+	font-variation-settings: "opsz" 144;
 }
 rd-page h2 {
-	font-size: 1.5rem;
+	font-size: var(--rd-text-2xl);
+	line-height: var(--rd-leading-snug);
 	padding-bottom: var(--rd-space-2);
 	border-bottom: 1px solid var(--rd-border);
+	font-variation-settings: "opsz" 72;
 }
 rd-page h3 {
-	font-size: 1.2rem;
+	font-size: var(--rd-text-xl);
+	line-height: var(--rd-leading-snug);
+	font-variation-settings: "opsz" 32;
 }
 rd-page h4 {
-	font-size: 1rem;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-sm);
+	font-weight: var(--rd-weight-semibold);
+	line-height: var(--rd-leading-snug);
 	color: var(--rd-fg-muted);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rd-tracking-wide);
+}
+rd-page h5,
+rd-page h6 {
+	font-size: var(--rd-text-base);
+	font-weight: var(--rd-weight-semibold);
 }
 
 rd-page p {
@@ -70,11 +92,11 @@ rd-page code {
 
 rd-page pre {
 	font-family: var(--rd-font-mono);
-	font-size: 0.9rem;
-	line-height: 1.55;
+	font-size: var(--rd-text-sm);
+	line-height: var(--rd-leading-normal);
 	background: var(--rd-bg-sunken);
 	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius);
+	border-radius: var(--rd-radius-md);
 	padding: var(--rd-space-4);
 	overflow-x: auto;
 	margin: 0 0 var(--rd-space-4);
@@ -87,6 +109,9 @@ rd-page pre code {
 }
 
 rd-page blockquote {
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-md);
+	line-height: var(--rd-leading-relaxed);
 	margin: 0 0 var(--rd-space-4);
 	padding: var(--rd-space-2) var(--rd-space-4);
 	border-left: 3px solid var(--rd-border-strong);
@@ -104,7 +129,7 @@ rd-page table {
 	width: 100%;
 	border-collapse: collapse;
 	margin: 0 0 var(--rd-space-4);
-	font-size: 0.95rem;
+	font-size: var(--rd-text-sm);
 }
 rd-page th,
 rd-page td {
@@ -114,7 +139,7 @@ rd-page td {
 	vertical-align: top;
 }
 rd-page th {
-	font-weight: 600;
+	font-weight: var(--rd-weight-semibold);
 	background: var(--rd-bg-sunken);
 }
 

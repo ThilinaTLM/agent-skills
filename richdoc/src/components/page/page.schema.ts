@@ -2,7 +2,11 @@ import type { TagSpec } from "../../lib/types.ts";
 
 export const tagName = "rd-page";
 export const spec: TagSpec = {
-	optional: ["theme"],
+	optional: ["theme", "mode"],
 	customChildren: "any",
-	enums: { theme: ["light", "dark", "auto"] },
+	enums: {
+		// Extend this list when adding a theme — see AUTHORING.md.
+		theme: ["editorial-warm"],
+		mode: ["light", "dark", "auto"],
+	},
 };

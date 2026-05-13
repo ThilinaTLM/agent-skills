@@ -8,7 +8,7 @@ rd-callout {
 	position: relative;
 }
 rd-callout > ._rd-callout-title {
-	font-weight: 600;
+	font-weight: var(--rd-weight-semibold);
 	display: flex;
 	align-items: center;
 	gap: var(--rd-space-2);
@@ -16,7 +16,7 @@ rd-callout > ._rd-callout-title {
 	color: var(--rd-fg);
 }
 rd-callout > ._rd-callout-title > ._rd-callout-icon {
-	font-size: 1rem;
+	font-size: var(--rd-text-base);
 	flex: 0 0 auto;
 }
 rd-callout > :last-child {

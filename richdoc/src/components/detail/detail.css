@@ -2,7 +2,7 @@ rd-detail {
 	display: block;
 	margin: 0 0 var(--rd-space-4);
 	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius);
+	border-radius: var(--rd-radius-md);
 	background: var(--rd-bg-elev);
 	overflow: hidden;
 }
@@ -12,7 +12,7 @@ rd-detail > details {
 rd-detail > details > ._rd-detail-summary {
 	cursor: pointer;
 	padding: var(--rd-space-3) var(--rd-space-4);
-	font-weight: 600;
+	font-weight: var(--rd-weight-semibold);
 	color: var(--rd-fg);
 	background: var(--rd-bg-sunken);
 	user-select: none;

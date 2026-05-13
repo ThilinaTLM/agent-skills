@@ -1,34 +1,69 @@
-/* Tokens — colors, spacing, type, shadows. All themable via CSS variables. */
+/* Tokens — the entire richdoc design system.
+ *
+ * Three layers:
+ *   1. Font import (must come first so all variable-font axes resolve).
+ *   2. Theme-agnostic tokens: typography scale, spacing, radius, layout.
+ *      These never change between themes or modes.
+ *   3. Theme palettes: color + shadow. The unprefixed :root block is
+ *      editorial-warm light (the default). Named selectors override when
+ *      <html data-theme=…> or <html data-mode=…> is set.
+ *
+ * Conventions:
+ *   - All tokens carry the --rd- prefix.
+ *   - Component CSS must read from tokens — no literal sizes or colors.
+ *   - Use color-mix(in oklab, ...) for runtime alpha; do not hand-roll
+ *     channel-based color tricks.
+ *   - To add a theme: append two blocks (light + dark) below and add the
+ *     name to the theme enum in src/components/page/page.schema.ts. See
+ *     AUTHORING.md → "Adding a theme".
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@100..900&display=swap");
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Layer 2 — theme-agnostic tokens
+   ────────────────────────────────────────────────────────────────────────── */
 
 :root {
-	--rd-bg: #fbfaf7;
-	--rd-bg-elev: #ffffff;
-	--rd-bg-sunken: #f3f1ec;
-	--rd-fg: #1c1a17;
-	--rd-fg-muted: #6a655d;
-	--rd-fg-subtle: #908a80;
-	--rd-border: #e6e2d8;
-	--rd-border-strong: #cfc9bb;
+	/* Font stacks. Body uses Inter with a strong system fallback so
+	   offline file:// docs still render coherently. */
+	--rd-font-display: "Fraunces", ui-serif, Georgia, Cambria,
+		"Times New Roman", serif;
+	--rd-font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
+		"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--rd-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+		"Liberation Mono", monospace;
 
-	--rd-accent: #b25a18;
-	--rd-accent-fg: #ffffff;
-	--rd-accent-soft: #f5e6d6;
+	/* Type scale — rem-based modular scale. */
+	--rd-text-xs: 0.75rem;
+	--rd-text-sm: 0.875rem;
+	--rd-text-base: 1rem;
+	--rd-text-md: 1.0625rem;
+	--rd-text-lg: 1.125rem;
+	--rd-text-xl: 1.25rem;
+	--rd-text-2xl: 1.5rem;
+	--rd-text-3xl: 1.875rem;
+	--rd-text-4xl: 2.5rem;
 
-	--rd-info: #1f6feb;
-	--rd-info-soft: #e3edfc;
-	--rd-success: #1f8a4c;
-	--rd-success-soft: #e0f1e5;
-	--rd-warn: #b8860b;
-	--rd-warn-soft: #faf0d1;
-	--rd-danger: #c2362b;
-	--rd-danger-soft: #fae3e1;
-	--rd-note: #6f42c1;
-	--rd-note-soft: #ede4fa;
+	/* Weights — map to nearest variable-font value. */
+	--rd-weight-normal: 400;
+	--rd-weight-medium: 500;
+	--rd-weight-semibold: 600;
+	--rd-weight-bold: 700;
 
-	--rd-radius: 10px;
-	--rd-radius-sm: 6px;
-	--rd-radius-lg: 16px;
+	/* Line height ratios. */
+	--rd-leading-tight: 1.2;
+	--rd-leading-snug: 1.35;
+	--rd-leading-normal: 1.55;
+	--rd-leading-relaxed: 1.7;
 
+	/* Letter spacing. */
+	--rd-tracking-tight: -0.02em;
+	--rd-tracking-snug: -0.01em;
+	--rd-tracking-normal: 0;
+	--rd-tracking-wide: 0.05em;
+
+	/* Spacing scale — keep unchanged for backwards compatibility. */
 	--rd-space-1: 4px;
 	--rd-space-2: 8px;
 	--rd-space-3: 12px;
@@ -38,75 +73,147 @@
 	--rd-space-7: 48px;
 	--rd-space-8: 64px;
 
-	--rd-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-		"Helvetica Neue", Arial, sans-serif;
-	--rd-font-serif: ui-serif, Georgia, Cambria, "Times New Roman", serif;
-	--rd-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-		"Liberation Mono", monospace;
+	/* Radius scale. */
+	--rd-radius-sm: 6px;
+	--rd-radius-md: 10px;
+	--rd-radius-lg: 16px;
 
+	/* Layout. */
 	--rd-max-width: 960px;
-	--rd-shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.04),
-		0 1px 1px rgba(20, 18, 14, 0.03);
-	--rd-shadow: 0 2px 6px rgba(20, 18, 14, 0.06),
-		0 1px 2px rgba(20, 18, 14, 0.04);
+	--rd-max-width-prose: 680px;
+	--rd-max-width-wide: 1120px;
 }
 
-[data-theme="dark"] {
-	--rd-bg: #14130f;
-	--rd-bg-elev: #1c1a16;
-	--rd-bg-sunken: #0f0e0b;
+/* ──────────────────────────────────────────────────────────────────────────
+   Layer 3 — themes
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* editorial-warm — LIGHT (default).
+   Applies when no data-theme is set, or when data-theme="editorial-warm"
+   without an explicit dark mode. */
+:root,
+:root[data-theme="editorial-warm"],
+:root[data-theme="editorial-warm"][data-mode="light"] {
+	--rd-bg: #fbfaf7;
+	--rd-bg-elev: #ffffff;
+	--rd-bg-sunken: #f3f1ec;
+	--rd-fg: #1c1a17;
+	--rd-fg-muted: #6a655d;
+	--rd-fg-subtle: #908a80;
+	--rd-border: #e6e2d8;
+	--rd-border-strong: #cfc9bb;
+
+	--rd-accent: #a8501a;
+	--rd-accent-fg: #ffffff;
+	--rd-accent-soft: #f4e3cf;
+
+	--rd-info: #1f6feb;
+	--rd-info-fg: #ffffff;
+	--rd-info-soft: #e3edfc;
+	--rd-success: #1f8a4c;
+	--rd-success-fg: #ffffff;
+	--rd-success-soft: #e0f1e5;
+	--rd-warn: #b8860b;
+	--rd-warn-fg: #ffffff;
+	--rd-warn-soft: #faf0d1;
+	--rd-danger: #c2362b;
+	--rd-danger-fg: #ffffff;
+	--rd-danger-soft: #fae3e1;
+	--rd-note: #6f42c1;
+	--rd-note-fg: #ffffff;
+	--rd-note-soft: #ede4fa;
+
+	--rd-ring: color-mix(in oklab, var(--rd-accent) 60%, transparent);
+
+	--rd-shadow-xs: 0 1px 1px rgba(20, 18, 14, 0.04);
+	--rd-shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.04),
+		0 1px 1px rgba(20, 18, 14, 0.03);
+	--rd-shadow-md: 0 2px 6px rgba(20, 18, 14, 0.06),
+		0 1px 2px rgba(20, 18, 14, 0.04);
+	--rd-shadow-lg: 0 8px 24px rgba(20, 18, 14, 0.08),
+		0 2px 6px rgba(20, 18, 14, 0.05);
+}
+
+/* editorial-warm — DARK. Warm brown-black, not neutral, to keep the
+   theme identity in dark mode. Applies on explicit data-mode="dark"
+   regardless of theme (since editorial-warm is the only theme today). */
+:root[data-mode="dark"],
+:root[data-theme="editorial-warm"][data-mode="dark"] {
+	--rd-bg: #1a1612;
+	--rd-bg-elev: #221d18;
+	--rd-bg-sunken: #14110d;
 	--rd-fg: #eee8da;
 	--rd-fg-muted: #a8a294;
 	--rd-fg-subtle: #7a7466;
-	--rd-border: #2c2924;
-	--rd-border-strong: #3d3932;
+	--rd-border: #2f2a24;
+	--rd-border-strong: #423c33;
 
 	--rd-accent: #e08a3c;
-	--rd-accent-fg: #14130f;
+	--rd-accent-fg: #1a1612;
 	--rd-accent-soft: #3a2614;
 
 	--rd-info: #7aa7f0;
+	--rd-info-fg: #0f0c08;
 	--rd-info-soft: #1a2640;
 	--rd-success: #6ec083;
+	--rd-success-fg: #0f0c08;
 	--rd-success-soft: #142a1c;
 	--rd-warn: #d9b25a;
+	--rd-warn-fg: #0f0c08;
 	--rd-warn-soft: #2e2614;
 	--rd-danger: #e88078;
+	--rd-danger-fg: #0f0c08;
 	--rd-danger-soft: #321714;
 	--rd-note: #b09ce0;
+	--rd-note-fg: #0f0c08;
 	--rd-note-soft: #221a36;
 
+	--rd-ring: color-mix(in oklab, var(--rd-accent) 60%, transparent);
+
+	--rd-shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.3);
 	--rd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-	--rd-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	--rd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+	--rd-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
+/* System-preference fallback — applies only when no explicit data-mode
+   is set on <html>. data-mode="light" or data-mode="dark" wins. */
 @media (prefers-color-scheme: dark) {
-	:root:not([data-theme="light"]) {
-		--rd-bg: #14130f;
-		--rd-bg-elev: #1c1a16;
-		--rd-bg-sunken: #0f0e0b;
+	:root:not([data-mode="light"]):not([data-mode="dark"]) {
+		--rd-bg: #1a1612;
+		--rd-bg-elev: #221d18;
+		--rd-bg-sunken: #14110d;
 		--rd-fg: #eee8da;
 		--rd-fg-muted: #a8a294;
 		--rd-fg-subtle: #7a7466;
-		--rd-border: #2c2924;
-		--rd-border-strong: #3d3932;
+		--rd-border: #2f2a24;
+		--rd-border-strong: #423c33;
 
 		--rd-accent: #e08a3c;
-		--rd-accent-fg: #14130f;
+		--rd-accent-fg: #1a1612;
 		--rd-accent-soft: #3a2614;
 
 		--rd-info: #7aa7f0;
+		--rd-info-fg: #0f0c08;
 		--rd-info-soft: #1a2640;
 		--rd-success: #6ec083;
+		--rd-success-fg: #0f0c08;
 		--rd-success-soft: #142a1c;
 		--rd-warn: #d9b25a;
+		--rd-warn-fg: #0f0c08;
 		--rd-warn-soft: #2e2614;
 		--rd-danger: #e88078;
+		--rd-danger-fg: #0f0c08;
 		--rd-danger-soft: #321714;
 		--rd-note: #b09ce0;
+		--rd-note-fg: #0f0c08;
 		--rd-note-soft: #221a36;
 
+		--rd-ring: color-mix(in oklab, var(--rd-accent) 60%, transparent);
+
+		--rd-shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.3);
 		--rd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-		--rd-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+		--rd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+		--rd-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
 	}
 }

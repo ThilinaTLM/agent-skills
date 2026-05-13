@@ -3,13 +3,15 @@ rd-section {
 	margin-bottom: var(--rd-space-6);
 }
 rd-section > ._rd-section-title {
-	font-size: 1.5rem;
-	font-weight: 650;
-	letter-spacing: -0.01em;
-	line-height: 1.25;
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-2xl);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-snug);
+	line-height: var(--rd-leading-snug);
 	margin: var(--rd-space-6) 0 var(--rd-space-3);
 	padding-bottom: var(--rd-space-2);
 	border-bottom: 1px solid var(--rd-border);
+	font-variation-settings: "opsz" 72;
 }
 rd-section:first-child > ._rd-section-title {
 	margin-top: 0;
