@@ -46,8 +46,10 @@ async function main(): Promise<void> {
 
 	// Codegen must run before the bundle so the generated names file is
 	// available to icon.schema.ts when esbuild resolves imports.
-	const iconCount = await generateLucideNames();
-	console.log(`  generated lucide names file (${iconCount} icons)`);
+	const iconNames = await generateLucideNames();
+	console.log(`  generated lucide names file (${iconNames.length} icons)`);
+	await generateIconsMarkdown(iconNames);
+	console.log(`  generated ICONS.md (${iconNames.length} icons)`);
 
 	artifacts.push(await buildJs());
 	artifacts.push(await buildCss());
@@ -84,7 +86,7 @@ async function main(): Promise<void> {
  * The output file is gitignored — it regenerates from npm install +
  * `LUCIDE_VERSION` and is never edited by hand.
  */
-async function generateLucideNames(): Promise<number> {
+async function generateLucideNames(): Promise<string[]> {
 	const iconsDir = resolve(ROOT, "node_modules", "lucide-static", "icons");
 	if (!existsSync(iconsDir)) {
 		throw new Error("lucide-static is not installed. Run `pnpm install` before `pnpm build`.");
@@ -105,7 +107,60 @@ export type LucideName = (typeof LUCIDE_NAMES)[number];
 `;
 	const outPath = resolve(SRC_DIR, "components", "icon", "lucide-names.generated.ts");
 	await writeFile(outPath, out);
-	return names.length;
+	return names;
+}
+
+/**
+ * Emit `richdoc/ICONS.md` — the human- and LLM-readable catalogue of every
+ * valid `<rd-icon name="…">` value at the pinned Lucide version. Linked from
+ * `SKILL.md` so authors don't have to spelunk the schema enum or run a CLI to
+ * discover available glyphs. Committed to the repo (not gitignored) so it
+ * renders on GitHub and is reachable by anyone reading the skill.
+ */
+async function generateIconsMarkdown(names: string[]): Promise<void> {
+	const { LUCIDE_VERSION } = await import("./src/components/icon/lucide-version.ts");
+	const lines: string[] = [];
+	lines.push(`# Lucide icons available to \`<rd-icon name="…">\``);
+	lines.push("");
+	lines.push(
+		`Auto-generated from \`lucide-static@${LUCIDE_VERSION}\` — do not edit. Re-run`,
+	);
+	lines.push(
+		"`pnpm build` from `richdoc/richdoc-lib/` after bumping the version pin in",
+	);
+	lines.push("`src/components/icon/lucide-version.ts`.");
+	lines.push("");
+	lines.push("Inline a glyph anywhere in a richdoc with:");
+	lines.push("");
+	lines.push("```html");
+	lines.push('<rd-icon name="alert-triangle"></rd-icon>');
+	lines.push("```");
+	lines.push("");
+	lines.push(
+		"Optional attributes: `size` (`sm` / `md` / `lg`, default `md`), `label`",
+	);
+	lines.push("(sets `aria-label` + `<title>` for meaningful icons).");
+	lines.push("");
+	lines.push(
+		"All names below are loaded lazily from the Lucide CDN on first reference",
+	);
+	lines.push(
+		"and cached. Framework chrome (callouts, checklists, banners, …) prewarms",
+	);
+	lines.push(
+		"its own glyphs at script boot so first paint has no flash. Offline or on",
+	);
+	lines.push(
+		"a failed fetch, the element renders an empty slot of the right size and",
+	);
+	lines.push("is marked `data-rd-icon-missing`.");
+	lines.push("");
+	lines.push(`## Names (${names.length})`);
+	lines.push("");
+	for (const n of names) lines.push(`- \`${n}\``);
+	lines.push("");
+	const outPath = resolve(ROOT, "..", "ICONS.md");
+	await writeFile(outPath, lines.join("\n"));
 }
 
 async function buildJs(): Promise<BuildArtifact> {

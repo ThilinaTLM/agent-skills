@@ -29,7 +29,6 @@ import * as gallery from "./components/gallery/gallery.schema.ts";
 import * as hero from "./components/hero/hero.schema.ts";
 import * as icon from "./components/icon/icon.schema.ts";
 import * as kv from "./components/kv/kv.schema.ts";
-import * as margin from "./components/margin/margin.schema.ts";
 import * as math from "./components/math/math.schema.ts";
 import * as mermaid from "./components/mermaid/mermaid.schema.ts";
 import * as page from "./components/page/page.schema.ts";
@@ -82,7 +81,6 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 	{ tagName: update.tagName, spec: update.spec },
 	{ tagName: quote.tagName, spec: quote.spec },
 	{ tagName: footnote.tagName, spec: footnote.spec },
-	{ tagName: margin.tagName, spec: margin.spec },
 	{ tagName: swatch.tagName, spec: swatch.spec },
 
 	// Comparison & code

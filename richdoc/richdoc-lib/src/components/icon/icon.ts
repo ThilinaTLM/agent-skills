@@ -1,13 +1,14 @@
 import { type Upgradeable, define } from "../../lib/dom.ts";
-import { isCoreIcon, loadIconInner } from "./icon-loader.ts";
+import { loadIconInner, prewarmFrameworkIcons } from "./icon-loader.ts";
 import { spec, tagName } from "./icon.schema.ts";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
- * Create the outer <svg> shell with the editorial stroke settings.
- * Empty by default — `connectedCallback` either fills it synchronously
- * (core icon) or asynchronously after the CDN fetch resolves.
+ * Create the outer <svg> shell with the editorial stroke settings. The shell
+ * is appended synchronously so the element occupies its final size on first
+ * paint; `connectedCallback` fills in the inner geometry once the CDN fetch
+ * resolves (or marks the element missing on failure).
  */
 function makeShell(label: string | null): SVGSVGElement {
 	const svg = document.createElementNS(SVG_NS, "svg");
@@ -42,21 +43,13 @@ class RdIcon extends HTMLElement implements Upgradeable {
 		this.appendChild(svg);
 		if (!name) return;
 
-		if (isCoreIcon(name)) {
-			// Synchronous path: no layout shift, no async flash.
-			const inner = await loadIconInner(name);
-			if (inner) svg.insertAdjacentHTML("beforeend", inner);
-			return;
-		}
-
-		// Lazy CDN path. Re-check `_upgraded`/parent after await so a
-		// disconnected element doesn't end up with mismatched markup.
 		const inner = await loadIconInner(name);
 		if (!inner) {
 			this.setAttribute("data-rd-icon-missing", "");
 			return;
 		}
-		// Only mutate if we're still hosting the original shell.
+		// Guard: only mutate if we're still hosting the original shell — the
+		// element may have been replaced or re-rendered while awaiting.
 		if (this.firstChild === svg) {
 			svg.insertAdjacentHTML("beforeend", inner);
 		}
@@ -65,5 +58,9 @@ class RdIcon extends HTMLElement implements Upgradeable {
 
 export function register(): void {
 	define(tagName, RdIcon);
+	// Fire framework-internal icon fetches the moment richdoc.js boots, so the
+	// CDN round-trips overlap with the rest of the document parse and almost
+	// always resolve before the consuming component upgrades.
+	prewarmFrameworkIcons();
 }
 export { spec, tagName };

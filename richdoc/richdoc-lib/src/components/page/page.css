@@ -40,3 +40,32 @@ rd-page[data-rd-entered] > [data-rd-enter] {
 	opacity: 1;
 	transform: none;
 }
+
+/* TOC rail reservation.
+ *
+ * When the page contains an <rd-toc>, switch to a two-column grid on
+ * wide viewports so the sticky rail has a column to live in. The host
+ * <rd-toc> is `display: contents` by default (so it paints nothing);
+ * here we flip it back to a block so it can be a grid child and its
+ * inner ._rd-toc-rail can establish a `position: sticky` context.
+ *
+ * Below 1024px the page is single-column as before; the narrow-mode bar
+ * inside rd-toc takes over via `position: fixed`. */
+@media (min-width: 1024px) {
+	rd-page:has(rd-toc) {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 16rem;
+		column-gap: var(--rd-space-7);
+		align-items: start;
+	}
+	rd-page:has(rd-toc) > rd-toc {
+		display: block;
+		grid-column: 2;
+		grid-row: 1 / 9999;
+		height: 100%;
+	}
+	rd-page:has(rd-toc) > :not(rd-toc) {
+		grid-column: 1;
+		min-width: 0;
+	}
+}

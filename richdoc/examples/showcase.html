@@ -443,8 +443,8 @@
 			title="Adopt Observable Plot for charting">
 			<p>Bundle size is not a concern for documentation artefacts. Plot's grammar-of-graphics defaults match the editorial voice better than anything we'd hand-roll, and one library covers every chart type plus sparklines.</p>
 		</rd-decision>
-		<rd-decision status="proposed" id="ADR-015" date="2026-05-14" title="Inline-margin sidenotes on wide viewports">
-			<p>Tufte-style margin notes float into the page gutter above 1024px and collapse to a tap-to-open tooltip below the breakpoint. Already implemented as <code>rd-margin</code>.</p>
+		<rd-decision status="rejected" id="ADR-015" date="2026-05-14" title="Tufte-style margin notes as a separate component">
+			<p>A floating-gutter sidenote (<code>rd-margin</code>) was prototyped but rejected: the page column is centred at 1280px with no reserved gutter, so the negative-margin float overflowed off-screen on 1024–1500px viewports — the exact range the wide-mode media query targeted. <code>rd-footnote</code> already provides an inline marker with a hover/focus tooltip preview plus a numbered entry collected at the foot of the page, which covers the same authoring intent on every viewport.</p>
 		</rd-decision>
 		<rd-decision status="superseded" id="ADR-007" date="2026-02-01" title="Original hand-rolled SVG chart approach">
 			<p>Superseded by ADR-014.</p>
@@ -457,7 +457,7 @@
 	<rd-section title="Status updates">
 		<p>Dated reverse-chron entries for changelogs, release notes, status reports. The kind glyph and tint differ between release / change / note.</p>
 		<rd-update date="2026-05-14" kind="release" author="platform team" title="v0.4 — expanded vocabulary">
-			<p>Phase 1 expanded the framework's structural vocabulary — hero, banner, progress, steps, pros/cons, decision records, updates, tree, terminal sessions, API blocks, rubrics, swatches, and margin notes all landed in one release.</p>
+			<p>Phase 1 expanded the framework's structural vocabulary — hero, banner, progress, steps, pros/cons, decision records, updates, tree, terminal sessions, API blocks, rubrics, and swatches all landed in one release.</p>
 		</rd-update>
 		<rd-update date="2026-05-12" kind="change" author="dana" title="Schema groups reorganised">
 			<p>Introduced <em>Decision &amp; planning</em> and <em>Reference</em> groupings in the schema registry. Mirrored in the SKILL.md tag tables.</p>
@@ -577,7 +577,7 @@ copied richdoc.js  → docs/richdoc.js</rd-output>
 	<rd-section title="Citations and references">
 		<p>Bibliography support follows the footnote pattern but with square-bracketed numbers and a separate collector. Authors write <code>rd-cite</code> markers inline<rd-cite key="tufte2001"></rd-cite> and <code>rd-ref</code> entries anywhere in the doc<rd-cite key="bringhurst2004"></rd-cite>. The system numbers citations in document order, builds the bibliography below, and shows the entry as a tooltip when hovering a marker.</p>
 		<p>Multiple cites to the same key share a number<rd-cite key="tufte2001"></rd-cite>. Entries not cited still appear in the bibliography, after the cited ones<rd-cite key="strunk2000"></rd-cite>.</p>
-		<rd-ref key="tufte2001" author="Tufte, Edward R." title="The Visual Display of Quantitative Information" publisher="Graphics Press" date="2001" url="https://www.edwardtufte.com/tufte/books_vdqi">Reference work for editorial data graphics; cited in this doc for margin notes and sparkline philosophy.</rd-ref>
+		<rd-ref key="tufte2001" author="Tufte, Edward R." title="The Visual Display of Quantitative Information" publisher="Graphics Press" date="2001" url="https://www.edwardtufte.com/tufte/books_vdqi">Reference work for editorial data graphics; cited in this doc for sparkline philosophy and the footnote-as-aside pattern.</rd-ref>
 		<rd-ref key="bringhurst2004" author="Bringhurst, Robert" title="The Elements of Typographic Style" publisher="Hartley &amp; Marks" date="2004"></rd-ref>
 		<rd-ref key="strunk2000" author="Strunk, William and White, E.B." title="The Elements of Style" date="2000"></rd-ref>
 		<rd-ref key="hochuli2008" author="Hochuli, Jost" title="Detail in Typography" date="2008">Uncited — still appears in the bibliography after the cited works.</rd-ref>
@@ -666,10 +666,7 @@ West,Add-on,11
 		<rd-embed src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="YouTube embed example" caption="YouTube embeds use lite-youtube for fast initial paint."></rd-embed>
 	</rd-section>
 
-	<rd-section title="Margin notes and spoilers">
-		<p>Two affordances for content that should not interrupt the main reading line.</p>
-		<rd-margin>Margin notes float into the page gutter on viewports ≥ 1024 px and collapse to an inline tooltip marker below that — tap it to read the aside.</rd-margin>
-		<p>Margin notes — sometimes called sidenotes, after Tufte — give you a place to slip a clarifying remark next to the prose without breaking the paragraph. Use them where a footnote would feel too far away.</p>
+	<rd-section title="Spoilers">
 		<p>Spoilers use <code>rd-detail variant="reveal"</code> — content hides behind an eye-icon button until the reader is ready. Useful for runbook solutions, exam answers, or any "think before you peek" pattern.</p>
 		<rd-detail summary="Show the answer" variant="reveal">
 			<p>The same component can also wrap multiple paragraphs, callouts, or even code blocks — anything that should not be eye-deep on first read.</p>

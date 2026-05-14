@@ -1,19 +1,19 @@
 {
-  "hash": "c04b66712437",
-  "builtAt": "2026-05-14T20:46:59.165Z",
+  "hash": "3ed596dd827f",
+  "builtAt": "2026-05-14T21:19:11.618Z",
   "dev": false,
   "files": [
     {
       "path": "assets/richdoc.js",
-      "bytes": 67927
+      "bytes": 67593
     },
     {
       "path": "assets/richdoc.css",
-      "bytes": 95145
+      "bytes": 97662
     },
     {
       "path": "assets/schema.json",
-      "bytes": 34702
+      "bytes": 34611
     }
   ]
 }

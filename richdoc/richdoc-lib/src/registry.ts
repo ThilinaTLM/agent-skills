@@ -27,7 +27,6 @@ import * as gallery from "./components/gallery/gallery.ts";
 import * as hero from "./components/hero/hero.ts";
 import * as icon from "./components/icon/icon.ts";
 import * as kv from "./components/kv/kv.ts";
-import * as margin from "./components/margin/margin.ts";
 import * as math from "./components/math/math.ts";
 import * as mermaid from "./components/mermaid/mermaid.ts";
 import * as page from "./components/page/page.ts";
@@ -90,7 +89,6 @@ export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	gallery.register,
 	embed.register,
 	checklist.register,
-	margin.register,
 	api.register,
 	// tooltip must register before footnote so the footnote marker can
 	// rely on the shared tooltip layer being available at upgrade time.

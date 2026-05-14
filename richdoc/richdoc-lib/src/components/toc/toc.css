@@ -1,21 +1,34 @@
+/* rd-toc — floating, sticky table of contents.
+ *
+ * Two responsive presentations driven by the same DOM:
+ *   • Wide  (≥ 1024px): right-hand sticky rail beside the content column.
+ *                       Page becomes a 2-col grid via :has(rd-toc) (see
+ *                       page.css). The rail is borderless — only a 1px
+ *                       hairline rule on the left, with an accent fill
+ *                       (`--rd-toc-progress`) growing top→down with scroll.
+ *   • Narrow (< 1024px): sticky top bar that fades in once the hero has
+ *                       scrolled past. Tapping the bar opens a popover with
+ *                       the full tree. A 2px accent strip along the bar's
+ *                       bottom edge mirrors the rail's progress fill.
+ *
+ * The host element is `display: contents` so it never paints itself; the
+ * rail / bar / popover children carry all the styling. The grid override
+ * in page.css flips the host back to `display: block` when it's a grid
+ * child, so position: sticky on the rail has a sticking context.
+ */
+
 rd-toc {
-	display: block;
-	background: var(--rd-panel-bg);
-	border: 1px solid var(--rd-panel-border);
-	border-radius: var(--rd-panel-radius);
-	padding: var(--rd-space-4) var(--rd-space-5);
-	margin: 0 0 var(--rd-space-6);
-	font-size: var(--rd-text-sm);
+	display: contents;
+	--rd-toc-progress: 0;
+	--_rd-toc-bar-h: 48px; /* read by JS for scroll-margin-top offset */
 }
-rd-toc > ._rd-toc-title {
-	font-family: var(--rd-font-body);
-	font-weight: var(--rd-weight-semibold);
-	color: var(--rd-fg-muted);
-	font-size: var(--rd-text-xs);
-	text-transform: uppercase;
-	letter-spacing: var(--rd-tracking-caps);
-	margin-bottom: var(--rd-space-3);
-}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Shared list styling — used by both the rail (wide) and the popover
+   (narrow). Numerals come from the existing `counters(rd-toc-item, ".")`
+   pattern; the rail and popover both reset the counter on their root <ul>.
+   ────────────────────────────────────────────────────────────────────── */
+
 rd-toc ul {
 	list-style: none;
 	margin: 0;
@@ -23,14 +36,14 @@ rd-toc ul {
 	counter-reset: rd-toc-item;
 }
 rd-toc ul ul {
-	padding-left: var(--rd-space-5);
-	margin: var(--rd-space-1) 0 var(--rd-space-1);
+	padding-left: var(--rd-space-4);
+	margin: var(--rd-space-1) 0;
 }
 rd-toc li {
 	margin: 0;
 	padding: 0;
 	counter-increment: rd-toc-item;
-	position: static;
+	position: relative;
 }
 /* Defeat the global rd-page bullet (filled circle / open ring / square). */
 rd-toc li::before,
@@ -43,45 +56,319 @@ rd-page rd-toc ul ul ul > li::before {
 	width: 0;
 	height: 0;
 }
-rd-toc > ul > li {
-	border-top: 1px solid var(--rd-panel-border);
-}
-rd-toc > ul > li:first-child {
-	border-top: 0;
-}
+
 rd-toc a {
+	position: relative;
 	display: flex;
 	align-items: baseline;
-	gap: var(--rd-space-3);
-	padding: var(--rd-space-2) 0;
-	color: var(--rd-fg);
+	gap: var(--rd-space-2);
+	padding: var(--rd-space-1) var(--rd-space-3);
+	color: var(--rd-fg-muted);
 	text-decoration: none;
 	font-family: var(--rd-font-body);
-	transition: color var(--rd-motion-fast) var(--rd-ease-out);
+	font-size: var(--rd-text-sm);
+	line-height: var(--rd-leading-snug);
+	border-radius: var(--rd-radius-sm);
+	transition:
+		color var(--rd-motion-fast) var(--rd-ease-out),
+		background-color var(--rd-motion-fast) var(--rd-ease-out);
 }
-/* Hierarchical numbering: 1, 1.1, 1.2, 1.2.1, 2, 3 … */
 rd-toc a::before {
 	content: counters(rd-toc-item, ".");
+	flex: 0 0 auto;
+	min-width: 2.25em;
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-xs);
-	letter-spacing: 0;
 	color: var(--rd-fg-subtle);
 	font-variant-numeric: lining-nums tabular-nums;
-	flex: 0 0 auto;
-	min-width: 2.5em;
+	letter-spacing: 0;
 }
 rd-toc ul ul a::before {
-	min-width: 3em;
-}
-rd-toc ul ul a {
-	color: var(--rd-fg-muted);
-}
-rd-toc a:hover {
-	color: var(--rd-accent);
+	min-width: 2.75em;
+	color: var(--rd-fg-subtle);
+	opacity: 0.85;
 }
 rd-toc a > ._rd-toc-text {
 	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
-rd-toc a > ._rd-toc-leader {
-	display: none;
+rd-toc a:hover {
+	color: var(--rd-fg);
+}
+rd-toc a:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 2px;
+}
+
+/* Active entry — ink up the label, accent the numeral, drop a marker dot
+   on the left rule (rendered against the rail; in the popover it sits on
+   the popover's own hairline). The marker uses ::after so we don't fight
+   with the existing ::before that paints the numeral. */
+rd-toc a[aria-current="true"] {
+	color: var(--rd-fg);
+	font-weight: var(--rd-weight-semibold);
+}
+rd-toc a[aria-current="true"]::before {
+	color: var(--rd-accent);
+}
+rd-toc a[aria-current="true"]::after {
+	content: "";
+	position: absolute;
+	left: -1px;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--rd-accent);
+	box-shadow: 0 0 0 3px var(--rd-bg);
+	transition: top var(--rd-motion-fast) var(--rd-ease-out);
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Wide-mode rail (≥ 1024px)
+   ────────────────────────────────────────────────────────────────────── */
+
+rd-toc ._rd-toc-rail {
+	position: sticky;
+	top: var(--rd-space-6);
+	align-self: start;
+	max-height: calc(100vh - var(--rd-space-7) * 2);
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding-left: var(--rd-space-4);
+	/* The hairline rule lives in ::before so we can pair it with the
+	   accent fill in ::after without nesting an extra element. */
+}
+rd-toc ._rd-toc-rail::before,
+rd-toc ._rd-toc-rail::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 1px;
+	pointer-events: none;
+}
+rd-toc ._rd-toc-rail::before {
+	height: 100%;
+	background: var(--rd-border);
+}
+rd-toc ._rd-toc-rail::after {
+	height: 100%;
+	background: var(--rd-accent);
+	transform-origin: top;
+	transform: scaleY(var(--rd-toc-progress, 0));
+	transition: transform var(--rd-motion-fast) linear;
+}
+
+rd-toc ._rd-toc-rail-title {
+	font-family: var(--rd-font-body);
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+	margin: 0 0 var(--rd-space-3) var(--rd-space-3);
+}
+rd-toc ._rd-toc-rail-list {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	/* Hide ugly scrollbars; rely on overlay scrollbars on platforms that
+	   support them. */
+	scrollbar-width: thin;
+	scrollbar-color: var(--rd-border-strong) transparent;
+	padding-bottom: var(--rd-space-3);
+	/* Subtle fade-out at the bottom hints there's more to scroll. */
+	mask-image: linear-gradient(
+		to bottom,
+		#000 0,
+		#000 calc(100% - 24px),
+		transparent 100%
+	);
+}
+
+/* Hide rail below the breakpoint; narrow-mode bar takes over. */
+@media (max-width: 1023.98px) {
+	rd-toc ._rd-toc-rail {
+		display: none;
+	}
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Narrow-mode top bar (< 1024px)
+   ────────────────────────────────────────────────────────────────────── */
+
+rd-toc ._rd-toc-bar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 50;
+	display: flex;
+	justify-content: center;
+	padding: 0;
+	background: color-mix(in oklab, var(--rd-bg) 86%, transparent);
+	backdrop-filter: blur(10px) saturate(1.1);
+	-webkit-backdrop-filter: blur(10px) saturate(1.1);
+	border-bottom: 1px solid var(--rd-border);
+	box-shadow: var(--rd-shadow-sm);
+	transform: translateY(-100%);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		transform var(--rd-motion-base) var(--rd-ease-out),
+		opacity var(--rd-motion-base) var(--rd-ease-out);
+}
+rd-toc[data-rd-toc-visible="true"] ._rd-toc-bar {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	rd-toc ._rd-toc-bar {
+		background: var(--rd-bg);
+	}
+}
+
+rd-toc ._rd-toc-bar-button {
+	all: unset;
+	box-sizing: border-box;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-3);
+	width: 100%;
+	max-width: var(--rd-max-width);
+	padding: var(--rd-space-3) var(--rd-space-5);
+	font-family: var(--rd-font-body);
+	color: var(--rd-fg);
+	min-height: var(--_rd-toc-bar-h);
+}
+rd-toc ._rd-toc-bar-eyebrow {
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+	flex: 0 0 auto;
+}
+rd-toc ._rd-toc-bar-sep {
+	color: var(--rd-fg-subtle);
+	flex: 0 0 auto;
+}
+rd-toc ._rd-toc-bar-current {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: var(--rd-text-sm);
+	font-weight: var(--rd-weight-medium);
+	color: var(--rd-fg);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+rd-toc ._rd-toc-bar-current:empty::before {
+	content: "Top";
+	color: var(--rd-fg-muted);
+	font-weight: var(--rd-weight-normal);
+}
+rd-toc ._rd-toc-bar-chev {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+	color: var(--rd-fg-muted);
+	transition: transform var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-toc[data-rd-toc-open="true"] ._rd-toc-bar-chev {
+	transform: rotate(180deg);
+}
+rd-toc ._rd-toc-bar:focus-within {
+	outline: none;
+}
+rd-toc ._rd-toc-bar-button:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: -4px;
+	border-radius: var(--rd-radius-sm);
+}
+
+/* Progress fill at the bottom edge of the bar — same source variable as
+   the rail, scaled horizontally. */
+rd-toc ._rd-toc-bar::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 2px;
+	background: var(--rd-accent);
+	transform-origin: left;
+	transform: scaleX(var(--rd-toc-progress, 0));
+	transition: transform var(--rd-motion-fast) linear;
+	pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Narrow-mode popover (drops below the bar)
+   ────────────────────────────────────────────────────────────────────── */
+
+rd-toc ._rd-toc-pop {
+	position: fixed;
+	top: var(--_rd-toc-bar-h);
+	left: 0;
+	right: 0;
+	z-index: 49;
+	max-height: min(60vh, calc(100vh - var(--_rd-toc-bar-h) - var(--rd-space-5)));
+	overflow-y: auto;
+	background: var(--rd-bg-elev);
+	border-bottom: 1px solid var(--rd-border);
+	box-shadow: var(--rd-shadow-lg);
+	padding: var(--rd-space-4) var(--rd-space-5) var(--rd-space-5);
+	transform: translateY(-8px);
+	opacity: 0;
+	pointer-events: none;
+	transition:
+		transform var(--rd-motion-base) var(--rd-ease-out),
+		opacity var(--rd-motion-base) var(--rd-ease-out);
+}
+rd-toc[data-rd-toc-open="true"] ._rd-toc-pop {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+}
+rd-toc ._rd-toc-pop-inner {
+	max-width: var(--rd-max-width);
+	margin: 0 auto;
+}
+rd-toc ._rd-toc-pop a {
+	padding: var(--rd-space-2) var(--rd-space-3);
+	font-size: var(--rd-text-md);
+}
+rd-toc ._rd-toc-pop a::before {
+	min-width: 2.5em;
+}
+
+/* Hide the narrow-mode pieces above the breakpoint. */
+@media (min-width: 1024px) {
+	rd-toc ._rd-toc-bar,
+	rd-toc ._rd-toc-pop {
+		display: none;
+	}
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Reduced-motion — the global killswitch in tokens.css already zeroes
+   --rd-motion-*. Belt-and-braces: also disable the progress-fill
+   scale transitions which use linear timing (not token-driven), so they
+   don't jitter on update.
+   ────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+	rd-toc ._rd-toc-rail::after,
+	rd-toc ._rd-toc-bar::after {
+		transition: none;
+	}
 }
