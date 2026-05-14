@@ -59,6 +59,12 @@ class RdStat extends HTMLElement implements Upgradeable {
 
 		if (tone) this.setAttribute("data-tone", tone);
 
+		// Preserve element children authored inside <rd-stat> (typically a
+		// <rd-sparkline> trend strip). They get re-attached in a trailing
+		// "extras" slot below the value/meta line so the count-up animation
+		// and tone styling stay in charge of the headline.
+		const extras = Array.from(this.children) as HTMLElement[];
+
 		this.innerHTML = "";
 		if (label) {
 			this.appendChild(el("div", { class: "_rd-stat-label" }, label));
@@ -76,6 +82,11 @@ class RdStat extends HTMLElement implements Upgradeable {
 				meta.appendChild(el("span", { class: "_rd-stat-delta" }, delta));
 			}
 			this.appendChild(meta);
+		}
+		if (extras.length) {
+			const slot = el("div", { class: "_rd-stat-extras" });
+			for (const node of extras) slot.appendChild(node);
+			this.appendChild(slot);
 		}
 
 		// Count-up animation. Numeric values animate from 0 → target on

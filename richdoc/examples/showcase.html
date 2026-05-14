@@ -6,22 +6,31 @@
 	<title>richdoc — component showcase</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="stylesheet" href="./richdoc.css">
-	<script src="./richdoc.js" defer></script>
+	<link rel="stylesheet" href="../richdoc-lib/assets/richdoc.css">
+	<script src="../richdoc-lib/assets/richdoc.js" defer></script>
 </head>
 <body>
 <rd-page>
 
-	<h1>An editorial frame<br>for AI-authored documents.</h1>
+	<rd-banner type="draft"></rd-banner>
 
-	<rd-kv>
-		<rd-row key="Version">v0.3.0</rd-row>
-		<rd-row key="Audience">Agents writing for humans</rd-row>
-		<rd-row key="Vocabulary">~30 tags · 24 components</rd-row>
-		<rd-row key="Status"><rd-badge variant="success">stable</rd-badge> <rd-badge variant="info">editorial redesign</rd-badge></rd-row>
-	</rd-kv>
+	<rd-hero
+		eyebrow="Component showcase"
+		title="An editorial frame for AI-authored documents."
+		lede="Every tag, every variant, in one document — the way a real richdoc should be read top-to-bottom."
+		meta="v0.4 · Updated this build · Platform team">
+		<rd-kv>
+			<rd-row key="Audience">Agents writing for humans</rd-row>
+			<rd-row key="Vocabulary">~70 tags · 40+ components</rd-row>
+			<rd-row key="Status"><rd-badge variant="success">stable</rd-badge> <rd-badge variant="info">expanded vocabulary</rd-badge></rd-row>
+		</rd-kv>
+	</rd-hero>
 
-	<p><em>Richdoc</em> is a small framework for documents that are written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should. Read it top-to-bottom — occasional asides drop down to a Notes section at the foot of the page<rd-footnote>Markers stay inline as small superscript numerals; the body of each note is collected at the bottom of the enclosing <code>rd-page</code> with auto-numbering and a back-link.</rd-footnote>. The look is intentionally editorial: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
+	<rd-tldr>
+		<p><em>Richdoc</em> is a small framework for documents written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should — read top-to-bottom, with occasional asides dropping down to a Notes section at the foot of the page.</p>
+	</rd-tldr>
+
+	<p>The look is intentionally editorial<rd-footnote>Markers stay inline as small superscript numerals; the body of each note is collected at the bottom of the enclosing <code>rd-page</code> with auto-numbering and a back-link.</rd-footnote>: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
 
 	<rd-toc levels="2,3" title="Contents"></rd-toc>
 
@@ -356,6 +365,306 @@
 			<rd-def term="closed vocabulary">A fixed list of tags that the agent must choose from. New tags require a deliberate authoring decision and a linter update.</rd-def>
 			<rd-def term="optical size">A Fraunces variation axis that adjusts letterforms for the size at which they will appear. Set higher (<code>72</code>, <code>144</code>) for display.</rd-def>
 		</rd-defs>
+	</rd-section>
+
+	<rd-section title="TL;DR strip">
+		<p>Use <code>rd-tldr</code> as the first block after the hero. It's a focal summary band with an oversized eyebrow and slightly larger body type than the surrounding prose. See the very top of this page.</p>
+	</rd-section>
+
+	<rd-section title="Hero">
+		<p>Use <code>rd-hero</code> instead of an ad-hoc <code>&lt;h1&gt;</code> + <code>rd-kv</code> opener. It coordinates eyebrow, title, lede, and meta into one display block, and accepts any inline children (e.g. an <code>rd-kv</code>) as an "extras" strip below the meta line. The top of this page demonstrates the full structure.</p>
+	</rd-section>
+
+	<rd-section title="Banner">
+		<p>Doc-status ribbons sit at the top of the page. Five types:</p>
+		<rd-banner type="draft"></rd-banner>
+		<rd-banner type="frozen"></rd-banner>
+		<rd-banner type="archived"></rd-banner>
+		<rd-banner type="confidential"></rd-banner>
+		<rd-banner type="info" message="Custom message overrides the default text for the type."></rd-banner>
+	</rd-section>
+
+	<rd-section title="Progress">
+		<p>Linear progress / capacity bar. Accepts a 0..1 decimal, <code>N%</code>, or <code>N/M</code> fraction. The fill animates from 0 to the target on entry.</p>
+		<rd-progress value="0.78" label="Migration complete"></rd-progress>
+		<rd-progress value="12/20" label="Tests passing" tone="positive"></rd-progress>
+		<rd-progress value="35%" label="Disk used" tone="negative"></rd-progress>
+		<rd-progress value="0.45" label="Project budget consumed" tone="neutral"></rd-progress>
+	</rd-section>
+
+	<rd-section title="Steps">
+		<p>Numbered procedural steps with a rich body per step. Use this for runbooks, onboarding flows, migration guides. Distinct from <code>rd-timeline</code> (dated history) and <code>rd-checklist</code> (task tracking).</p>
+		<rd-steps>
+			<rd-step done title="Drop the assets next to your doc">
+				<p>Run <code>richdoc init docs</code> once in the directory that will hold your <code>.html</code> file.</p>
+			</rd-step>
+			<rd-step done title="Scaffold a new document">
+				<p>Pick a template: <code>richdoc new docs/plan.html -t plan</code>.</p>
+			</rd-step>
+			<rd-step title="Write the document">
+				<p>Use only the <code>rd-*</code> tags from the vocabulary. Plain HTML is welcome inside any block.</p>
+			</rd-step>
+			<rd-step title="Validate before sharing">
+				<p>Run <code>richdoc lint docs/plan.html</code>. Linting cleanly is part of "done".</p>
+			</rd-step>
+		</rd-steps>
+	</rd-section>
+
+	<rd-section title="Pros and cons">
+		<p>Two-column ✓/✗ grid for decision documents. Distinct from <code>rd-compare</code> — that's a matrix; this is one-sided evaluation of a single option.</p>
+		<rd-pros-cons pros-title="Reasons to adopt" cons-title="Reasons to wait">
+			<rd-pro>Already-shipped pattern in the existing vocabulary.</rd-pro>
+			<rd-pro>No new external dependencies in Phase 1.</rd-pro>
+			<rd-pro>Linter enforces shape on existing rule engine.</rd-pro>
+			<rd-con>Vocabulary grows from ~30 → ~70 entries.</rd-con>
+			<rd-con>Authors must learn the new tags.</rd-con>
+		</rd-pros-cons>
+	</rd-section>
+
+	<rd-section title="Decision records">
+		<p>ADR-style decision header + rationale. Four statuses control the left rule colour and the status pill.</p>
+		<rd-decision
+			status="accepted"
+			id="ADR-014"
+			date="2026-05-14"
+			deciders="platform team"
+			title="Adopt Observable Plot for charting">
+			<p>Bundle size is not a concern for documentation artefacts. Plot's grammar-of-graphics defaults match the editorial voice better than anything we'd hand-roll, and one library covers every chart type plus sparklines.</p>
+		</rd-decision>
+		<rd-decision status="proposed" id="ADR-015" date="2026-05-14" title="Inline-margin sidenotes on wide viewports">
+			<p>Tufte-style margin notes float into the page gutter above 1024px and collapse to a tap-to-open tooltip below the breakpoint. Already implemented as <code>rd-margin</code>.</p>
+		</rd-decision>
+		<rd-decision status="superseded" id="ADR-007" date="2026-02-01" title="Original hand-rolled SVG chart approach">
+			<p>Superseded by ADR-014.</p>
+		</rd-decision>
+		<rd-decision status="rejected" id="ADR-008" date="2026-02-15" title="Embedding D3 directly for every chart">
+			<p>Too much per-chart code; Plot covers the same surface with a much smaller author API.</p>
+		</rd-decision>
+	</rd-section>
+
+	<rd-section title="Status updates">
+		<p>Dated reverse-chron entries for changelogs, release notes, status reports. The kind glyph and tint differ between release / change / note.</p>
+		<rd-update date="2026-05-14" kind="release" author="platform team" title="v0.4 — expanded vocabulary">
+			<p>16 new tags landed in Phase 1: <code>rd-hero</code>, <code>rd-banner</code>, <code>rd-tldr</code>, <code>rd-progress</code>, <code>rd-steps</code>, <code>rd-pros-cons</code>, <code>rd-decision</code>, <code>rd-update</code>, <code>rd-faq</code>, <code>rd-tree</code>, <code>rd-shell</code>, <code>rd-api</code>, <code>rd-rubric</code>, <code>rd-swatch</code>, <code>rd-margin</code>, <code>rd-spoiler</code>.</p>
+		</rd-update>
+		<rd-update date="2026-05-12" kind="change" author="dana" title="Schema groups reorganised">
+			<p>Introduced <em>Decision &amp; planning</em> and <em>Reference</em> groupings in the schema registry. Mirrored in the SKILL.md tag tables.</p>
+		</rd-update>
+		<rd-update date="2026-05-09" kind="note" title="Discovery doc accepted">
+			<p>The 20-component plan was reviewed and accepted. Implementation phases queued.</p>
+		</rd-update>
+	</rd-section>
+
+	<rd-section title="FAQ">
+		<p>Question/answer disclosure. Distinct from <code>rd-detail</code> — questions render in display Fraunces, answers in body Inter.</p>
+		<rd-faq title="Common questions">
+			<rd-q question="Do I have to use richdoc instead of Markdown?" open>
+				<rd-a><p>Use Markdown where the renderer might be anything (GitHub, chat, CLI). For documents read in a browser, richdoc gives a much richer presentation with no extra effort.</p></rd-a>
+			</rd-q>
+			<rd-q question="Can I add my own tags?">
+				<rd-a><p>No — the linter will reject unknown <code>rd-*</code> tags. The fixed vocabulary is the point. Extensions ship through a new release.</p></rd-a>
+			</rd-q>
+			<rd-q question="Does it work offline?">
+				<rd-a><p>Yes. The two shipped assets (<code>richdoc.css</code>, <code>richdoc.js</code>) work over <code>file://</code>. Components that need a CDN library (mermaid, KaTeX, charts) degrade to a readable fallback when offline.</p></rd-a>
+			</rd-q>
+		</rd-faq>
+	</rd-section>
+
+	<rd-section title="Tree">
+		<p>Collapsible hierarchical tree, native <code>&lt;details&gt;</code> under the hood. Useful for file structures, org charts, ontologies.</p>
+		<rd-tree title="Repository layout">
+			<rd-node label="richdoc/" open>
+				<rd-node label="richdoc-cli/">
+					<rd-node label="src/richdoc_cli/">
+						<rd-node label="cli.py"></rd-node>
+						<rd-node label="commands/"></rd-node>
+						<rd-node label="schema.py"></rd-node>
+					</rd-node>
+				</rd-node>
+				<rd-node label="richdoc-lib/" open>
+					<rd-node label="src/components/" open>
+						<rd-node label="hero/"></rd-node>
+						<rd-node label="banner/"></rd-node>
+						<rd-node label="tldr/"></rd-node>
+						<rd-node label="progress/"></rd-node>
+						<rd-node label="... 30+ more"></rd-node>
+					</rd-node>
+					<rd-node label="src/lib/"></rd-node>
+					<rd-node label="build.ts"></rd-node>
+				</rd-node>
+				<rd-node label="examples/">
+					<rd-node label="showcase.html"></rd-node>
+					<rd-node label="status-onepager.html"></rd-node>
+				</rd-node>
+			</rd-node>
+		</rd-tree>
+	</rd-section>
+
+	<rd-section title="Shell sessions">
+		<p>Terminal transcripts for runbooks and tutorials. Distinct from <code>rd-code</code> — no syntax highlighting, no copy button, just prompt → output.</p>
+		<rd-shell title="~/Projects/agent-skills">
+			<rd-prompt cwd="~/Projects/agent-skills">richdoc init docs</rd-prompt>
+			<rd-output tone="positive">copied richdoc.css → docs/richdoc.css
+copied richdoc.js  → docs/richdoc.js</rd-output>
+			<rd-prompt cwd="~/Projects/agent-skills">richdoc new docs/plan.html -t plan</rd-prompt>
+			<rd-output>wrote docs/plan.html (1245 bytes)</rd-output>
+			<rd-prompt cwd="~/Projects/agent-skills">richdoc lint docs/plan.html</rd-prompt>
+			<rd-output tone="positive">{"ok": true, "issues": []}</rd-output>
+		</rd-shell>
+	</rd-section>
+
+	<rd-section title="API reference">
+		<p>Single-endpoint reference block. Method pill is coloured per HTTP verb; status pills tint themselves based on the 2xx/4xx/5xx class.</p>
+		<rd-api method="POST" path="/v1/documents/{id}/validate" auth="Bearer token" title="Lint a single richdoc against the schema">
+			<rd-param name="id" in="path" required type="uuid">Document identifier.</rd-param>
+			<rd-param name="strict" in="query" type="boolean" default="false">Treat warnings as errors.</rd-param>
+			<rd-param name="X-Trace-Id" in="header" type="string">Optional client-supplied trace identifier.</rd-param>
+			<rd-param name="body" in="body" required type="text/html">The document to lint.</rd-param>
+			<rd-response status="200" type="application/json">Lint succeeded. Body is <code>{ ok, issues[] }</code>.</rd-response>
+			<rd-response status="400" type="application/json">Malformed input.</rd-response>
+			<rd-response status="422" type="application/json">Schema validation failed; <code>issues[]</code> contains details.</rd-response>
+		</rd-api>
+	</rd-section>
+
+	<rd-section title="Rubric (weighted scoring)">
+		<p>Weighted scoring grid for comparison documents — like <code>rd-compare</code> but with numeric scores, weights, and an automatic totals row. The winning column highlights.</p>
+		<rd-rubric options="Observable Plot,ApexCharts,Hand-rolled SVG" scale="5" title="Chart engine evaluation">
+			<rd-criterion label="Editorial fit" weight="3">
+				<rd-score value="5" note="FT/Economist defaults"></rd-score>
+				<rd-score value="3" note="SaaS dashboard"></rd-score>
+				<rd-score value="5" note="total control"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="Chart types" weight="2">
+				<rd-score value="5"></rd-score>
+				<rd-score value="5"></rd-score>
+				<rd-score value="2" note="bar/line/area/donut"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="Author API" weight="2">
+				<rd-score value="4"></rd-score>
+				<rd-score value="5"></rd-score>
+				<rd-score value="3"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="Offline fallback">
+				<rd-score value="4"></rd-score>
+				<rd-score value="4"></rd-score>
+				<rd-score value="5" note="no CDN"></rd-score>
+			</rd-criterion>
+		</rd-rubric>
+	</rd-section>
+
+	<rd-section title="Design tokens">
+		<p>Five swatch kinds for design-system documents. Drop them inside <code>rd-cols</code> for a gallery.</p>
+		<rd-cols n="2">
+			<rd-swatch kind="color" name="--rd-accent" value="#8a3a1a" note="Editorial rust"></rd-swatch>
+			<rd-swatch kind="color" name="--rd-bg" value="#f7f3ea" note="Cream paper"></rd-swatch>
+			<rd-swatch kind="type" name="display" value="italic 600 1.5rem/1.2 Fraunces"></rd-swatch>
+			<rd-swatch kind="type" name="body" value="400 1rem/1.55 Geist"></rd-swatch>
+			<rd-swatch kind="radius" name="--rd-radius-md" value="8px"></rd-swatch>
+			<rd-swatch kind="shadow" name="--rd-shadow-md" value="0 2px 6px rgba(20,18,14,.07), 0 1px 2px rgba(20,18,14,.04)"></rd-swatch>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Citations and references">
+		<p>Bibliography support follows the footnote pattern but with square-bracketed numbers and a separate collector. Authors write <code>rd-cite</code> markers inline<rd-cite key="tufte2001"></rd-cite> and <code>rd-ref</code> entries anywhere in the doc<rd-cite key="bringhurst2004"></rd-cite>. The system numbers citations in document order, builds the bibliography below, and shows the entry as a tooltip when hovering a marker.</p>
+		<p>Multiple cites to the same key share a number<rd-cite key="tufte2001"></rd-cite>. Entries not cited still appear in the bibliography, after the cited ones<rd-cite key="strunk2000"></rd-cite>.</p>
+		<rd-ref key="tufte2001" author="Tufte, Edward R." title="The Visual Display of Quantitative Information" publisher="Graphics Press" date="2001" url="https://www.edwardtufte.com/tufte/books_vdqi">Reference work for editorial data graphics; cited in this doc for margin notes and sparkline philosophy.</rd-ref>
+		<rd-ref key="bringhurst2004" author="Bringhurst, Robert" title="The Elements of Typographic Style" publisher="Hartley &amp; Marks" date="2004"></rd-ref>
+		<rd-ref key="strunk2000" author="Strunk, William and White, E.B." title="The Elements of Style" date="2000"></rd-ref>
+		<rd-ref key="hochuli2008" author="Hochuli, Jost" title="Detail in Typography" date="2008">Uncited — still appears in the bibliography after the cited works.</rd-ref>
+	</rd-section>
+
+	<rd-section title="Charts">
+		<p>SVG charts via Observable Plot, lazy-loaded from jsDelivr on first use. Six kinds out of the box. If Plot can't load (offline, blocked CDN), each chart falls back to a clean table of the underlying data.</p>
+
+		<rd-cols n="2">
+			<rd-chart kind="bar" data="12,15,9,18,21,17" labels="Jan,Feb,Mar,Apr,May,Jun" title="Monthly revenue ($K)" height="220"></rd-chart>
+			<rd-chart kind="line" x="month" y="users" title="Active users (thousands)" height="220">
+[
+  {"month":"Jan","users":42},
+  {"month":"Feb","users":58},
+  {"month":"Mar","users":61},
+  {"month":"Apr","users":79},
+  {"month":"May","users":92},
+  {"month":"Jun","users":104}
+]
+			</rd-chart>
+			<rd-chart kind="area" x="month" y="requests" title="API requests / day (M)" height="220">
+[{"month":"Jan","requests":1.2},{"month":"Feb","requests":1.8},{"month":"Mar","requests":2.1},{"month":"Apr","requests":2.6},{"month":"May","requests":3.0},{"month":"Jun","requests":3.4}]
+			</rd-chart>
+			<rd-chart kind="donut" data="42,28,18,12" labels="Plan,Research,Comparison,One-pager" title="Docs by template" height="220"></rd-chart>
+		</rd-cols>
+
+		<rd-chart kind="bar" x="region" y="value" series="product" title="Revenue by region and product" height="260" format="csv">
+region,product,value
+North,Core,18
+North,Add-on,7
+South,Core,14
+South,Add-on,9
+East,Core,22
+East,Add-on,5
+West,Core,16
+West,Add-on,11
+		</rd-chart>
+	</rd-section>
+
+	<rd-section title="Sparklines">
+		<p>Tiny inline trends, same Plot engine. They render in tables, in prose, or inside <code>rd-stat</code>. Latency last 30 days: <rd-sparkline values="4,3,5,3,4,2,3,5,6,4,3,2,3,4,5,3,2,4,3,2,3,4,3,5,4,3,2,3,4,3"></rd-sparkline>. Signups: <rd-sparkline kind="bar" values="2,4,3,6,8,5,9,7,10,12" color="var(--rd-success)" endpoint="false"></rd-sparkline>.</p>
+
+		<rd-cols n="3">
+			<rd-stat value="42K" label="Active users" trend="up" delta="+12% MoM" tone="positive">
+				<rd-sparkline values="32,33,35,34,36,37,39,38,40,42" color="var(--rd-success)"></rd-sparkline>
+			</rd-stat>
+			<rd-stat value="99.94" label="Uptime %" trend="flat">
+				<rd-sparkline values="99.9,99.95,99.94,99.97,99.93,99.94,99.95,99.94,99.96,99.94"></rd-sparkline>
+			</rd-stat>
+			<rd-stat value="$12.4M" label="ARR" trend="up" delta="+18% YoY" tone="positive">
+				<rd-sparkline kind="area" values="8,9,9.5,10,10.8,11.2,11.6,11.9,12.1,12.4" color="var(--rd-accent)"></rd-sparkline>
+			</rd-stat>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Roadmap">
+		<p>Horizon view rendered as a themed CSS gantt — no external library, no horizontal scrollbars. Lanes are workstreams; items are date-bracketed tasks with an optional <code>progress</code> attribute (0–1) and <code>tone</code>. A discreet “today” marker is drawn when the current date falls inside the window.</p>
+		<rd-roadmap start="2026-01-01" end="2026-09-30" unit="month" title="Platform 2026 H1+">
+			<rd-lane name="Editor">
+				<rd-item start="2026-01-01" end="2026-02-28" label="v0.3 redesign" progress="1" tone="positive"></rd-item>
+				<rd-item start="2026-03-01" end="2026-05-15" label="v0.4 vocabulary expansion" progress="0.8" tone="positive"></rd-item>
+				<rd-item start="2026-05-15" end="2026-07-31" label="v1.0 multi-doc sites" progress="0.1"></rd-item>
+			</rd-lane>
+			<rd-lane name="Tooling">
+				<rd-item start="2026-02-01" end="2026-04-15" label="CLI rewrite (Python)" progress="1" tone="positive"></rd-item>
+				<rd-item start="2026-04-15" end="2026-08-31" label="Hosted lint service" progress="0.2"></rd-item>
+			</rd-lane>
+			<rd-lane name="Community">
+				<rd-item start="2026-03-01" end="2026-05-31" label="Showcase site" progress="0.5" tone="neutral"></rd-item>
+				<rd-item start="2026-06-01" end="2026-09-30" label="Template marketplace" progress="0"></rd-item>
+			</rd-lane>
+		</rd-roadmap>
+	</rd-section>
+
+	<rd-section title="Gallery and embeds">
+		<p>Screenshot grids open in a PhotoSwipe lightbox. Embeds detect YouTube and Vimeo URLs and use the matching <code>lite-*</code> web component for fast initial paint; anything else renders as a sandboxed iframe.</p>
+		<rd-gallery cols="3" title="Recent designs">
+			<rd-shot src="https://picsum.photos/id/1015/1600/1000" alt="Mountain landscape" caption="Landscape · 1015"></rd-shot>
+			<rd-shot src="https://picsum.photos/id/1024/1600/1000" alt="Bear in a forest" caption="Wildlife · 1024"></rd-shot>
+			<rd-shot src="https://picsum.photos/id/1043/1600/1000" alt="City rooftops" caption="Urban · 1043"></rd-shot>
+			<rd-shot src="https://picsum.photos/id/1067/1600/1000" alt="Coastline" caption="Coast · 1067"></rd-shot>
+			<rd-shot src="https://picsum.photos/id/1080/1600/1000" alt="Fruit on a tree" caption="Botanical · 1080"></rd-shot>
+			<rd-shot src="https://picsum.photos/id/1084/1600/1000" alt="Tiger" caption="Wildlife · 1084"></rd-shot>
+		</rd-gallery>
+
+		<rd-embed src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="YouTube embed example" caption="YouTube embeds use lite-youtube for fast initial paint."></rd-embed>
+	</rd-section>
+
+	<rd-section title="Margin notes and spoilers">
+		<p>Two affordances for content that should not interrupt the main reading line.</p>
+		<rd-margin>Margin notes float into the page gutter on viewports ≥ 1024 px and collapse to an inline tooltip marker below that — tap it to read the aside.</rd-margin>
+		<p>Margin notes — sometimes called sidenotes, after Tufte — give you a place to slip a clarifying remark next to the prose without breaking the paragraph. Use them where a footnote would feel too far away.</p>
+		<p>Spoilers hide content behind a reveal button. Useful for runbook solutions, exam answers, or any "think before you peek" pattern.</p>
+		<rd-spoiler label="Show the answer">
+			<p>The same component can also wrap multiple paragraphs, callouts, or even code blocks — anything that should not be eye-deep on first read.</p>
+			<rd-callout type="success" title="Inside the spoiler">Hidden content can include any other component.</rd-callout>
+		</rd-spoiler>
 	</rd-section>
 
 	<rd-section title="Plain prose, lists, and HTML">

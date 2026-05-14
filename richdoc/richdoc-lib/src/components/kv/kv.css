@@ -1,12 +1,12 @@
 rd-kv {
 	display: grid;
 	grid-template-columns: minmax(8rem, max-content) 1fr;
-	gap: var(--rd-space-3) var(--rd-space-5);
+	gap: 0;
 	margin: 0 0 var(--rd-space-5);
-	padding: var(--rd-space-4) var(--rd-space-5);
 	background: var(--rd-panel-bg);
 	border: 1px solid var(--rd-panel-border);
 	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
 	font-variant-numeric: lining-nums tabular-nums;
 }
 rd-kv > rd-row {
@@ -19,14 +19,16 @@ rd-kv > rd-row > ._rd-kv-key {
 	text-transform: uppercase;
 	letter-spacing: var(--rd-tracking-caps);
 	font-weight: var(--rd-weight-semibold);
-	padding-top: 0.4em;
-	align-self: start;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	align-self: stretch;
 }
 rd-kv > rd-row > ._rd-kv-value {
 	color: var(--rd-fg);
 	font-family: var(--rd-font-body);
 	font-size: var(--rd-text-base);
 	line-height: var(--rd-leading-snug);
+	padding: var(--rd-space-3) var(--rd-space-4);
 }
 rd-kv > rd-row > ._rd-kv-value > :last-child {
 	margin-bottom: 0;
@@ -36,19 +38,14 @@ rd-kv > rd-row > ._rd-kv-value > :last-child {
 rd-kv > rd-row:not(:first-of-type) > ._rd-kv-key,
 rd-kv > rd-row:not(:first-of-type) > ._rd-kv-value {
 	border-top: 1px solid var(--rd-panel-border);
-	padding-top: var(--rd-space-3);
 }
 
 @media (max-width: 640px) {
 	rd-kv {
 		grid-template-columns: 1fr;
-		gap: var(--rd-space-1) 0;
-	}
-	rd-kv > rd-row > ._rd-kv-key {
-		padding-top: var(--rd-space-3);
+		gap: 0;
 	}
 	rd-kv > rd-row:not(:first-of-type) > ._rd-kv-value {
 		border-top: 0;
-		padding-top: 0;
 	}
 }

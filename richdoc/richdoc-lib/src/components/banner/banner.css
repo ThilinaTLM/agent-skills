@@ -1,0 +1,63 @@
+/* Doc-status ribbon. Always respects the surrounding gutter — whether the
+   banner sits at the top of the page (direct child of <rd-page>) or inside
+   a section as an example. A direct page-child banner gets a slightly
+   larger trailing margin so it visually separates from the hero. */
+rd-banner {
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-2);
+	padding: var(--rd-space-2) var(--rd-space-4);
+	margin: 0 0 var(--rd-space-3);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	border: var(--rd-rule) solid var(--rd-border);
+	border-radius: var(--rd-radius-sm);
+	animation: _rd-banner-slide var(--rd-motion-slow) var(--rd-ease-out) both;
+}
+rd-page > rd-banner {
+	margin-bottom: var(--rd-space-6);
+}
+@keyframes _rd-banner-slide {
+	from {
+		transform: translateY(-100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+rd-banner > ._rd-banner-icon {
+	flex: 0 0 auto;
+}
+rd-banner > ._rd-banner-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+rd-banner[data-type="draft"] {
+	background: var(--rd-warn-soft);
+	color: var(--rd-warn);
+	border-color: color-mix(in oklab, var(--rd-warn) 30%, transparent);
+}
+rd-banner[data-type="frozen"] {
+	background: var(--rd-info-soft);
+	color: var(--rd-info);
+	border-color: color-mix(in oklab, var(--rd-info) 30%, transparent);
+}
+rd-banner[data-type="archived"] {
+	background: color-mix(in oklab, var(--rd-fg) 5%, transparent);
+	color: var(--rd-fg-muted);
+}
+rd-banner[data-type="confidential"] {
+	background: var(--rd-danger-soft);
+	color: var(--rd-danger);
+	border-color: color-mix(in oklab, var(--rd-danger) 30%, transparent);
+}
+rd-banner[data-type="info"] {
+	background: var(--rd-info-soft);
+	color: var(--rd-info);
+	border-color: color-mix(in oklab, var(--rd-info) 30%, transparent);
+}

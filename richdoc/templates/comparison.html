@@ -12,13 +12,19 @@
 <body>
 <rd-page>
 
-	<h1>TODO: decision title</h1>
+	<rd-hero
+		eyebrow="Comparison"
+		title="TODO: decision title"
+		lede="TODO: one-sentence framing of the decision being made."
+		meta="Decision by TODO YYYY-MM-DD · Owner TODO">
+		<rd-kv>
+			<rd-row key="Stakeholders">TODO</rd-row>
+		</rd-kv>
+	</rd-hero>
 
-	<rd-kv>
-		<rd-row key="Decision needed by">TODO YYYY-MM-DD</rd-row>
-		<rd-row key="Owner">TODO</rd-row>
-		<rd-row key="Stakeholders">TODO</rd-row>
-	</rd-kv>
+	<rd-tldr>
+		<p>TODO: one-paragraph framing. State the decision, the options, and the leaning if any.</p>
+	</rd-tldr>
 
 	<rd-callout type="info" title="Context">
 		TODO: what triggered this comparison and what's at stake.
@@ -34,46 +40,52 @@
 	</rd-section>
 
 	<rd-section title="Comparison">
-		<rd-compare headers="Criterion,Option A,Option B,Option C">
-			<rd-row-cells label="TODO criterion 1">
-				<rd-cell tone="positive">TODO</rd-cell>
-				<rd-cell tone="neutral">TODO</rd-cell>
-				<rd-cell tone="negative">TODO</rd-cell>
-			</rd-row-cells>
-			<rd-row-cells label="TODO criterion 2">
-				<rd-cell>TODO</rd-cell>
-				<rd-cell>TODO</rd-cell>
-				<rd-cell>TODO</rd-cell>
-			</rd-row-cells>
-			<rd-row-cells label="TODO criterion 3">
-				<rd-cell>TODO</rd-cell>
-				<rd-cell>TODO</rd-cell>
-				<rd-cell>TODO</rd-cell>
-			</rd-row-cells>
-		</rd-compare>
+		<rd-rubric options="Option A,Option B,Option C" scale="5" title="Weighted evaluation">
+			<rd-criterion label="TODO criterion 1" weight="2">
+				<rd-score value="4" note="TODO"></rd-score>
+				<rd-score value="3" note="TODO"></rd-score>
+				<rd-score value="2" note="TODO"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="TODO criterion 2">
+				<rd-score value="3"></rd-score>
+				<rd-score value="4"></rd-score>
+				<rd-score value="5"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="TODO criterion 3">
+				<rd-score value="3"></rd-score>
+				<rd-score value="3"></rd-score>
+				<rd-score value="4"></rd-score>
+			</rd-criterion>
+		</rd-rubric>
 	</rd-section>
 
 	<rd-section title="Trade-offs at a glance">
 		<rd-cols n="3">
 			<rd-card title="Option A" accent="info">
-				<p><strong>Pros:</strong> TODO.</p>
-				<p><strong>Cons:</strong> TODO.</p>
+				<rd-pros-cons>
+					<rd-pro>TODO.</rd-pro>
+					<rd-con>TODO.</rd-con>
+				</rd-pros-cons>
 			</rd-card>
 			<rd-card title="Option B" accent="info">
-				<p><strong>Pros:</strong> TODO.</p>
-				<p><strong>Cons:</strong> TODO.</p>
+				<rd-pros-cons>
+					<rd-pro>TODO.</rd-pro>
+					<rd-con>TODO.</rd-con>
+				</rd-pros-cons>
 			</rd-card>
 			<rd-card title="Option C" accent="info">
-				<p><strong>Pros:</strong> TODO.</p>
-				<p><strong>Cons:</strong> TODO.</p>
+				<rd-pros-cons>
+					<rd-pro>TODO.</rd-pro>
+					<rd-con>TODO.</rd-con>
+				</rd-pros-cons>
 			</rd-card>
 		</rd-cols>
 	</rd-section>
 
 	<rd-section title="Recommendation">
-		<rd-callout type="success" title="Recommended: TODO">
-			TODO: rationale that ties back to the criteria.
-		</rd-callout>
+		<rd-decision status="proposed" id="DEC-1" date="TODO YYYY-MM-DD" title="Recommended: TODO">
+			<p>TODO: rationale that ties back to the criteria.</p>
+		</rd-decision>
 	</rd-section>
 
 </rd-page>

@@ -34,7 +34,7 @@ rd-event::before {
 	content: "";
 	position: absolute;
 	left: calc(-1 * var(--rd-space-6) + 1px);
-	top: 4px;
+	top: calc((1.5rem - 14px) / 2);
 	width: 14px;
 	height: 14px;
 	background: var(--rd-bg);
@@ -44,19 +44,28 @@ rd-event::before {
 }
 rd-event > ._rd-event-meta {
 	display: flex;
-	align-items: baseline;
+	align-items: center;
 	gap: var(--rd-space-3);
 	margin-bottom: var(--rd-space-1);
 	flex-wrap: wrap;
+	min-height: 1.5rem;
+	line-height: 1.5rem;
 }
 rd-event > ._rd-event-meta > ._rd-event-date {
+	display: inline-flex;
+	align-items: center;
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-xs);
+	line-height: 1;
 	color: var(--rd-fg-muted);
 	font-weight: var(--rd-weight-semibold);
 	letter-spacing: var(--rd-tracking-caps);
 	text-transform: uppercase;
 	font-variant-numeric: lining-nums tabular-nums;
+	background: color-mix(in oklab, var(--rd-fg) 4%, transparent);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius-sm);
+	padding: 0.25em 0.5em;
 }
 rd-event > ._rd-event-meta > ._rd-event-title {
 	font-family: var(--rd-font-display);

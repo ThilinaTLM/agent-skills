@@ -76,3 +76,25 @@ rd-stat[data-tone="negative"] > ._rd-stat-meta > ._rd-stat-trend {
 rd-stat[data-tone="neutral"] > ._rd-stat-meta {
 	color: var(--rd-fg-muted);
 }
+
+/* Optional trailing slot for children authored inside <rd-stat> (typically
+   a <rd-sparkline> trend strip). The slot sits below the meta row and
+   stretches to the card's content box so embedded sparklines feel like
+   part of the card rather than a postage stamp. */
+rd-stat > ._rd-stat-extras {
+	display: block;
+	margin-top: var(--rd-space-3);
+	color: var(--rd-fg-muted);
+}
+rd-stat > ._rd-stat-extras > rd-sparkline,
+rd-stat > ._rd-stat-extras > rd-sparkline > svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+rd-stat[data-tone="positive"] > ._rd-stat-extras {
+	color: var(--rd-success);
+}
+rd-stat[data-tone="negative"] > ._rd-stat-extras {
+	color: var(--rd-danger);
+}

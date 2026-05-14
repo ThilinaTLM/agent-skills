@@ -38,7 +38,12 @@ rd-card > ._rd-card-header > ._rd-card-title {
 	letter-spacing: var(--rd-tracking-snug);
 	font-variation-settings: "opsz" 32;
 }
-rd-card > :last-child {
+/* Strip trailing margin from the final body element so it doesn't fight the
+   card's bottom padding. The header is excluded because in cards whose body
+   is a bare text node (no <p>), the header itself would otherwise match
+   :last-child and lose its margin-bottom, collapsing the gap below the
+   header bar. */
+rd-card > :last-child:not(._rd-card-header) {
 	margin-bottom: 0;
 }
 

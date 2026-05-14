@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>One-pager — TODO topic</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<rd-hero
+		eyebrow="Status one-pager"
+		title="TODO: product / project name"
+		lede="TODO: one-sentence north star or current focus."
+		meta="TODO YYYY-MM-DD · TODO team">
+	</rd-hero>
+
+	<rd-tldr>
+		<p>TODO: 2–3 sentence executive summary. What changed since last week? What's next?</p>
+	</rd-tldr>
+
+	<rd-section title="Key metrics">
+		<rd-cols n="3">
+			<rd-stat value="TODO" label="TODO metric" trend="up" delta="+TODO" tone="positive">
+				<rd-sparkline values="3,4,4,5,6,6,7,8" color="var(--rd-success)"></rd-sparkline>
+			</rd-stat>
+			<rd-stat value="TODO" label="TODO metric" trend="flat">
+				<rd-sparkline values="5,5,6,5,5,6,5,6"></rd-sparkline>
+			</rd-stat>
+			<rd-stat value="TODO" label="TODO metric" trend="up" delta="+TODO" tone="positive">
+				<rd-sparkline kind="area" values="2,3,4,5,6,7,8,9" color="var(--rd-accent)"></rd-sparkline>
+			</rd-stat>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Health">
+		<rd-progress value="0.78" label="Goal 1 — TODO" tone="positive"></rd-progress>
+		<rd-progress value="0.45" label="Goal 2 — TODO"></rd-progress>
+		<rd-progress value="0.12" label="Goal 3 — TODO" tone="negative"></rd-progress>
+	</rd-section>
+
+	<rd-section title="Trend">
+		<rd-chart kind="line" x="week" y="value" title="Active users by week" height="240">
+[{"week":"W1","value":42},{"week":"W2","value":48},{"week":"W3","value":53},{"week":"W4","value":59},{"week":"W5","value":64},{"week":"W6","value":71},{"week":"W7","value":78},{"week":"W8","value":86}]
+		</rd-chart>
+	</rd-section>
+
+	<rd-section title="Recent updates">
+		<rd-update date="TODO YYYY-MM-DD" kind="release" title="TODO release title">
+			<p>TODO: what shipped, who used it, what's measurable.</p>
+		</rd-update>
+		<rd-update date="TODO YYYY-MM-DD" kind="change" title="TODO change title">
+			<p>TODO.</p>
+		</rd-update>
+		<rd-update date="TODO YYYY-MM-DD" kind="note" title="TODO note title">
+			<p>TODO.</p>
+		</rd-update>
+	</rd-section>
+
+	<rd-section title="Risks">
+		<rd-cols n="2">
+			<rd-card title="TODO risk" accent="warn">
+				<p><strong>Mitigation:</strong> TODO.</p>
+			</rd-card>
+			<rd-card title="TODO risk" accent="warn">
+				<p><strong>Mitigation:</strong> TODO.</p>
+			</rd-card>
+		</rd-cols>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

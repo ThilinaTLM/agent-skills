@@ -14,6 +14,8 @@
 
 /* Structure */
 @import "../components/page/page.css";
+@import "../components/hero/hero.css";
+@import "../components/banner/banner.css";
 @import "../components/section/section.css";
 @import "../components/cols/cols.css";
 @import "../components/card/card.css";
@@ -24,29 +26,53 @@
 @import "../components/tooltip/tooltip.css";
 
 /* Information blocks */
+@import "../components/tldr/tldr.css";
 @import "../components/callout/callout.css";
 @import "../components/kv/kv.css";
 @import "../components/badge/badge.css";
 @import "../components/stat/stat.css";
+@import "../components/sparkline/sparkline.css";
+@import "../components/progress/progress.css";
+@import "../components/chart/chart.css";
+@import "../components/update/update.css";
 @import "../components/quote/quote.css";
 @import "../components/footnote/footnote.css";
 @import "../components/defs/defs.css";
+@import "../components/margin/margin.css";
+@import "../components/spoiler/spoiler.css";
+@import "../components/swatch/swatch.css";
 
 /* Comparison & code */
 @import "../components/compare/compare.css";
+@import "../components/rubric/rubric.css";
 @import "../components/code/code.css";
 @import "../components/diff/diff.css";
+@import "../components/shell/shell.css";
 @import "../components/math/math.css";
 
 /* Sequenced & interactive */
 @import "../components/tabs/tabs.css";
 @import "../components/timeline/timeline.css";
+@import "../components/steps/steps.css";
 @import "../components/detail/detail.css";
+@import "../components/faq/faq.css";
+@import "../components/tree/tree.css";
 @import "../components/checklist/checklist.css";
+
+/* Decision & planning */
+@import "../components/decision/decision.css";
+@import "../components/pros-cons/pros-cons.css";
+@import "../components/roadmap/roadmap.css";
+
+/* Reference */
+@import "../components/api/api.css";
+@import "../components/references/references.css";
 
 /* Diagrams, media */
 @import "../components/mermaid/mermaid.css";
 @import "../components/figure/figure.css";
+@import "../components/gallery/gallery.css";
+@import "../components/embed/embed.css";
 @import "../components/toc/toc.css";
 
 @import "./print.css";

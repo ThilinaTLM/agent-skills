@@ -63,6 +63,8 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | Tag | Attributes | Notes |
 | --- | --- | --- |
 | `<rd-page>` | `theme?` (`editorial-warm`), `mode?` (`light\|dark\|auto`) | Outer container. Exactly one per doc, directly under `<body>`. |
+| `<rd-hero>` | **`title`**, `eyebrow?`, `lede?`, `meta?` | Magazine-style top-of-page header. Replaces the ad-hoc `<h1>` + `<rd-kv>` opener. Children render as an "extras" strip below the meta line. |
+| `<rd-banner>` | **`type`** (`draft\|frozen\|archived\|confidential\|info`), `message?` | Thin doc-status ribbon. Sits at the top of `<rd-page>`. Default message comes from the type; element content overrides it. |
 | `<rd-section>` | `title?`, `id?` | Titled section with eyebrow numeral. Title renders as `<h2>`. |
 | `<rd-cols>` | `n?` (`2\|3\|4`), `template?` (CSS grid-template-columns, e.g. `"2fr 1fr"`) | Responsive grid. Use `n` for equal columns, `template` for asymmetric. Collapses to one column under ~720px. |
 | `<rd-card>` | `title?`, `accent?` (`info\|success\|warn\|danger\|muted`) | Bordered block. Accent value also renders as a kicker label. |
@@ -71,15 +73,22 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 
 | Tag | Attributes | Notes |
 | --- | --- | --- |
+| `<rd-tldr>` | `label?` (default `"TL;DR"`) | Focal summary band. Typically the first block after `<rd-hero>`. Distinct visual identity from `<rd-callout>`: oversized eyebrow, full-width band, slightly larger body type. |
 | `<rd-callout>` | **`type`** (`info\|success\|warn\|danger\|note`), `title?` | Aside with Lucide icon and colored left rule. |
 | `<rd-kv>` | — | Magazine-style spec block. Children must be `<rd-row>`. |
 | `<rd-row>` | **`key`** | Inside `<rd-kv>` only. Value is the element's content. |
 | `<rd-badge>` | `variant?` (`info\|success\|warn\|danger\|muted`) | Inline status tag with coloured dot. |
-| `<rd-stat>` | **`value`**, `label?`, `trend?` (`up\|down\|flat`), `delta?`, `tone?` (`positive\|negative\|neutral`) | Big-number dashboard tile, Fraunces display at opsz 144. |
+| `<rd-stat>` | **`value`**, `label?`, `trend?` (`up\|down\|flat`), `delta?`, `tone?` (`positive\|negative\|neutral`) | Big-number dashboard tile, Fraunces display at opsz 144. Children render as a small slot below the number (typically an `<rd-sparkline>`). |
+| `<rd-sparkline>` | **`values`** (comma-separated), `kind?` (`line\|bar\|area`), `width?`, `height?`, `color?`, `endpoint?` | Tiny inline trend via Observable Plot. Works inside `rd-stat`, tables, prose, captions. Same lazy-load + table fallback as `rd-chart`. |
+| `<rd-progress>` | **`value`** (`0..1`, `N%`, or `N/M`), `label?`, `tone?` (`positive\|negative\|neutral`) | Linear progress / capacity bar. Fill count-up animates on entry. |
+| `<rd-update>` | **`date`**, `kind?` (`release\|change\|note`), `author?`, `title?` | Dated reverse-chron entry for changelogs, release notes, status reports. |
 | `<rd-quote>` | `author?`, `cite?`, `source-url?` | Pull-quote with oversized opening glyph. |
 | `<rd-footnote>` | `mark?` | Inline superscript marker that links to a numbered entry collected in an auto-generated `<rd-footnotes>` block at the foot of the enclosing `<rd-page>`. Hover or focus the marker for a rich preview of the note; click to scroll to the entry. Each entry includes a back-link to its marker. |
 | `<rd-defs>` | `title?` | Definition list. Children must be `<rd-def>`. |
 | `<rd-def>` | **`term`** | One term/definition. Inside `<rd-defs>` only. |
+| `<rd-margin>` | `side?` (`right\|left`) | Tufte-style sidenote. Floats into the page gutter ≥ 1024 px; collapses to an inline tooltip marker (native popover) below the breakpoint so it never breaks the reading line. |
+| `<rd-spoiler>` | `label?` (default `"Reveal"`) | Content hidden behind a reveal button. |
+| `<rd-swatch>` | **`kind`** (`color\|type\|space\|radius\|shadow`), **`name`**, **`value`**, `note?` | Design-token chip. Preview surface on the left, name + value on the right. |
 
 ### Comparison and code
 
@@ -88,10 +97,20 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | `<rd-compare>` | **`headers`** (comma-separated) | Hairline decision matrix. Children must be `<rd-row-cells>`. |
 | `<rd-row-cells>` | **`label`** | One row in `<rd-compare>`. Children must be `<rd-cell>`. |
 | `<rd-cell>` | `tone?` (`positive\|negative\|neutral`) | One cell with optional tone-coloured dot. |
+| `<rd-rubric>` | **`options`** (comma-separated), `scale?` (default `5`), `title?` | Weighted scoring grid with automatic totals. Children must be `<rd-criterion>`. The highest-total column highlights. |
+| `<rd-criterion>` | **`label`**, `weight?` (default `1`) | One row in `<rd-rubric>`. Children must be `<rd-score>` in the order of the parent's `options`. |
+| `<rd-score>` | **`value`** (0..scale), `note?` | One cell in `<rd-criterion>`. |
 | `<rd-code>` | `lang?`, `title?`, `line-numbers?`, `highlight?` (e.g. `"3,7-9"`), `start?` | Syntax-highlighted code block via highlight.js (lazy CDN load). Themed against the editorial palette. |
 | `<rd-diff>` | `lang?`, `title?`, `line-numbers?` | Unified-diff with `+`/`-` lines coloured. If `lang` is set, line bodies are syntax-highlighted. |
+| `<rd-shell>` | `title?` | Terminal session block. Children must be `<rd-prompt>` and/or `<rd-output>`. Distinct from `<rd-code>` — no highlighting, no copy button. |
+| `<rd-prompt>` | `cwd?`, `user?` | Terminal command line. Renders with a `$` glyph and optional dim `cwd` prefix. Inside `<rd-shell>` only. |
+| `<rd-output>` | `tone?` (`positive\|negative\|neutral`) | Terminal output block. Whitespace is preserved. Inside `<rd-shell>` only. |
 | `<rd-math>` | `display?` (`block\|inline`) | KaTeX-rendered math, lazy-loaded from CDN. |
 | `<rd-figure>` | `caption?` | Centred media with italic Fraunces caption. |
+| `<rd-chart>` | **`kind`** (`bar\|line\|area\|donut\|scatter\|heatmap`), `data?`, `format?` (`json\|csv`), `x?`, `y?`, `series?`, `labels?`, `title?`, `caption?`, `height?`, `legend?` | SVG chart via Observable Plot (lazy CDN). Data lives in the `data` attribute (JSON or compact `1,2,3` list) or as the element's text content. Falls back to a table if Plot can't load. |
+| `<rd-gallery>` | `cols?` (`2\|3\|4`, default `3`), `title?` | Image grid. Click opens a PhotoSwipe lightbox. Children must be `<rd-shot>`. With no JS / no network the grid links open the source image in a new tab. |
+| `<rd-shot>` | **`src`**, **`alt`**, `caption?`, `width?`, `height?` | One image. Inside `<rd-gallery>` only. Width/height are auto-detected from the loaded image but can be set explicitly to avoid the probe. |
+| `<rd-embed>` | **`src`**, **`title`**, `aspect?` (default `"16:9"`), `caption?` | YouTube / Vimeo / generic iframe wrapper. YouTube and Vimeo URLs use lite-youtube and lite-vimeo web components for fast initial paint; other URLs render as a sandboxed iframe. |
 
 ### Sequenced and interactive
 
@@ -101,13 +120,43 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | `<rd-tab>` | **`label`**, `active?` | One pane. First tab is active unless one has `active`. |
 | `<rd-timeline>` | — | Vertical timeline with dotted rule. Children must be `<rd-event>`. |
 | `<rd-event>` | **`date`**, `title?` | One event with hollow-circle marker. |
+| `<rd-steps>` | — | Numbered procedural steps for runbooks, onboarding flows. Children must be `<rd-step>`. |
+| `<rd-step>` | **`title`**, `done?` | One step with display-Fraunces numeral and rich body. Inside `<rd-steps>` only. |
 | `<rd-detail>` | **`summary`**, `open?` | Hairline-only collapsible. Native `<details>`; works without JS. |
+| `<rd-faq>` | `title?` | Question/answer disclosure list. Children must be `<rd-q>`. Distinct from `<rd-detail>` — Q in display Fraunces, A in body Inter. |
+| `<rd-q>` | **`question`**, `open?` | One question in `<rd-faq>`. Children must be `<rd-a>`. |
+| `<rd-a>` | — | Answer body. Inside `<rd-q>` only. |
+| `<rd-tree>` | `title?` | Collapsible hierarchical tree on native `<details>`. Children must be `<rd-node>`. |
+| `<rd-node>` | **`label`**, `open?`, `icon?` | One tree node. Nested `<rd-node>` children become the disclosure body; leaves render as a row with no chevron. |
 | `<rd-checklist>` | — | Hairline-separated task list. Children must be `<rd-task>`. |
 | `<rd-task>` | `done?`, `assignee?`, `due?` | One item with checkbox and optional metadata. |
 | `<rd-mermaid>` | — | Lazy-loads mermaid from CDN; renders the diagram from text content. |
 | `<rd-toc>` | `levels?` (default `"2,3"`), `title?` (default `"On this page"`) | Auto-generated TOC from `<h2>`/`<h3>` inside the parent `<rd-page>`. |
 | `<rd-icon>` | **`name`** (enum), `size?` (`sm\|md\|lg`), `label?` | Inline SVG from the full Lucide library at a pinned version. A small core set is bundled inline; everything else is lazy-loaded from jsDelivr on first reference and cached. Run `richdoc components --tag rd-icon` for the ~1,900 available names. Offline: non-core icons render as empty slots until the network is back. |
 | `<rd-tooltip>` | **`term`** (text), `placement?` (`auto\|top\|bottom`) | Inline definition popup. The `term` renders with a dotted underline; the children render as a rich tooltip body on hover, focus, or tap. |
+
+### Decision and planning
+
+| Tag | Attributes | Notes |
+| --- | --- | --- |
+| `<rd-decision>` | **`status`** (`proposed\|accepted\|superseded\|rejected`), `id?`, `date?`, `deciders?`, `title?` | ADR-style decision record header + rationale block. Status drives the left rule colour and the status pill. |
+| `<rd-pros-cons>` | `pros-title?`, `cons-title?` | Two-column ✓/✗ evaluation grid. Children must be `<rd-pro>` and/or `<rd-con>`. Distinct from `<rd-compare>` (a matrix). |
+| `<rd-pro>` | — | One pro point. Inside `<rd-pros-cons>` only. |
+| `<rd-con>` | — | One con point. Inside `<rd-pros-cons>` only. |
+| `<rd-roadmap>` | **`start`** (ISO date), **`end`** (ISO date), `unit?` (`day\|week\|month\|quarter`), `title?` | Themed CSS gantt — no external library, no horizontal scrollbars. Bars are positioned by percentage within each lane, a discreet “today” marker is drawn when the current date falls inside the window, and items take optional `progress` / `tone`. Children must be `<rd-lane>`. |
+| `<rd-lane>` | **`name`** | One workstream lane. Children must be `<rd-item>`. Inside `<rd-roadmap>` only. |
+| `<rd-item>` | **`start`** (ISO), **`end`** (ISO), **`label`**, `tone?` (`positive\|negative\|neutral`), `progress?` (`0..1`) | One bar in `<rd-lane>`. |
+
+### Reference
+
+| Tag | Attributes | Notes |
+| --- | --- | --- |
+| `<rd-api>` | **`method`** (`GET\|POST\|PUT\|PATCH\|DELETE\|HEAD\|OPTIONS`), **`path`**, `auth?`, `title?` | Single-endpoint API reference. Method pill coloured per verb. Children must be `<rd-param>` and/or `<rd-response>`. |
+| `<rd-param>` | **`name`**, `in?` (`query\|path\|body\|header`, default `query`), `required?`, `type?`, `default?` | One parameter. Body content describes the parameter. Inside `<rd-api>` only. |
+| `<rd-response>` | **`status`**, `type?` | One response. Body content describes the payload. Status pill tints itself by 2xx/4xx class. Inside `<rd-api>` only. |
+| `<rd-references>` | `title?` (default `"References"`) | Optional explicit placement for the auto-generated bibliography. If omitted, the bibliography is appended to the foot of the enclosing `<rd-page>` after `<rd-footnotes>`. |
+| `<rd-ref>` | **`key`**, `author?`, `title?`, `url?`, `date?`, `publisher?` | One bibliography entry. Anywhere in the doc; rendered only inside the bibliography. Element body content (if any) appears as a note. |
+| `<rd-cite>` | **`key`** | Inline citation marker. Renders as `[N]` with a tooltip preview of the entry and a click-jump to the bibliography. Numbered in document order; uncited entries appear at the end of the bibliography. |
 
 ## Minimal example
 
@@ -153,9 +202,12 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 
 ## Templates
 
-- **`plan`** — title, problem callout, goals, steps timeline, risks, open questions, acceptance criteria.
-- **`research`** — summary callout, TOC, findings, comparison matrix, recommendation, references.
-- **`comparison`** — context, criteria, comparison matrix, trade-offs grid, recommendation.
+- **`plan`** — hero, TL;DR, problem callout, goals, pros/cons, numbered steps, risks, FAQ-style open questions, acceptance criteria.
+- **`research`** — hero, TL;DR, TOC, findings with inline citations, scored rubric, recommendation as a decision record, references.
+- **`comparison`** — hero, TL;DR, context, scored rubric, trade-offs grid with pros/cons cards, decision record.
+- **`onepager`** — hero, TL;DR, stat tiles with sparklines, progress bars, line chart, recent updates feed, risks.
+- **`adr`** — hero, decision header, context, considered options, decision, consequences, references.
+- **`runbook`** — hero, TL;DR, prerequisites checklist, numbered steps with terminal sessions, FAQ for failure modes, escalation.
 
 Scaffold with `richdoc new <output> --template <name>`.
 
@@ -164,18 +216,20 @@ Scaffold with `richdoc new <output> --template <name>`.
 richdoc has a small, consistent motion vocabulary driven by tokens in `richdoc.css`:
 
 - **Page-enter cascade** — the first ~8 direct children of `<rd-page>` fade and lift in on load (~180 ms with a 20 ms stagger).
-- **Viewport-entry reveal** — `<rd-stat>`, `<rd-card>`, `<rd-callout>`, `<rd-figure>`, `<rd-quote>`, and `<rd-event>` reveal as they scroll into view.
+- **Viewport-entry reveal** — `<rd-stat>`, `<rd-card>`, `<rd-callout>`, `<rd-figure>`, `<rd-quote>`, `<rd-event>`, `<rd-tldr>`, `<rd-step>`, `<rd-update>`, `<rd-progress>`, `<rd-chart>`, and `<rd-roadmap>` reveal as they scroll into view.
 - **`<rd-stat>` count-up** — numeric values animate from zero on entry. Non-numeric values (`"complete"`, `"42 days"`) render immediately.
-- **`<rd-detail>`** — chevron rotates and content height interpolates (in browsers that support it).
+- **`<rd-progress>` fill** — the bar interpolates from 0 to its target width on entry, mirroring the count-up easing.
+- **`<rd-detail>` / `<rd-faq>` / `<rd-spoiler>`** — chevron / disclosure body height interpolate in browsers that support `interpolate-size`.
 - **`<rd-tabs>`** — active underline slides between tabs.
-- **`<rd-checklist>`** — the check icon scales in when a task is marked done.
+- **`<rd-checklist>` / `<rd-step done>`** — the check icon scales in when an item is marked done.
+- **`<rd-banner>`** — slides in from the top edge on first paint.
 - **`<rd-callout type="warn">` / `"danger"`** — a one-shot pulse on entry. Other variants stay still.
 
 All motion is gated on `prefers-reduced-motion: reduce` and collapses to instant transitions for users who opt out at the OS level.
 
 ## Limitations
 
-- **JS required** for tabs, mermaid, math, syntax highlighting, TOC, the count-up animation, the tabs underline indicator, and the copy button. Other components render with CSS alone.
-- **Internet required on first render** of `rd-mermaid`, `rd-math`, any `rd-code` with `lang` set, and any `<rd-icon>` outside the inlined core set (mermaid / KaTeX / highlight.js / lucide-static load from jsDelivr). All fall back gracefully if offline — code blocks show raw source, math shows the source, icons show an empty slot of the right size.
+- **JS required** for tabs, mermaid, math, syntax highlighting, charts, sparklines, roadmaps, the gallery lightbox, video embeds, citation collection, TOC, the count-up animation, the tabs underline indicator, and the copy button. Other components render with CSS alone.
+- **Internet required on first render** of `rd-mermaid`, `rd-math`, any `rd-code` with `lang` set, `rd-chart`, `rd-sparkline`, `rd-gallery`, `rd-embed`, and any `<rd-icon>` outside the inlined core set. mermaid / KaTeX / highlight.js / lucide-static / Observable Plot / d3 / PhotoSwipe / lite-youtube / lite-vimeo all load from jsDelivr. `rd-roadmap` renders entirely from local CSS/JS — no CDN. Every component degrades gracefully offline: code blocks show raw source, math shows the source, charts render their data as a table, galleries become a plain image grid, embeds become a link, and icons show an empty slot of the right size.
 - **One document per file.** No multi-page nav.
 - **Browser-only consumer.** Use markdown if the doc must render on GitHub, in plaintext email, or in a CLI pager.

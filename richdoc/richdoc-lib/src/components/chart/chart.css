@@ -1,0 +1,82 @@
+rd-chart {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	padding: var(--rd-space-4);
+	background: var(--rd-panel-bg);
+	border: var(--rd-rule) solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+}
+rd-chart > ._rd-chart-title {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	margin: 0 0 var(--rd-space-3);
+}
+rd-chart > ._rd-chart-body {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+rd-chart > ._rd-chart-body svg {
+	max-width: 100%;
+	height: auto;
+}
+rd-chart > ._rd-chart-caption {
+	margin-top: var(--rd-space-3);
+	font-family: var(--rd-font-display);
+	font-style: italic;
+	font-size: var(--rd-text-sm);
+	color: var(--rd-fg-muted);
+	font-variation-settings: "opsz" 32;
+	text-align: center;
+}
+
+/* Plot output is themed via the `style:` option, but we also re-style
+   axis text and tick lines from the outside for consistency. */
+rd-chart svg [aria-label="x-axis tick label"],
+rd-chart svg [aria-label="y-axis tick label"],
+rd-chart svg [aria-label="x-axis label"],
+rd-chart svg [aria-label="y-axis label"] {
+	fill: var(--rd-fg-muted);
+}
+rd-chart svg [aria-label="x-axis tick"],
+rd-chart svg [aria-label="y-axis tick"] {
+	stroke: var(--rd-border-strong);
+}
+
+/* Table fallback when Plot can't load. */
+rd-chart ._rd-chart-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--rd-text-sm);
+	font-variant-numeric: tabular-nums;
+	background: transparent;
+	border: 0;
+	margin: 0;
+}
+rd-chart ._rd-chart-table th,
+rd-chart ._rd-chart-table td {
+	padding: var(--rd-space-2) var(--rd-space-3);
+	border-bottom: var(--rd-rule) solid var(--rd-border);
+	text-align: left;
+}
+rd-chart ._rd-chart-table th {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-chart ._rd-chart-table tr:last-child td {
+	border-bottom: 0;
+}
+rd-chart ._rd-chart-fallback {
+	color: var(--rd-fg-muted);
+	font-style: italic;
+	padding: var(--rd-space-3);
+}

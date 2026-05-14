@@ -1,0 +1,14 @@
+rd-sparkline {
+	display: inline-block;
+	vertical-align: middle;
+	line-height: 1;
+	color: var(--rd-accent);
+}
+rd-sparkline > svg {
+	display: block;
+}
+rd-sparkline > ._rd-sparkline-fallback {
+	font-family: var(--rd-font-mono);
+	font-size: 0.85em;
+	color: inherit;
+}

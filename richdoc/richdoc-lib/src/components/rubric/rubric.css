@@ -1,0 +1,128 @@
+rd-rubric {
+	display: block;
+	overflow-x: auto;
+	margin: 0 0 var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: var(--rd-rule) solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+}
+rd-rubric > ._rd-rubric-title {
+	padding: var(--rd-space-3) var(--rd-space-4);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	border-bottom: var(--rd-rule) solid var(--rd-panel-border);
+}
+rd-rubric ._rd-rubric-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--rd-text-sm);
+	margin: 0;
+	background: transparent;
+	border: 0;
+}
+rd-rubric ._rd-rubric-table th {
+	text-align: left;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	border-bottom: var(--rd-rule) solid var(--rd-panel-border);
+}
+rd-rubric ._rd-rubric-table td {
+	padding: var(--rd-space-3) var(--rd-space-4);
+	border-bottom: var(--rd-rule) solid var(--rd-border);
+	vertical-align: top;
+}
+rd-rubric ._rd-rubric-table tr:last-child td {
+	border-bottom: 0;
+}
+rd-rubric ._rd-rubric-criterion-label {
+	font-family: var(--rd-font-display);
+	font-style: italic;
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-md);
+	color: var(--rd-fg);
+	font-variation-settings: "opsz" 32;
+}
+rd-rubric ._rd-rubric-criterion-weight {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	color: var(--rd-fg-muted);
+	margin-top: var(--rd-space-1);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+}
+rd-rubric ._rd-rubric-cell {
+	min-width: 8rem;
+}
+rd-rubric ._rd-rubric-score {
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-lg);
+	color: var(--rd-fg);
+	font-variant-numeric: tabular-nums;
+	font-variation-settings: "opsz" 32;
+}
+rd-rubric ._rd-rubric-score-of {
+	font-family: var(--rd-font-body);
+	font-weight: var(--rd-weight-normal);
+	font-size: var(--rd-text-xs);
+	color: var(--rd-fg-subtle);
+	margin-left: 0.2em;
+	letter-spacing: 0;
+}
+rd-rubric ._rd-rubric-bar {
+	margin-top: var(--rd-space-1);
+	height: 3px;
+	background: var(--rd-bg-sunken);
+	border-radius: 999px;
+	overflow: hidden;
+	max-width: 8rem;
+}
+rd-rubric ._rd-rubric-bar-fill {
+	height: 100%;
+	background: var(--rd-accent);
+	border-radius: 999px;
+}
+rd-rubric ._rd-rubric-note,
+rd-rubric ._rd-rubric-cell-body {
+	margin-top: var(--rd-space-2);
+	font-size: var(--rd-text-xs);
+	color: var(--rd-fg-muted);
+	line-height: var(--rd-leading-snug);
+}
+rd-rubric ._rd-rubric-cell-body > :last-child {
+	margin-bottom: 0;
+}
+rd-rubric ._rd-rubric-table tfoot td {
+	background: var(--rd-panel-header-bg);
+	border-top: var(--rd-rule-strong) solid var(--rd-panel-border);
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-xl);
+	font-variant-numeric: tabular-nums;
+	color: var(--rd-fg);
+	font-variation-settings: "opsz" 72;
+}
+rd-rubric ._rd-rubric-total-label {
+	font-family: var(--rd-font-body) !important;
+	font-style: normal !important;
+	font-size: var(--rd-text-xs) !important;
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted) !important;
+	font-weight: var(--rd-weight-semibold) !important;
+}
+rd-rubric ._rd-rubric-total[data-winner="true"] {
+	color: var(--rd-accent);
+	background: color-mix(in oklab, var(--rd-accent) 8%, var(--rd-panel-header-bg));
+	box-shadow: inset 0 var(--rd-rule-strong) 0 var(--rd-accent);
+}

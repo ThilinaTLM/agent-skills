@@ -1,0 +1,52 @@
+rd-spoiler {
+	display: block;
+	margin: 0 0 var(--rd-space-4);
+	border: var(--rd-rule) dashed var(--rd-border-strong);
+	border-radius: var(--rd-panel-radius);
+	background: var(--rd-panel-bg);
+	overflow: hidden;
+}
+rd-spoiler > ._rd-spoiler-button {
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-2);
+	width: 100%;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: transparent;
+	border: 0;
+	border-bottom: var(--rd-rule) dashed transparent;
+	cursor: pointer;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	text-align: left;
+	transition: color var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-spoiler > ._rd-spoiler-button:hover {
+	color: var(--rd-fg);
+}
+rd-spoiler[data-revealed] > ._rd-spoiler-button {
+	border-bottom-color: var(--rd-border);
+	color: var(--rd-fg);
+}
+rd-spoiler > ._rd-spoiler-body {
+	padding: 0 var(--rd-space-4);
+	opacity: 0;
+	max-height: 0;
+	overflow: hidden;
+	transition:
+		opacity var(--rd-motion-base) var(--rd-ease-out),
+		max-height var(--rd-motion-base) var(--rd-ease-out),
+		padding var(--rd-motion-base) var(--rd-ease-out);
+}
+rd-spoiler[data-revealed] > ._rd-spoiler-body {
+	opacity: 1;
+	max-height: 9999px;
+	padding: var(--rd-space-4);
+}
+rd-spoiler > ._rd-spoiler-body > :last-child {
+	margin-bottom: 0;
+}

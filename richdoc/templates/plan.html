@@ -12,13 +12,20 @@
 <body>
 <rd-page>
 
-	<h1>TODO: plan title</h1>
+	<rd-hero
+		eyebrow="Plan"
+		title="TODO: plan title"
+		lede="TODO: one-line description of what this plan changes and why."
+		meta="TODO YYYY-MM-DD · Owner TODO">
+		<rd-kv>
+			<rd-row key="Status"><rd-badge variant="info">draft</rd-badge></rd-row>
+			<rd-row key="Reviewers">TODO</rd-row>
+		</rd-kv>
+	</rd-hero>
 
-	<rd-kv>
-		<rd-row key="Status"><rd-badge variant="info">draft</rd-badge></rd-row>
-		<rd-row key="Owner">TODO</rd-row>
-		<rd-row key="Date">TODO YYYY-MM-DD</rd-row>
-	</rd-kv>
+	<rd-tldr>
+		<p>TODO: two-sentence executive summary. State the problem and the proposed solution.</p>
+	</rd-tldr>
 
 	<rd-callout type="info" title="Problem">
 		TODO: one or two sentences on the problem this plan addresses.
@@ -35,20 +42,26 @@
 
 	<rd-section title="Approach">
 		<p>TODO: short description of the chosen approach and why.</p>
+		<rd-pros-cons>
+			<rd-pro>TODO upside.</rd-pro>
+			<rd-pro>TODO upside.</rd-pro>
+			<rd-con>TODO trade-off.</rd-con>
+			<rd-con>TODO trade-off.</rd-con>
+		</rd-pros-cons>
 	</rd-section>
 
-	<rd-section title="Steps">
-		<rd-timeline>
-			<rd-event date="Step 1" title="TODO">
-				TODO: what gets done, in which files, by which function.
-			</rd-event>
-			<rd-event date="Step 2" title="TODO">
-				TODO.
-			</rd-event>
-			<rd-event date="Step 3" title="TODO">
-				TODO.
-			</rd-event>
-		</rd-timeline>
+	<rd-section title="Implementation">
+		<rd-steps>
+			<rd-step title="TODO step 1">
+				<p>TODO: what gets done, in which files, by which function.</p>
+			</rd-step>
+			<rd-step title="TODO step 2">
+				<p>TODO.</p>
+			</rd-step>
+			<rd-step title="TODO step 3">
+				<p>TODO.</p>
+			</rd-step>
+		</rd-steps>
 	</rd-section>
 
 	<rd-section title="Risks">
@@ -63,9 +76,11 @@
 	</rd-section>
 
 	<rd-section title="Open questions">
-		<ul>
-			<li>TODO question — owner: TODO.</li>
-		</ul>
+		<rd-faq>
+			<rd-q question="TODO question" open>
+				<rd-a><p>TODO: owner, leaning, what would resolve it.</p></rd-a>
+			</rd-q>
+		</rd-faq>
 	</rd-section>
 
 	<rd-section title="Acceptance criteria">
