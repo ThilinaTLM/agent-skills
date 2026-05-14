@@ -26,20 +26,16 @@
 @import "../components/tooltip/tooltip.css";
 
 /* Information blocks */
-@import "../components/tldr/tldr.css";
 @import "../components/callout/callout.css";
 @import "../components/kv/kv.css";
 @import "../components/badge/badge.css";
 @import "../components/stat/stat.css";
-@import "../components/sparkline/sparkline.css";
 @import "../components/progress/progress.css";
 @import "../components/chart/chart.css";
 @import "../components/update/update.css";
 @import "../components/quote/quote.css";
 @import "../components/footnote/footnote.css";
-@import "../components/defs/defs.css";
 @import "../components/margin/margin.css";
-@import "../components/spoiler/spoiler.css";
 @import "../components/swatch/swatch.css";
 
 /* Comparison & code */
@@ -55,7 +51,6 @@
 @import "../components/timeline/timeline.css";
 @import "../components/steps/steps.css";
 @import "../components/detail/detail.css";
-@import "../components/faq/faq.css";
 @import "../components/tree/tree.css";
 @import "../components/checklist/checklist.css";
 

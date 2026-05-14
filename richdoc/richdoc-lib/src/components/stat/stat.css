@@ -78,16 +78,16 @@ rd-stat[data-tone="neutral"] > ._rd-stat-meta {
 }
 
 /* Optional trailing slot for children authored inside <rd-stat> (typically
-   a <rd-sparkline> trend strip). The slot sits below the meta row and
-   stretches to the card's content box so embedded sparklines feel like
-   part of the card rather than a postage stamp. */
+   a <rd-chart variant="sparkline"> trend strip). The slot sits below the
+   meta row and stretches to the card's content box so embedded sparklines
+   feel like part of the card rather than a postage stamp. */
 rd-stat > ._rd-stat-extras {
 	display: block;
 	margin-top: var(--rd-space-3);
 	color: var(--rd-fg-muted);
 }
-rd-stat > ._rd-stat-extras > rd-sparkline,
-rd-stat > ._rd-stat-extras > rd-sparkline > svg {
+rd-stat > ._rd-stat-extras > rd-chart[data-variant="sparkline"],
+rd-stat > ._rd-stat-extras > rd-chart[data-variant="sparkline"] > svg {
 	display: block;
 	width: 100%;
 	height: auto;

@@ -1,10 +1,10 @@
+/* rd-detail — four variants share one element. Panel is the default
+   (unattributed); the three text-driven variants attach a data-variant
+   that selects an alternate skin. */
+
 rd-detail {
 	display: block;
 	margin: 0 0 var(--rd-space-4);
-	background: var(--rd-panel-bg);
-	border: 1px solid var(--rd-panel-border);
-	border-radius: var(--rd-panel-radius);
-	overflow: hidden;
 }
 rd-detail + rd-detail {
 	margin-top: var(--rd-space-2);
@@ -14,15 +14,6 @@ rd-detail > details {
 }
 rd-detail > details > ._rd-detail-summary {
 	cursor: pointer;
-	padding: var(--rd-space-3) var(--rd-space-4);
-	font-family: var(--rd-font-body);
-	font-size: var(--rd-text-xs);
-	font-weight: var(--rd-weight-semibold);
-	letter-spacing: var(--rd-tracking-caps);
-	text-transform: uppercase;
-	color: var(--rd-fg);
-	background: var(--rd-panel-header-bg);
-	border-bottom: 1px solid var(--rd-panel-border);
 	user-select: none;
 	list-style: none;
 	display: flex;
@@ -30,14 +21,8 @@ rd-detail > details > ._rd-detail-summary {
 	gap: var(--rd-space-3);
 	transition: background var(--rd-motion-fast) var(--rd-ease-out);
 }
-rd-detail > details:not([open]) > ._rd-detail-summary {
-	border-bottom-color: transparent;
-}
 rd-detail > details > ._rd-detail-summary::-webkit-details-marker {
 	display: none;
-}
-rd-detail > details > ._rd-detail-summary:hover {
-	background: color-mix(in oklab, var(--rd-panel-header-bg) 75%, var(--rd-fg) 6%);
 }
 rd-detail > details > ._rd-detail-summary > ._rd-detail-text {
 	flex: 1 1 auto;
@@ -58,14 +43,144 @@ rd-detail > details > ._rd-detail-summary:hover > ._rd-detail-chevron {
 rd-detail > details[open] > ._rd-detail-summary > ._rd-detail-chevron {
 	transform: rotate(180deg);
 }
-rd-detail > details > :not(._rd-detail-summary) {
+
+/* ── Variant: panel (default) ─────────────────────────────────────── */
+rd-detail:not([data-variant]),
+rd-detail[data-variant="panel"] {
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
+}
+rd-detail:not([data-variant]) > details > ._rd-detail-summary,
+rd-detail[data-variant="panel"] > details > ._rd-detail-summary {
+	padding: var(--rd-space-3) var(--rd-space-4);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg);
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
+}
+rd-detail:not([data-variant]) > details:not([open]) > ._rd-detail-summary,
+rd-detail[data-variant="panel"] > details:not([open]) > ._rd-detail-summary {
+	border-bottom-color: transparent;
+}
+rd-detail:not([data-variant]) > details > ._rd-detail-summary:hover,
+rd-detail[data-variant="panel"] > details > ._rd-detail-summary:hover {
+	background: color-mix(in oklab, var(--rd-panel-header-bg) 75%, var(--rd-fg) 6%);
+}
+rd-detail:not([data-variant]) > details > :not(._rd-detail-summary),
+rd-detail[data-variant="panel"] > details > :not(._rd-detail-summary) {
 	padding: 0 var(--rd-space-4);
 }
-rd-detail > details > ._rd-detail-summary + * {
+rd-detail:not([data-variant]) > details > ._rd-detail-summary + *,
+rd-detail[data-variant="panel"] > details > ._rd-detail-summary + * {
 	padding-top: var(--rd-space-3);
 }
-rd-detail > details > :last-child:not(._rd-detail-summary) {
+rd-detail:not([data-variant]) > details > :last-child:not(._rd-detail-summary),
+rd-detail[data-variant="panel"] > details > :last-child:not(._rd-detail-summary) {
 	padding-bottom: var(--rd-space-4);
+}
+
+/* ── Variant: hairline ────────────────────────────────────────────── */
+rd-detail[data-variant="hairline"] {
+	border-top: var(--rd-rule) solid var(--rd-border);
+}
+rd-detail[data-variant="hairline"]:last-of-type,
+rd-detail[data-variant="hairline"] + :not(rd-detail) {
+	/* Last hairline detail (or one followed by a different block) carries
+	   its own bottom rule so the group reads as a bracketed list. */
+	border-bottom: var(--rd-rule) solid var(--rd-border);
+}
+rd-detail[data-variant="hairline"] > details > ._rd-detail-summary {
+	padding: var(--rd-space-3) 0;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg);
+}
+rd-detail[data-variant="hairline"] > details > :not(._rd-detail-summary) {
+	padding: 0 0 var(--rd-space-4) 0;
+}
+rd-detail[data-variant="hairline"] > details > :last-child:not(._rd-detail-summary) {
+	padding-bottom: var(--rd-space-4);
+}
+
+/* ── Variant: question (Q/A disclosure) ───────────────────────────── */
+rd-detail[data-variant="question"] {
+	border-top: var(--rd-rule) solid var(--rd-border);
+}
+rd-detail[data-variant="question"]:last-of-type,
+rd-detail[data-variant="question"] + :not(rd-detail) {
+	border-bottom: var(--rd-rule) solid var(--rd-border);
+}
+rd-detail[data-variant="question"] > details > ._rd-detail-summary {
+	align-items: baseline;
+	padding: var(--rd-space-4) 0;
+	color: var(--rd-fg);
+}
+rd-detail[data-variant="question"] > details > ._rd-detail-summary > ._rd-detail-text {
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-xl);
+	font-weight: var(--rd-weight-semibold);
+	line-height: var(--rd-leading-snug);
+	font-variation-settings: "opsz" 32;
+	text-wrap: balance;
+	letter-spacing: normal;
+	text-transform: none;
+}
+rd-detail[data-variant="question"] > details > ._rd-detail-summary > ._rd-detail-chevron {
+	align-self: center;
+}
+rd-detail[data-variant="question"] > details > :not(._rd-detail-summary) {
+	padding: 0 0 var(--rd-space-4) 0;
+	color: var(--rd-fg);
+	line-height: var(--rd-leading-relaxed);
+}
+
+/* ── Variant: reveal (spoiler) ────────────────────────────────────── */
+rd-detail[data-variant="reveal"] {
+	border: var(--rd-rule) dashed var(--rd-border-strong);
+	border-radius: var(--rd-panel-radius);
+	background: var(--rd-panel-bg);
+	overflow: hidden;
+}
+rd-detail[data-variant="reveal"] > details > ._rd-detail-summary {
+	padding: var(--rd-space-3) var(--rd-space-4);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	border-bottom: var(--rd-rule) dashed transparent;
+}
+rd-detail[data-variant="reveal"] > details > ._rd-detail-summary:hover {
+	color: var(--rd-fg);
+}
+rd-detail[data-variant="reveal"] > details[open] > ._rd-detail-summary {
+	border-bottom-color: var(--rd-border);
+	color: var(--rd-fg);
+}
+/* Reveal uses an eye glyph — its rotation behaviour from the chevron
+   rule above doesn't apply visually since it isn't a chevron. Pin it. */
+rd-detail[data-variant="reveal"] > details[open] > ._rd-detail-summary > ._rd-detail-chevron {
+	transform: none;
+	color: var(--rd-fg);
+}
+rd-detail[data-variant="reveal"] > details > :not(._rd-detail-summary) {
+	padding: var(--rd-space-3) var(--rd-space-4) var(--rd-space-4);
+}
+
+/* All variants: trim the last child's bottom margin so the body looks
+   right inside the wrapper. */
+rd-detail > details > :last-child {
+	margin-bottom: 0;
 }
 
 /* Animated open/close where supported (Chrome 129+, ~mid-2024). Other

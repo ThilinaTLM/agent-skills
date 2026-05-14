@@ -39,8 +39,7 @@
 	rd-stat,
 	rd-figure,
 	rd-quote,
-	rd-detail,
-	rd-defs {
+	rd-detail {
 		box-shadow: none;
 		break-inside: avoid;
 	}

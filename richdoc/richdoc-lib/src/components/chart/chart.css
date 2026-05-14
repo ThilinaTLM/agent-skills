@@ -80,3 +80,27 @@ rd-chart ._rd-chart-fallback {
 	font-style: italic;
 	padding: var(--rd-space-3);
 }
+
+/* Sparkline variant — inline trend strip, no chrome. Overrides every
+   block-level decoration the default chart skin sets up. */
+rd-chart[data-variant="sparkline"] {
+	display: inline-block;
+	vertical-align: middle;
+	line-height: 1;
+	color: var(--rd-accent);
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+}
+rd-chart[data-variant="sparkline"] > svg {
+	display: block;
+	max-width: none;
+	height: auto;
+}
+rd-chart[data-variant="sparkline"] > ._rd-sparkline-fallback {
+	font-family: var(--rd-font-mono);
+	font-size: 0.85em;
+	color: inherit;
+}

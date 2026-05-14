@@ -27,6 +27,12 @@ class RdChart extends HTMLElement implements Upgradeable {
 	async connectedCallback() {
 		if (this._upgraded) return;
 		this._upgraded = true;
+		const variant = this.getAttribute("variant") || "chart";
+		if (variant === "sparkline") {
+			this.setAttribute("data-variant", "sparkline");
+			await renderSparkline(this);
+			return;
+		}
 		const kind = this.getAttribute("kind") || "bar";
 		const format = (this.getAttribute("format") || "auto") as "json" | "csv" | "auto";
 		const xAttr = this.getAttribute("x");
@@ -265,6 +271,82 @@ function buildTable(rows: Row[]): HTMLElement {
 	}
 	table.appendChild(tbody);
 	return table;
+}
+
+/**
+ * Sparkline mode — inline trend strip, no chrome. Same Plot engine,
+ * different defaults and a strictly minimal layout. Triggered by
+ * `variant="sparkline"`.
+ */
+async function renderSparkline(host: HTMLElement): Promise<void> {
+	const raw = host.getAttribute("data") || host.textContent || "";
+	const values = raw
+		.split(",")
+		.map((s) => s.trim())
+		.filter(Boolean)
+		.map(Number)
+		.filter((n) => Number.isFinite(n));
+	host.innerHTML = "";
+	if (!values.length) return;
+
+	const kind = host.getAttribute("kind") || "line";
+	const width = Number(host.getAttribute("width") || "80");
+	const height = Number(host.getAttribute("height") || "20");
+	const color = host.getAttribute("color") || "currentColor";
+	const showEndpoint = host.getAttribute("endpoint") !== "false";
+
+	const Plot = await loadPlot();
+	if (!Plot) {
+		host.appendChild(el("span", { class: "_rd-sparkline-fallback" }, sparkSummary(values)));
+		return;
+	}
+
+	const data = values.map((v, i) => ({ i, v }));
+	const opts: Record<string, unknown> = {
+		width,
+		height,
+		marginTop: 2,
+		marginBottom: 2,
+		marginLeft: 2,
+		marginRight: showEndpoint ? 6 : 2,
+		x: { axis: null },
+		y: { axis: null },
+		style: {
+			background: "transparent",
+			overflow: "visible",
+		},
+		marks: [
+			kind === "bar"
+				? Plot.barY(data, { x: "i", y: "v", fill: color })
+				: kind === "area"
+					? Plot.areaY(data, { x: "i", y: "v", fill: color, fillOpacity: 0.25 })
+					: Plot.line(data, { x: "i", y: "v", stroke: color, strokeWidth: 1.25 }),
+		],
+	};
+	if (showEndpoint && kind !== "bar") {
+		(opts.marks as unknown[]).push(
+			Plot.dot([data[data.length - 1]], { x: "i", y: "v", fill: color, r: 2 }),
+		);
+	}
+	try {
+		const svg = Plot.plot(opts);
+		host.appendChild(svg);
+	} catch {
+		host.appendChild(el("span", { class: "_rd-sparkline-fallback" }, sparkSummary(values)));
+	}
+}
+
+function sparkSummary(vs: number[]): string {
+	const last = vs[vs.length - 1];
+	const first = vs[0];
+	const delta = last - first;
+	const sign = delta > 0 ? "▲" : delta < 0 ? "▼" : "→";
+	return `${sign} ${formatSparkNum(last)}`;
+}
+
+function formatSparkNum(n: number): string {
+	if (Number.isInteger(n)) return String(n);
+	return n.toFixed(1);
 }
 
 export function register(): void {

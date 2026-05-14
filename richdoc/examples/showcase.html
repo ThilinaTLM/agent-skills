@@ -26,9 +26,9 @@
 		</rd-kv>
 	</rd-hero>
 
-	<rd-tldr>
+	<rd-callout type="tldr">
 		<p><em>Richdoc</em> is a small framework for documents written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should — read top-to-bottom, with occasional asides dropping down to a Notes section at the foot of the page.</p>
-	</rd-tldr>
+	</rd-callout>
 
 	<p>The look is intentionally editorial<rd-footnote>Markers stay inline as small superscript numerals; the body of each note is collected at the bottom of the enclosing <code>rd-page</code> with auto-numbering and a back-link.</rd-footnote>: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
 
@@ -291,7 +291,7 @@
 			</rd-event>
 			<rd-event date="2026-05-16" title="v0.3 editorial redesign">
 				Fraunces + Geist + Fira Code, hairline rules, pull-quotes, oversized stats.
-				Six new tags (<code>rd-icon</code>, <code>rd-math</code>, <code>rd-diff</code>, <code>rd-footnote</code>, <code>rd-defs</code>, <code>rd-def</code>);
+				Five new tags (<code>rd-icon</code>, <code>rd-math</code>, <code>rd-diff</code>, <code>rd-footnote</code>, glossary support via <code>rd-kv layout="stacked"</code>);
 				<code>rd-code</code> upgraded with syntax highlighting and line numbers.
 			</rd-event>
 			<rd-event date="TBD" title="v1.0 multi-doc sites">
@@ -358,17 +358,17 @@
 	</rd-section>
 
 	<rd-section title="Glossary">
-		<p>Use <code>rd-defs</code> for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines. For inline previews where a full glossary entry would be overkill, reach for <rd-tooltip term="rd-tooltip">An inline term with a dotted underline. Hover, focus, or tap it to read a rich preview — including <code>code</code>, <em>emphasis</em>, or links — without leaving your place in the prose.</rd-tooltip> instead.</p>
-		<rd-defs title="Terms used in this document">
-			<rd-def term="richdoc">A small framework for AI-authored, human-read HTML documents that uses a closed vocabulary of <code>rd-*</code> custom elements.</rd-def>
-			<rd-def term="editorial">A design voice borrowed from print publications: hairline rules, oldstyle figures, drop caps, Fraunces display type, restrained colour.</rd-def>
-			<rd-def term="closed vocabulary">A fixed list of tags that the agent must choose from. New tags require a deliberate authoring decision and a linter update.</rd-def>
-			<rd-def term="optical size">A Fraunces variation axis that adjusts letterforms for the size at which they will appear. Set higher (<code>72</code>, <code>144</code>) for display.</rd-def>
-		</rd-defs>
+		<p>Use <code>rd-kv layout="stacked"</code> for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines. For inline previews where a full glossary entry would be overkill, reach for <rd-tooltip term="rd-tooltip">An inline term with a dotted underline. Hover, focus, or tap it to read a rich preview — including <code>code</code>, <em>emphasis</em>, or links — without leaving your place in the prose.</rd-tooltip> instead.</p>
+		<rd-kv layout="stacked" title="Terms used in this document">
+			<rd-row key="richdoc">A small framework for AI-authored, human-read HTML documents that uses a closed vocabulary of <code>rd-*</code> custom elements.</rd-row>
+			<rd-row key="editorial">A design voice borrowed from print publications: hairline rules, oldstyle figures, drop caps, Fraunces display type, restrained colour.</rd-row>
+			<rd-row key="closed vocabulary">A fixed list of tags that the agent must choose from. New tags require a deliberate authoring decision and a linter update.</rd-row>
+			<rd-row key="optical size">A Fraunces variation axis that adjusts letterforms for the size at which they will appear. Set higher (<code>72</code>, <code>144</code>) for display.</rd-row>
+		</rd-kv>
 	</rd-section>
 
 	<rd-section title="TL;DR strip">
-		<p>Use <code>rd-tldr</code> as the first block after the hero. It's a focal summary band with an oversized eyebrow and slightly larger body type than the surrounding prose. See the very top of this page.</p>
+		<p>Use <code>&lt;rd-callout type="tldr"&gt;</code> as the first block after the hero. It's a focal summary band with an oversized eyebrow and slightly larger body type than the surrounding prose. See the very top of this page.</p>
 	</rd-section>
 
 	<rd-section title="Hero">
@@ -445,7 +445,7 @@
 	<rd-section title="Status updates">
 		<p>Dated reverse-chron entries for changelogs, release notes, status reports. The kind glyph and tint differ between release / change / note.</p>
 		<rd-update date="2026-05-14" kind="release" author="platform team" title="v0.4 — expanded vocabulary">
-			<p>16 new tags landed in Phase 1: <code>rd-hero</code>, <code>rd-banner</code>, <code>rd-tldr</code>, <code>rd-progress</code>, <code>rd-steps</code>, <code>rd-pros-cons</code>, <code>rd-decision</code>, <code>rd-update</code>, <code>rd-faq</code>, <code>rd-tree</code>, <code>rd-shell</code>, <code>rd-api</code>, <code>rd-rubric</code>, <code>rd-swatch</code>, <code>rd-margin</code>, <code>rd-spoiler</code>.</p>
+			<p>Phase 1 expanded the framework's structural vocabulary — hero, banner, progress, steps, pros/cons, decision records, updates, tree, terminal sessions, API blocks, rubrics, swatches, and margin notes all landed in one release.</p>
 		</rd-update>
 		<rd-update date="2026-05-12" kind="change" author="dana" title="Schema groups reorganised">
 			<p>Introduced <em>Decision &amp; planning</em> and <em>Reference</em> groupings in the schema registry. Mirrored in the SKILL.md tag tables.</p>
@@ -456,18 +456,16 @@
 	</rd-section>
 
 	<rd-section title="FAQ">
-		<p>Question/answer disclosure. Distinct from <code>rd-detail</code> — questions render in display Fraunces, answers in body Inter.</p>
-		<rd-faq title="Common questions">
-			<rd-q question="Do I have to use richdoc instead of Markdown?" open>
-				<rd-a><p>Use Markdown where the renderer might be anything (GitHub, chat, CLI). For documents read in a browser, richdoc gives a much richer presentation with no extra effort.</p></rd-a>
-			</rd-q>
-			<rd-q question="Can I add my own tags?">
-				<rd-a><p>No — the linter will reject unknown <code>rd-*</code> tags. The fixed vocabulary is the point. Extensions ship through a new release.</p></rd-a>
-			</rd-q>
-			<rd-q question="Does it work offline?">
-				<rd-a><p>Yes. The two shipped assets (<code>richdoc.css</code>, <code>richdoc.js</code>) work over <code>file://</code>. Components that need a CDN library (mermaid, KaTeX, charts) degrade to a readable fallback when offline.</p></rd-a>
-			</rd-q>
-		</rd-faq>
+		<p>Question/answer disclosure uses <code>rd-detail variant="question"</code> — questions render in display Fraunces, answers in body Inter, with hairline separators between entries.</p>
+		<rd-detail summary="Do I have to use richdoc instead of Markdown?" variant="question" open>
+			<p>Use Markdown where the renderer might be anything (GitHub, chat, CLI). For documents read in a browser, richdoc gives a much richer presentation with no extra effort.</p>
+		</rd-detail>
+		<rd-detail summary="Can I add my own tags?" variant="question">
+			<p>No — the linter will reject unknown <code>rd-*</code> tags. The fixed vocabulary is the point. Extensions ship through a new release.</p>
+		</rd-detail>
+		<rd-detail summary="Does it work offline?" variant="question">
+			<p>Yes. The two shipped assets (<code>richdoc.css</code>, <code>richdoc.js</code>) work over <code>file://</code>. Components that need a CDN library (mermaid, KaTeX, charts) degrade to a readable fallback when offline.</p>
+		</rd-detail>
 	</rd-section>
 
 	<rd-section title="Tree">
@@ -608,17 +606,17 @@ West,Add-on,11
 	</rd-section>
 
 	<rd-section title="Sparklines">
-		<p>Tiny inline trends, same Plot engine. They render in tables, in prose, or inside <code>rd-stat</code>. Latency last 30 days: <rd-sparkline values="4,3,5,3,4,2,3,5,6,4,3,2,3,4,5,3,2,4,3,2,3,4,3,5,4,3,2,3,4,3"></rd-sparkline>. Signups: <rd-sparkline kind="bar" values="2,4,3,6,8,5,9,7,10,12" color="var(--rd-success)" endpoint="false"></rd-sparkline>.</p>
+		<p>Tiny inline trends share the chart engine via <code>&lt;rd-chart variant="sparkline"&gt;</code> — stripped of axes, titles, legends. They render in tables, in prose, or inside <code>rd-stat</code>. Latency last 30 days: <rd-chart variant="sparkline" kind="line" data="4,3,5,3,4,2,3,5,6,4,3,2,3,4,5,3,2,4,3,2,3,4,3,5,4,3,2,3,4,3"></rd-chart>. Signups: <rd-chart variant="sparkline" kind="bar" data="2,4,3,6,8,5,9,7,10,12" color="var(--rd-success)" endpoint="false"></rd-chart>.</p>
 
 		<rd-cols n="3">
 			<rd-stat value="42K" label="Active users" trend="up" delta="+12% MoM" tone="positive">
-				<rd-sparkline values="32,33,35,34,36,37,39,38,40,42" color="var(--rd-success)"></rd-sparkline>
+				<rd-chart variant="sparkline" kind="line" data="32,33,35,34,36,37,39,38,40,42" color="var(--rd-success)"></rd-chart>
 			</rd-stat>
 			<rd-stat value="99.94" label="Uptime %" trend="flat">
-				<rd-sparkline values="99.9,99.95,99.94,99.97,99.93,99.94,99.95,99.94,99.96,99.94"></rd-sparkline>
+				<rd-chart variant="sparkline" kind="line" data="99.9,99.95,99.94,99.97,99.93,99.94,99.95,99.94,99.96,99.94"></rd-chart>
 			</rd-stat>
 			<rd-stat value="$12.4M" label="ARR" trend="up" delta="+18% YoY" tone="positive">
-				<rd-sparkline kind="area" values="8,9,9.5,10,10.8,11.2,11.6,11.9,12.1,12.4" color="var(--rd-accent)"></rd-sparkline>
+				<rd-chart variant="sparkline" kind="area" data="8,9,9.5,10,10.8,11.2,11.6,11.9,12.1,12.4" color="var(--rd-accent)"></rd-chart>
 			</rd-stat>
 		</rd-cols>
 	</rd-section>
@@ -660,11 +658,11 @@ West,Add-on,11
 		<p>Two affordances for content that should not interrupt the main reading line.</p>
 		<rd-margin>Margin notes float into the page gutter on viewports ≥ 1024 px and collapse to an inline tooltip marker below that — tap it to read the aside.</rd-margin>
 		<p>Margin notes — sometimes called sidenotes, after Tufte — give you a place to slip a clarifying remark next to the prose without breaking the paragraph. Use them where a footnote would feel too far away.</p>
-		<p>Spoilers hide content behind a reveal button. Useful for runbook solutions, exam answers, or any "think before you peek" pattern.</p>
-		<rd-spoiler label="Show the answer">
+		<p>Spoilers use <code>rd-detail variant="reveal"</code> — content hides behind an eye-icon button until the reader is ready. Useful for runbook solutions, exam answers, or any "think before you peek" pattern.</p>
+		<rd-detail summary="Show the answer" variant="reveal">
 			<p>The same component can also wrap multiple paragraphs, callouts, or even code blocks — anything that should not be eye-deep on first read.</p>
 			<rd-callout type="success" title="Inside the spoiler">Hidden content can include any other component.</rd-callout>
-		</rd-spoiler>
+		</rd-detail>
 	</rd-section>
 
 	<rd-section title="Plain prose, lists, and HTML">

@@ -60,7 +60,7 @@ class RdStat extends HTMLElement implements Upgradeable {
 		if (tone) this.setAttribute("data-tone", tone);
 
 		// Preserve element children authored inside <rd-stat> (typically a
-		// <rd-sparkline> trend strip). They get re-attached in a trailing
+		// <rd-chart variant="sparkline"> trend strip). They get re-attached in a trailing
 		// "extras" slot below the value/meta line so the count-up animation
 		// and tone styling stay in charge of the headline.
 		const extras = Array.from(this.children) as HTMLElement[];

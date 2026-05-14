@@ -20,11 +20,9 @@ import * as code from "./components/code/code.schema.ts";
 import * as cols from "./components/cols/cols.schema.ts";
 import * as compare from "./components/compare/compare.schema.ts";
 import * as decision from "./components/decision/decision.schema.ts";
-import * as defs from "./components/defs/defs.schema.ts";
 import * as detail from "./components/detail/detail.schema.ts";
 import * as diff from "./components/diff/diff.schema.ts";
 import * as embed from "./components/embed/embed.schema.ts";
-import * as faq from "./components/faq/faq.schema.ts";
 import * as figure from "./components/figure/figure.schema.ts";
 import * as footnote from "./components/footnote/footnote.schema.ts";
 import * as gallery from "./components/gallery/gallery.schema.ts";
@@ -43,14 +41,11 @@ import * as roadmap from "./components/roadmap/roadmap.schema.ts";
 import * as rubric from "./components/rubric/rubric.schema.ts";
 import * as section from "./components/section/section.schema.ts";
 import * as shell from "./components/shell/shell.schema.ts";
-import * as sparkline from "./components/sparkline/sparkline.schema.ts";
-import * as spoiler from "./components/spoiler/spoiler.schema.ts";
 import * as stat from "./components/stat/stat.schema.ts";
 import * as steps from "./components/steps/steps.schema.ts";
 import * as swatch from "./components/swatch/swatch.schema.ts";
 import * as tabs from "./components/tabs/tabs.schema.ts";
 import * as timeline from "./components/timeline/timeline.schema.ts";
-import * as tldr from "./components/tldr/tldr.schema.ts";
 import * as toc from "./components/toc/toc.schema.ts";
 import * as tooltip from "./components/tooltip/tooltip.schema.ts";
 import * as tree from "./components/tree/tree.schema.ts";
@@ -76,22 +71,17 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 	{ tagName: card.tagName, spec: card.spec },
 
 	// Information blocks
-	{ tagName: tldr.tagName, spec: tldr.spec },
 	{ tagName: callout.tagName, spec: callout.spec },
 	{ tagName: kv.tagName, spec: kv.spec },
 	{ tagName: kv.rowTagName, spec: kv.rowSpec },
 	{ tagName: badge.tagName, spec: badge.spec },
 	{ tagName: stat.tagName, spec: stat.spec },
-	{ tagName: sparkline.tagName, spec: sparkline.spec },
 	{ tagName: progress.tagName, spec: progress.spec },
 	{ tagName: chart.tagName, spec: chart.spec },
 	{ tagName: update.tagName, spec: update.spec },
 	{ tagName: quote.tagName, spec: quote.spec },
 	{ tagName: footnote.tagName, spec: footnote.spec },
-	{ tagName: defs.tagName, spec: defs.spec },
-	{ tagName: defs.defTagName, spec: defs.defSpec },
 	{ tagName: margin.tagName, spec: margin.spec },
-	{ tagName: spoiler.tagName, spec: spoiler.spec },
 	{ tagName: swatch.tagName, spec: swatch.spec },
 
 	// Comparison & code
@@ -116,9 +106,6 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 	{ tagName: steps.tagName, spec: steps.spec },
 	{ tagName: steps.stepTagName, spec: steps.stepSpec },
 	{ tagName: detail.tagName, spec: detail.spec },
-	{ tagName: faq.tagName, spec: faq.spec },
-	{ tagName: faq.qTagName, spec: faq.qSpec },
-	{ tagName: faq.aTagName, spec: faq.aSpec },
 	{ tagName: tree.tagName, spec: tree.spec },
 	{ tagName: tree.nodeTagName, spec: tree.nodeSpec },
 	{ tagName: checklist.tagName, spec: checklist.spec },

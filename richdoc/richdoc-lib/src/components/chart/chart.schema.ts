@@ -2,8 +2,9 @@ import type { TagSpec } from "../../lib/types.ts";
 
 export const tagName = "rd-chart";
 export const spec: TagSpec = {
-	required: ["kind"],
 	optional: [
+		"variant",
+		"kind",
 		"data",
 		"format",
 		"x",
@@ -13,9 +14,13 @@ export const spec: TagSpec = {
 		"title",
 		"caption",
 		"height",
+		"width",
 		"legend",
+		"color",
+		"endpoint",
 	],
 	enums: {
+		variant: ["chart", "sparkline"],
 		kind: ["bar", "line", "area", "donut", "scatter", "heatmap"],
 		format: ["json", "csv"],
 	},

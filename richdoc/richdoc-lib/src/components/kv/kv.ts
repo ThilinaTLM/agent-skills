@@ -5,9 +5,29 @@ interface UpgradeableRow extends HTMLElement {
 	_upgraded?: boolean;
 }
 
+/**
+ * <rd-kv> — magazine-style spec block.
+ *
+ * Two layouts:
+ *   - inline   (default) — two-column grid, key on the left
+ *   - stacked            — definition-list shape, term in Fraunces italic
+ *                          on top of the body. Use for glossaries.
+ *
+ * Optional `title` renders as an eyebrow above the rows.
+ */
 class RdKv extends HTMLElement {
 	_observer?: MutationObserver;
+	_titleAttached = false;
 	connectedCallback() {
+		const layout = this.getAttribute("layout") || "inline";
+		this.setAttribute("data-layout", layout);
+
+		const title = this.getAttribute("title");
+		if (title && !this._titleAttached) {
+			this.prepend(el("div", { class: "_rd-kv-title" }, title));
+			this._titleAttached = true;
+		}
+
 		this._upgradeRows();
 		if (!this._observer) {
 			this._observer = new MutationObserver(() => this._upgradeRows());

@@ -19,9 +19,9 @@
 		meta="TODO YYYY-MM-DD · Owner TODO · On-call TODO">
 	</rd-hero>
 
-	<rd-tldr>
+	<rd-callout type="tldr">
 		<p>TODO: 2–3 sentence summary. What's the symptom, what's the likely root cause, what's the fix?</p>
-	</rd-tldr>
+	</rd-callout>
 
 	<rd-callout type="warn" title="Before you start">
 		Run through the prerequisites. If any are missing, do not continue.
@@ -53,25 +53,23 @@
 			</rd-step>
 			<rd-step title="TODO step 3 — verify">
 				<p>TODO: how to know the fix worked.</p>
-				<rd-spoiler label="Expected verification output">
+				<rd-detail summary="Expected verification output" variant="reveal">
 					<rd-shell>
 						<rd-prompt>TODO verify</rd-prompt>
 						<rd-output tone="positive">TODO expected</rd-output>
 					</rd-shell>
-				</rd-spoiler>
+				</rd-detail>
 			</rd-step>
 		</rd-steps>
 	</rd-section>
 
 	<rd-section title="If it doesn't work">
-		<rd-faq>
-			<rd-q question="TODO failure mode 1" open>
-				<rd-a><p>TODO: what to try next.</p></rd-a>
-			</rd-q>
-			<rd-q question="TODO failure mode 2">
-				<rd-a><p>TODO.</p></rd-a>
-			</rd-q>
-		</rd-faq>
+		<rd-detail summary="TODO failure mode 1" variant="question" open>
+			<p>TODO: what to try next.</p>
+		</rd-detail>
+		<rd-detail summary="TODO failure mode 2" variant="question">
+			<p>TODO.</p>
+		</rd-detail>
 	</rd-section>
 
 	<rd-section title="Escalation">

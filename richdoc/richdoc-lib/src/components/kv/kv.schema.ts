@@ -5,7 +5,11 @@ import type { TagSpec } from "../../lib/types.ts";
 
 export const tagName = "rd-kv";
 export const spec: TagSpec = {
+	optional: ["title", "layout"],
 	customChildren: ["rd-row"],
+	enums: {
+		layout: ["inline", "stacked"],
+	},
 };
 
 export const rowTagName = "rd-row";

@@ -6,6 +6,6 @@ export const spec: TagSpec = {
 	optional: ["title"],
 	customChildren: "any",
 	enums: {
-		type: ["info", "success", "warn", "danger", "note"],
+		type: ["info", "success", "warn", "danger", "note", "tldr"],
 	},
 };

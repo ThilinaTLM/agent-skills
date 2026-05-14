@@ -18,11 +18,9 @@ import * as code from "./components/code/code.ts";
 import * as cols from "./components/cols/cols.ts";
 import * as compare from "./components/compare/compare.ts";
 import * as decision from "./components/decision/decision.ts";
-import * as defs from "./components/defs/defs.ts";
 import * as detail from "./components/detail/detail.ts";
 import * as diff from "./components/diff/diff.ts";
 import * as embed from "./components/embed/embed.ts";
-import * as faq from "./components/faq/faq.ts";
 import * as figure from "./components/figure/figure.ts";
 import * as footnote from "./components/footnote/footnote.ts";
 import * as gallery from "./components/gallery/gallery.ts";
@@ -41,14 +39,11 @@ import * as roadmap from "./components/roadmap/roadmap.ts";
 import * as rubric from "./components/rubric/rubric.ts";
 import * as section from "./components/section/section.ts";
 import * as shell from "./components/shell/shell.ts";
-import * as sparkline from "./components/sparkline/sparkline.ts";
-import * as spoiler from "./components/spoiler/spoiler.ts";
 import * as stat from "./components/stat/stat.ts";
 import * as steps from "./components/steps/steps.ts";
 import * as swatch from "./components/swatch/swatch.ts";
 import * as tabs from "./components/tabs/tabs.ts";
 import * as timeline from "./components/timeline/timeline.ts";
-import * as tldr from "./components/tldr/tldr.ts";
 import * as toc from "./components/toc/toc.ts";
 import * as tooltip from "./components/tooltip/tooltip.ts";
 import * as tree from "./components/tree/tree.ts";
@@ -65,7 +60,6 @@ export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	callout.register,
 	banner.register,
 	hero.register,
-	tldr.register,
 	kv.register,
 	badge.register,
 	compare.register,
@@ -85,10 +79,8 @@ export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	toc.register,
 	quote.register,
 	detail.register,
-	faq.register,
 	tree.register,
 	stat.register,
-	sparkline.register,
 	progress.register,
 	chart.register,
 	figure.register,
@@ -96,7 +88,6 @@ export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	gallery.register,
 	embed.register,
 	checklist.register,
-	spoiler.register,
 	margin.register,
 	api.register,
 	// tooltip must register before footnote so the footnote marker can
@@ -104,5 +95,4 @@ export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	tooltip.register,
 	footnote.register,
 	references.register,
-	defs.register,
 ];
