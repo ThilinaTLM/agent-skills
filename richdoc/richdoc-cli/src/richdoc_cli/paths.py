@@ -2,10 +2,11 @@
 
 Layout:
     <FRAMEWORK_ROOT>/
-        assets/
-            richdoc.css
-            richdoc.js
-            schema.json
+        richdoc-lib/
+            assets/
+                richdoc.css
+                richdoc.js
+                schema.json
         templates/
             *.html
         richdoc-cli/
@@ -27,6 +28,9 @@ CLI_ROOT: Path = CLI_PACKAGE_DIR.parent.parent
 # .../richdoc/
 FRAMEWORK_ROOT: Path = CLI_ROOT.parent
 
-ASSETS_DIR: Path = FRAMEWORK_ROOT / "assets"
+# .../richdoc/richdoc-lib/
+LIB_ROOT: Path = FRAMEWORK_ROOT / "richdoc-lib"
+
+ASSETS_DIR: Path = LIB_ROOT / "assets"
 TEMPLATES_DIR: Path = FRAMEWORK_ROOT / "templates"
 SCHEMA_PATH: Path = ASSETS_DIR / "schema.json"
