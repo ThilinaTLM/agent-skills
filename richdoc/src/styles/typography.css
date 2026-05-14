@@ -138,12 +138,30 @@ rd-page ul > li {
 	position: relative;
 }
 rd-page ul > li::before {
-	content: "—";
+	content: "";
 	position: absolute;
-	left: calc(-1 * var(--rd-space-5));
-	width: var(--rd-space-5);
-	color: var(--rd-fg-subtle);
-	font-weight: var(--rd-weight-medium);
+	left: calc(-1 * var(--rd-space-4));
+	top: 0.65em;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: var(--rd-fg-muted);
+}
+/* Nested levels: open circle to differentiate from the parent. */
+rd-page ul ul > li::before {
+	width: 5px;
+	height: 5px;
+	background: transparent;
+	border: 1px solid var(--rd-fg-subtle);
+}
+/* Third+ level: smaller filled square for further differentiation. */
+rd-page ul ul ul > li::before {
+	width: 4px;
+	height: 4px;
+	border-radius: 0;
+	background: var(--rd-fg-subtle);
+	border: 0;
+	top: 0.7em;
 }
 
 rd-page code {
@@ -160,9 +178,10 @@ rd-page pre {
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-sm);
 	line-height: var(--rd-leading-normal);
-	background: var(--rd-bg-sunken);
-	border-top: var(--rd-rule-strong) solid var(--rd-border-strong);
-	padding: var(--rd-space-4) 0;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	padding: var(--rd-space-4);
 	overflow-x: auto;
 	margin: 0 0 var(--rd-space-5);
 	font-feature-settings: "calt";
@@ -208,17 +227,25 @@ rd-page hr::after {
 
 rd-page table {
 	width: 100%;
-	border-collapse: collapse;
+	border-collapse: separate;
+	border-spacing: 0;
 	margin: 0 0 var(--rd-space-5);
 	font-size: var(--rd-text-sm);
 	font-variant-numeric: tabular-nums lining-nums;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
 }
 rd-page th,
 rd-page td {
 	text-align: left;
-	padding: var(--rd-space-2) var(--rd-space-3);
+	padding: var(--rd-space-3) var(--rd-space-4);
 	border-bottom: 1px solid var(--rd-border);
 	vertical-align: top;
+}
+rd-page tr:last-child td {
+	border-bottom: 0;
 }
 rd-page th {
 	font-weight: var(--rd-weight-semibold);
@@ -226,7 +253,8 @@ rd-page th {
 	text-transform: uppercase;
 	letter-spacing: var(--rd-tracking-caps);
 	color: var(--rd-fg-muted);
-	border-bottom: var(--rd-rule-strong) solid var(--rd-border-strong);
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
 }
 
 rd-page img {

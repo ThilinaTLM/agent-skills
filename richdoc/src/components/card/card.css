@@ -1,11 +1,12 @@
 rd-card {
 	display: block;
-	background: var(--rd-bg-elev);
-	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius-sm);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
 	padding: var(--rd-space-5) var(--rd-space-5);
 	margin: 0 0 var(--rd-space-4);
 	position: relative;
+	overflow: hidden;
 }
 rd-cols > rd-card {
 	margin: 0;
@@ -15,9 +16,10 @@ rd-card > ._rd-card-header {
 	display: flex;
 	flex-direction: column;
 	gap: var(--rd-space-1);
-	margin: 0 0 var(--rd-space-3);
-	padding-bottom: var(--rd-space-3);
-	border-bottom: 1px solid var(--rd-border);
+	margin: calc(-1 * var(--rd-space-5)) calc(-1 * var(--rd-space-5)) var(--rd-space-4);
+	padding: var(--rd-space-3) var(--rd-space-5);
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
 }
 rd-card > ._rd-card-header > ._rd-card-kicker {
 	font-family: var(--rd-font-body);

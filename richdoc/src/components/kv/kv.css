@@ -3,11 +3,10 @@ rd-kv {
 	grid-template-columns: minmax(8rem, max-content) 1fr;
 	gap: var(--rd-space-3) var(--rd-space-5);
 	margin: 0 0 var(--rd-space-5);
-	padding: var(--rd-space-4) 0;
-	background: transparent;
-	border: 0;
-	border-top: var(--rd-rule-strong) solid var(--rd-fg);
-	border-bottom: 1px solid var(--rd-border-strong);
+	padding: var(--rd-space-4) var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
 	font-variant-numeric: lining-nums tabular-nums;
 }
 rd-kv > rd-row {
@@ -36,7 +35,7 @@ rd-kv > rd-row > ._rd-kv-value > :last-child {
    first (the grid items inherit from their rd-row parent via :nth-of-type). */
 rd-kv > rd-row:not(:first-of-type) > ._rd-kv-key,
 rd-kv > rd-row:not(:first-of-type) > ._rd-kv-value {
-	border-top: 1px dotted var(--rd-border-strong);
+	border-top: 1px solid var(--rd-panel-border);
 	padding-top: var(--rd-space-3);
 }
 

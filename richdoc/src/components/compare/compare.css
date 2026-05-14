@@ -2,10 +2,9 @@ rd-compare {
 	display: block;
 	overflow-x: auto;
 	margin: 0 0 var(--rd-space-5);
-	background: transparent;
-	border: 0;
-	border-top: var(--rd-rule-strong) solid var(--rd-fg);
-	border-bottom: var(--rd-rule-strong) solid var(--rd-fg);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
 }
 rd-compare > ._rd-compare-table {
 	width: 100%;
@@ -15,21 +14,21 @@ rd-compare > ._rd-compare-table {
 }
 rd-compare ._rd-compare-table thead th {
 	text-align: left;
-	padding: var(--rd-space-3) var(--rd-space-4) var(--rd-space-3) 0;
-	background: transparent;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
 	font-family: var(--rd-font-body);
 	font-size: var(--rd-text-xs);
 	font-weight: var(--rd-weight-semibold);
 	letter-spacing: var(--rd-tracking-caps);
 	text-transform: uppercase;
 	color: var(--rd-fg-muted);
-	border-bottom: 1px solid var(--rd-border-strong);
+	border-bottom: 1px solid var(--rd-panel-border);
 }
 rd-compare ._rd-compare-table thead th:first-child {
 	color: var(--rd-fg);
 }
 rd-compare ._rd-compare-table td {
-	padding: var(--rd-space-3) var(--rd-space-4) var(--rd-space-3) 0;
+	padding: var(--rd-space-3) var(--rd-space-4);
 	border-bottom: 1px solid var(--rd-border);
 	vertical-align: top;
 	color: var(--rd-fg);

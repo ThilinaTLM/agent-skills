@@ -1,9 +1,10 @@
 rd-diff {
 	display: block;
 	margin: 0 0 var(--rd-space-5);
-	border-top: var(--rd-rule-strong) solid var(--rd-fg);
-	border-bottom: 1px solid var(--rd-border-strong);
-	background: transparent;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
 	font-family: var(--rd-font-mono);
 }
 rd-diff > ._rd-code-header {
@@ -11,8 +12,9 @@ rd-diff > ._rd-code-header {
 	align-items: baseline;
 	justify-content: space-between;
 	gap: var(--rd-space-3);
-	padding: var(--rd-space-2) 0;
-	border-bottom: 1px solid var(--rd-border);
+	padding: var(--rd-space-2) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
 }
 rd-diff > ._rd-code-header > ._rd-code-label {
 	font-family: var(--rd-font-mono);
@@ -48,7 +50,7 @@ rd-diff > ._rd-code-header > ._rd-code-copy[data-copied] {
 
 rd-diff > ._rd-diff-body {
 	margin: 0;
-	padding: var(--rd-space-3) 0;
+	padding: var(--rd-space-3) var(--rd-space-4);
 	border: 0;
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-sm);

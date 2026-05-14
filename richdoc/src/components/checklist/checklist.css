@@ -1,18 +1,17 @@
 rd-checklist {
 	display: block;
 	margin: 0 0 var(--rd-space-5);
-	padding: 0;
-	background: transparent;
-	border: 0;
-	border-top: var(--rd-rule-strong) solid var(--rd-fg);
-	border-bottom: 1px solid var(--rd-border-strong);
+	padding: 0 var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
 }
 rd-task {
 	display: flex;
 	align-items: flex-start;
 	gap: var(--rd-space-3);
 	padding: var(--rd-space-3) 0;
-	border-bottom: 1px dotted var(--rd-border-strong);
+	border-bottom: 1px solid var(--rd-panel-border);
 }
 rd-task:last-child {
 	border-bottom: 0;

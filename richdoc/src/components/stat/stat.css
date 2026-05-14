@@ -1,9 +1,9 @@
 rd-stat {
 	display: block;
-	background: transparent;
-	border: 0;
-	border-top: var(--rd-rule-strong) solid var(--rd-fg);
-	padding: var(--rd-space-3) 0 var(--rd-space-2);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	padding: var(--rd-space-4) var(--rd-space-5) var(--rd-space-5);
 	margin: 0 0 var(--rd-space-4);
 }
 rd-cols > rd-stat {

@@ -83,6 +83,15 @@
 	--rd-radius-md: 8px;
 	--rd-radius-lg: 14px;
 
+	/* Panel — shared container shell for information-dense blocks. Colors
+	   resolve from the active theme's elevation scale; the radius and rule
+	   width are fixed. Used by rd-code, rd-diff, rd-kv, rd-defs, rd-toc,
+	   rd-compare, rd-checklist, rd-card, rd-detail, and html <table>. */
+	--rd-panel-bg: var(--rd-bg-elev);
+	--rd-panel-header-bg: var(--rd-bg-sunken);
+	--rd-panel-border: var(--rd-border);
+	--rd-panel-radius: var(--rd-radius-md);
+
 	/* Hairline widths — semantic names so component CSS stays literal-free. */
 	--rd-rule: 1px;
 	--rd-rule-strong: 2px;

@@ -1,17 +1,19 @@
 rd-code {
 	display: block;
 	margin: 0 0 var(--rd-space-5);
-	background: transparent;
-	border-top: var(--rd-rule-strong) solid var(--rd-fg);
-	border-bottom: 1px solid var(--rd-border-strong);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
 	font-family: var(--rd-font-mono);
 }
 rd-code > ._rd-code-header {
 	display: flex;
 	align-items: baseline;
 	gap: var(--rd-space-3);
-	padding: var(--rd-space-2) 0;
-	border-bottom: 1px solid var(--rd-border);
+	padding: var(--rd-space-2) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
 }
 rd-code > ._rd-code-header > ._rd-code-lang {
 	font-family: var(--rd-font-mono);
@@ -55,7 +57,7 @@ rd-code > ._rd-code-header > ._rd-code-copy[data-copied] {
 
 rd-code > ._rd-code-body {
 	margin: 0;
-	padding: var(--rd-space-3) 0;
+	padding: var(--rd-space-3) var(--rd-space-4);
 	border: 0;
 	background: transparent;
 	overflow-x: auto;

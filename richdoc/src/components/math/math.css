@@ -1,18 +1,21 @@
 rd-math {
 	display: block;
 	margin: 0 0 var(--rd-space-5);
-	padding: var(--rd-space-3) 0;
+	padding: var(--rd-space-5) var(--rd-space-4);
 	overflow-x: auto;
 	text-align: center;
 	color: var(--rd-fg);
-	border-top: 1px solid var(--rd-border);
-	border-bottom: 1px solid var(--rd-border);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
 }
 rd-math[display="inline"] {
 	display: inline;
 	margin: 0;
 	padding: 0;
 	border: 0;
+	border-radius: 0;
+	background: transparent;
 	text-align: inherit;
 }
 

@@ -1,13 +1,12 @@
 rd-mermaid {
 	display: block;
-	background: transparent;
-	border: 0;
-	padding: var(--rd-space-4) 0;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	padding: var(--rd-space-5) var(--rd-space-4);
 	margin: 0 0 var(--rd-space-5);
 	overflow-x: auto;
 	text-align: center;
-	border-top: 1px solid var(--rd-border);
-	border-bottom: 1px solid var(--rd-border);
 }
 rd-mermaid svg {
 	max-width: 100%;

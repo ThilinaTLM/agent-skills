@@ -1,33 +1,36 @@
 rd-detail {
 	display: block;
 	margin: 0 0 var(--rd-space-4);
-	border: 0;
-	border-top: 1px solid var(--rd-border-strong);
-	border-bottom: 1px solid var(--rd-border-strong);
-	background: transparent;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
 }
 rd-detail + rd-detail {
-	border-top: 0;
-	margin-top: calc(-1 * var(--rd-space-4));
+	margin-top: var(--rd-space-2);
 }
 rd-detail > details {
 	display: block;
 }
 rd-detail > details > ._rd-detail-summary {
 	cursor: pointer;
-	padding: var(--rd-space-3) 0;
+	padding: var(--rd-space-3) var(--rd-space-4);
 	font-family: var(--rd-font-body);
 	font-size: var(--rd-text-xs);
 	font-weight: var(--rd-weight-semibold);
 	letter-spacing: var(--rd-tracking-caps);
 	text-transform: uppercase;
 	color: var(--rd-fg);
-	background: transparent;
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
 	user-select: none;
 	list-style: none;
 	display: flex;
 	align-items: center;
 	gap: var(--rd-space-3);
+}
+rd-detail > details:not([open]) > ._rd-detail-summary {
+	border-bottom-color: transparent;
 }
 rd-detail > details > ._rd-detail-summary::-webkit-details-marker {
 	display: none;
@@ -59,7 +62,7 @@ rd-detail > details > ._rd-detail-summary:hover::after {
 	border-color: var(--rd-fg);
 }
 rd-detail > details > :not(._rd-detail-summary) {
-	padding: 0;
+	padding: 0 var(--rd-space-4);
 }
 rd-detail > details > ._rd-detail-summary + * {
 	padding-top: var(--rd-space-3);
