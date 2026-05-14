@@ -73,7 +73,7 @@ rd-page > h1 + rd-quote + p::first-letter {
 	font-family: var(--rd-font-display);
 	font-weight: var(--rd-weight-semibold);
 	font-size: 3.6em;
-	line-height: 0.86;
+	line-height: 0.75;
 	float: left;
 	padding: 0.06em 0.08em 0 0;
 	margin: 0.02em 0.08em 0 0;
