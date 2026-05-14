@@ -310,6 +310,18 @@
 				D --> B
 				C --> E[Human review]
 		</rd-mermaid>
+		<p><code>rd-plantuml</code> works the same way but renders server-side — the source is sent to a PlantUML server (default <code>plantuml.com</code>). Set <code>endpoint</code> to a self-hosted or Kroki instance for sensitive content.</p>
+		<rd-plantuml>
+			@startuml
+			actor Agent
+			participant "richdoc CLI" as CLI
+			database Browser
+			Agent -> CLI : richdoc lint doc.html
+			CLI --> Agent : ok
+			Agent -> Browser : open doc.html
+			Browser --> Agent : rendered page
+			@enduml
+		</rd-plantuml>
 	</rd-section>
 
 	<rd-section title="Figures">

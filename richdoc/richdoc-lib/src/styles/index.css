@@ -65,6 +65,7 @@
 
 /* Diagrams, media */
 @import "../components/mermaid/mermaid.css";
+@import "../components/plantuml/plantuml.css";
 @import "../components/figure/figure.css";
 @import "../components/gallery/gallery.css";
 @import "../components/embed/embed.css";

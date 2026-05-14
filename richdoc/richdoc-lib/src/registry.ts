@@ -31,6 +31,7 @@ import * as margin from "./components/margin/margin.ts";
 import * as math from "./components/math/math.ts";
 import * as mermaid from "./components/mermaid/mermaid.ts";
 import * as page from "./components/page/page.ts";
+import * as plantuml from "./components/plantuml/plantuml.ts";
 import * as progress from "./components/progress/progress.ts";
 import * as prosCons from "./components/pros-cons/pros-cons.ts";
 import * as quote from "./components/quote/quote.ts";
@@ -75,6 +76,7 @@ export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	update.register,
 	decision.register,
 	mermaid.register,
+	plantuml.register,
 	roadmap.register,
 	toc.register,
 	quote.register,

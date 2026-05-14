@@ -33,6 +33,7 @@ import * as margin from "./components/margin/margin.schema.ts";
 import * as math from "./components/math/math.schema.ts";
 import * as mermaid from "./components/mermaid/mermaid.schema.ts";
 import * as page from "./components/page/page.schema.ts";
+import * as plantuml from "./components/plantuml/plantuml.schema.ts";
 import * as progress from "./components/progress/progress.schema.ts";
 import * as prosCons from "./components/pros-cons/pros-cons.schema.ts";
 import * as quote from "./components/quote/quote.schema.ts";
@@ -130,6 +131,7 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 
 	// Diagrams, media, decoration
 	{ tagName: mermaid.tagName, spec: mermaid.spec },
+	{ tagName: plantuml.tagName, spec: plantuml.spec },
 	{ tagName: figure.tagName, spec: figure.spec },
 	{ tagName: gallery.tagName, spec: gallery.spec },
 	{ tagName: gallery.shotTagName, spec: gallery.shotSpec },
