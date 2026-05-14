@@ -77,7 +77,7 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | `<rd-badge>` | `variant?` (`info\|success\|warn\|danger\|muted`) | Inline status tag with coloured dot. |
 | `<rd-stat>` | **`value`**, `label?`, `trend?` (`up\|down\|flat`), `delta?`, `tone?` (`positive\|negative\|neutral`) | Big-number dashboard tile, Fraunces display at opsz 144. |
 | `<rd-quote>` | `author?`, `cite?`, `source-url?` | Pull-quote with oversized opening glyph. |
-| `<rd-sidenote>` | `mark?` | Inline marginalia. Floats to the right gutter on wide viewports, inlines on narrow. Auto-numbered. |
+| `<rd-sidenote>` | `mark?` | Inline marginalia, auto-numbered. Renders inline-italic next to its marker on every viewport. |
 | `<rd-defs>` | `title?` | Definition list. Children must be `<rd-def>`. |
 | `<rd-def>` | **`term`** | One term/definition. Inside `<rd-defs>` only. |
 

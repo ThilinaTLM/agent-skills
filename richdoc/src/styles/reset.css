@@ -11,7 +11,12 @@ html {
 
 body {
 	margin: 0;
-	background: var(--rd-bg);
+	/* Paper grain lives on <body> so the texture is continuous across the
+	   viewport. rd-page intentionally has no background of its own — see
+	   page.css for the rationale. */
+	background-color: var(--rd-bg);
+	background-image: var(--rd-paper-grain);
+	background-repeat: repeat;
 	color: var(--rd-fg);
 	font-family: var(--rd-font-body);
 	font-size: var(--rd-text-base);

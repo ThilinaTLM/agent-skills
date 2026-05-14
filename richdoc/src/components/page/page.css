@@ -1,23 +1,19 @@
+/* Page — outer editorial frame.
+ *
+ * One centred column at --rd-max-width. No reserved gutter, no grid
+ * acrobatics. Paper grain is painted on <body> (see reset.css) so the
+ * background is continuous across the viewport.
+ */
+
 rd-page {
 	display: block;
 	max-width: var(--rd-max-width);
 	margin: 0 auto;
-	padding: var(--rd-space-8) var(--rd-space-5) var(--rd-space-8);
+	padding: var(--rd-space-8) var(--rd-space-5);
 	position: relative;
-	background-image: var(--rd-paper-grain);
-	background-repeat: repeat;
 	/* Counter context for editorial numbering. Section numerals, sidenote
 	   markers, and any future per-page counters reset here. */
 	counter-reset: rd-section rd-sidenote;
-}
-
-/* Wide viewport: reserve a right gutter so <rd-sidenote> can float into it.
-   Below this breakpoint, sidenotes collapse to inline-italic. */
-@media (min-width: 1100px) {
-	rd-page {
-		max-width: var(--rd-max-width-wide);
-		padding-right: calc(var(--rd-space-5) + var(--rd-gutter));
-	}
 }
 
 @media (max-width: 640px) {

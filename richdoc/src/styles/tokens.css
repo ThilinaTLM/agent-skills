@@ -87,12 +87,9 @@
 	--rd-rule: 1px;
 	--rd-rule-strong: 2px;
 
-	/* Layout. */
-	--rd-max-width: 1024px;
-	--rd-max-width-prose: 680px;
-	--rd-max-width-wide: 1180px;
-	/* Right gutter reserved for rd-sidenote on wide viewports. */
-	--rd-gutter: 240px;
+	/* Layout. Single page max-width — generous for modern monitors but
+	   still capped so prose stays readable on ultrawide displays. */
+	--rd-max-width: 1280px;
 
 	/* Subtle paper grain. Tiny inline SVG, tiled. Alpha is intentionally
 	   low — visible at zoom but invisible at a glance. */

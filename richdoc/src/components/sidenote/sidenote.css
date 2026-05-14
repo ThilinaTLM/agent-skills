@@ -1,7 +1,15 @@
+/* Sidenote — always inline-italic, auto-numbered.
+ *
+ * Renders like a tiny footnote pinned next to its marker. No floating,
+ * no reserved gutter, no breakpoint behaviour. The marker is a superscript
+ * "[N]" (or a custom mark); the body sits inline after it, in italic with
+ * a thin accent rule on the left so the eye can find it. */
+
 rd-sidenote {
 	display: inline;
 	counter-increment: rd-sidenote;
 }
+
 rd-sidenote > ._rd-sidenote-marker {
 	display: inline;
 	font-family: var(--rd-font-body);
@@ -20,6 +28,7 @@ rd-sidenote > ._rd-sidenote-marker::before {
 rd-sidenote > ._rd-sidenote-marker[data-custom-mark]::before {
 	content: "";
 }
+
 rd-sidenote > ._rd-sidenote-body {
 	display: inline;
 	font-style: italic;
@@ -44,34 +53,4 @@ rd-sidenote > ._rd-sidenote-body::before {
 }
 rd-sidenote > ._rd-sidenote-body[data-custom-mark]::before {
 	content: "";
-}
-
-/* Wide viewport: float the note body to the right and pull it into the
-   reserved gutter via negative margin. The float interrupts the line
-   so the marker stays inline with body prose while the note sits to
-   the right of the paragraph it appears in. */
-@media (min-width: 1100px) {
-	rd-sidenote > ._rd-sidenote-body {
-		float: right;
-		clear: right;
-		display: block;
-		width: var(--rd-gutter);
-		margin: 0 calc(-1 * (var(--rd-gutter) + var(--rd-space-5))) var(--rd-space-3) var(--rd-space-5);
-		padding: 0 0 0 var(--rd-space-4);
-		border-left: 1px solid var(--rd-border-strong);
-		border-top: 0;
-		background: transparent;
-		font-size: var(--rd-text-xs);
-		line-height: var(--rd-leading-snug);
-		text-align: left;
-		font-style: italic;
-		color: var(--rd-fg-muted);
-		border-radius: 0;
-	}
-	rd-sidenote > ._rd-sidenote-body::before {
-		display: block;
-		margin: 0 0 var(--rd-space-1);
-		font-size: var(--rd-text-xs);
-		letter-spacing: var(--rd-tracking-caps);
-	}
 }
