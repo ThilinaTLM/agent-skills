@@ -27,11 +27,12 @@ import * as mermaid from "./components/mermaid/mermaid.schema.ts";
 import * as page from "./components/page/page.schema.ts";
 import * as quote from "./components/quote/quote.schema.ts";
 import * as section from "./components/section/section.schema.ts";
-import * as sidenote from "./components/sidenote/sidenote.schema.ts";
+import * as footnote from "./components/footnote/footnote.schema.ts";
 import * as stat from "./components/stat/stat.schema.ts";
 import * as tabs from "./components/tabs/tabs.schema.ts";
 import * as timeline from "./components/timeline/timeline.schema.ts";
 import * as toc from "./components/toc/toc.schema.ts";
+import * as tooltip from "./components/tooltip/tooltip.schema.ts";
 
 import type { TagSpec } from "./lib/types.ts";
 
@@ -57,7 +58,7 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 	{ tagName: badge.tagName, spec: badge.spec },
 	{ tagName: stat.tagName, spec: stat.spec },
 	{ tagName: quote.tagName, spec: quote.spec },
-	{ tagName: sidenote.tagName, spec: sidenote.spec },
+	{ tagName: footnote.tagName, spec: footnote.spec },
 	{ tagName: defs.tagName, spec: defs.spec },
 	{ tagName: defs.defTagName, spec: defs.defSpec },
 
@@ -83,4 +84,5 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 	{ tagName: figure.tagName, spec: figure.spec },
 	{ tagName: toc.tagName, spec: toc.spec },
 	{ tagName: icon.tagName, spec: icon.spec },
+	{ tagName: tooltip.tagName, spec: tooltip.spec },
 ];

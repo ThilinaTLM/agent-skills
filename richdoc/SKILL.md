@@ -77,7 +77,7 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | `<rd-badge>` | `variant?` (`info\|success\|warn\|danger\|muted`) | Inline status tag with coloured dot. |
 | `<rd-stat>` | **`value`**, `label?`, `trend?` (`up\|down\|flat`), `delta?`, `tone?` (`positive\|negative\|neutral`) | Big-number dashboard tile, Fraunces display at opsz 144. |
 | `<rd-quote>` | `author?`, `cite?`, `source-url?` | Pull-quote with oversized opening glyph. |
-| `<rd-sidenote>` | `mark?` | Inline marginalia, auto-numbered. Renders inline-italic next to its marker on every viewport. |
+| `<rd-footnote>` | `mark?` | Inline superscript marker that links to a numbered entry collected in an auto-generated `<rd-footnotes>` block at the foot of the enclosing `<rd-page>`. Hover or focus the marker for a rich preview of the note; click to scroll to the entry. Each entry includes a back-link to its marker. |
 | `<rd-defs>` | `title?` | Definition list. Children must be `<rd-def>`. |
 | `<rd-def>` | **`term`** | One term/definition. Inside `<rd-defs>` only. |
 
@@ -107,6 +107,7 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | `<rd-mermaid>` | — | Lazy-loads mermaid from CDN; renders the diagram from text content. |
 | `<rd-toc>` | `levels?` (default `"2,3"`), `title?` (default `"On this page"`) | Auto-generated TOC from `<h2>`/`<h3>` inside the parent `<rd-page>`. |
 | `<rd-icon>` | **`name`** (enum), `size?` (`sm\|md\|lg`), `label?` | Inline SVG from vendored Lucide subset. Run `richdoc components --tag rd-icon` for the available names. |
+| `<rd-tooltip>` | **`term`** (text), `placement?` (`auto\|top\|bottom`) | Inline definition popup. The `term` renders with a dotted underline; the children render as a rich tooltip body on hover, focus, or tap. |
 
 ## Minimal example
 

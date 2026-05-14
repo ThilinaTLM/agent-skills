@@ -11,9 +11,10 @@ rd-page {
 	margin: 0 auto;
 	padding: var(--rd-space-8) var(--rd-space-5);
 	position: relative;
-	/* Counter context for editorial numbering. Section numerals, sidenote
-	   markers, and any future per-page counters reset here. */
-	counter-reset: rd-section rd-sidenote;
+	/* Counter context for editorial numbering. Section numerals and any
+	   future per-page counters reset here. Footnote numbering is handled
+	   by JS, not CSS counters. */
+	counter-reset: rd-section;
 }
 
 @media (max-width: 640px) {

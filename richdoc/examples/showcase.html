@@ -21,7 +21,7 @@
 		<rd-row key="Status"><rd-badge variant="success">stable</rd-badge> <rd-badge variant="info">editorial redesign</rd-badge></rd-row>
 	</rd-kv>
 
-	<p><em>Richdoc</em> is a small framework for documents that are written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should. Read it top-to-bottom — occasional sidenotes appear inline next to their marker<rd-sidenote>Sidenotes render inline-italic with an auto-numbered marker, on every viewport.</rd-sidenote>. The look is intentionally editorial: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
+	<p><em>Richdoc</em> is a small framework for documents that are written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should. Read it top-to-bottom — occasional asides drop down to a Notes section at the foot of the page<rd-footnote>Markers stay inline as small superscript numerals; the body of each note is collected at the bottom of the enclosing <code>rd-page</code> with auto-numbering and a back-link.</rd-footnote>. The look is intentionally editorial: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
 
 	<rd-toc levels="2,3" title="Contents"></rd-toc>
 
@@ -265,7 +265,7 @@
 			</rd-event>
 			<rd-event date="2026-05-16" title="v0.3 editorial redesign">
 				Fraunces + Geist + Fira Code, hairline rules, pull-quotes, oversized stats.
-				Six new tags (<code>rd-icon</code>, <code>rd-math</code>, <code>rd-diff</code>, <code>rd-sidenote</code>, <code>rd-defs</code>, <code>rd-def</code>);
+				Six new tags (<code>rd-icon</code>, <code>rd-math</code>, <code>rd-diff</code>, <code>rd-footnote</code>, <code>rd-defs</code>, <code>rd-def</code>);
 				<code>rd-code</code> upgraded with syntax highlighting and line numbers.
 			</rd-event>
 			<rd-event date="TBD" title="v1.0 multi-doc sites">
@@ -332,7 +332,7 @@
 	</rd-section>
 
 	<rd-section title="Glossary">
-		<p>Use <code>rd-defs</code> for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines.</p>
+		<p>Use <code>rd-defs</code> for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines. For inline previews where a full glossary entry would be overkill, reach for <rd-tooltip term="rd-tooltip">An inline term with a dotted underline. Hover, focus, or tap it to read a rich preview — including <code>code</code>, <em>emphasis</em>, or links — without leaving your place in the prose.</rd-tooltip> instead.</p>
 		<rd-defs title="Terms used in this document">
 			<rd-def term="richdoc">A small framework for AI-authored, human-read HTML documents that uses a closed vocabulary of <code>rd-*</code> custom elements.</rd-def>
 			<rd-def term="editorial">A design voice borrowed from print publications: hairline rules, oldstyle figures, drop caps, Fraunces display type, restrained colour.</rd-def>

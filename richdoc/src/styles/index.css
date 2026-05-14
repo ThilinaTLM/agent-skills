@@ -21,6 +21,7 @@
 /* Decoration / inline (icon first so callout's nested <rd-icon> picks
    up its styling immediately). */
 @import "../components/icon/icon.css";
+@import "../components/tooltip/tooltip.css";
 
 /* Information blocks */
 @import "../components/callout/callout.css";
@@ -28,7 +29,7 @@
 @import "../components/badge/badge.css";
 @import "../components/stat/stat.css";
 @import "../components/quote/quote.css";
-@import "../components/sidenote/sidenote.css";
+@import "../components/footnote/footnote.css";
 @import "../components/defs/defs.css";
 
 /* Comparison & code */

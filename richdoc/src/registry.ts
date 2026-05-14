@@ -25,11 +25,12 @@ import * as mermaid from "./components/mermaid/mermaid.ts";
 import * as page from "./components/page/page.ts";
 import * as quote from "./components/quote/quote.ts";
 import * as section from "./components/section/section.ts";
-import * as sidenote from "./components/sidenote/sidenote.ts";
+import * as footnote from "./components/footnote/footnote.ts";
 import * as stat from "./components/stat/stat.ts";
 import * as tabs from "./components/tabs/tabs.ts";
 import * as timeline from "./components/timeline/timeline.ts";
 import * as toc from "./components/toc/toc.ts";
+import * as tooltip from "./components/tooltip/tooltip.ts";
 
 export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	page.register,
@@ -55,6 +56,9 @@ export const REGISTRATIONS: ReadonlyArray<() => void> = [
 	stat.register,
 	figure.register,
 	checklist.register,
-	sidenote.register,
+	// tooltip must register before footnote so the footnote marker can
+	// rely on the shared tooltip layer being available at upgrade time.
+	tooltip.register,
+	footnote.register,
 	defs.register,
 ];

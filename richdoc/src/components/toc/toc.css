@@ -30,9 +30,18 @@ rd-toc li {
 	margin: 0;
 	padding: 0;
 	counter-increment: rd-toc-item;
+	position: static;
 }
-rd-toc li::before {
+/* Defeat the global rd-page bullet (filled circle / open ring / square). */
+rd-toc li::before,
+rd-page rd-toc ul > li::before,
+rd-page rd-toc ul ul > li::before,
+rd-page rd-toc ul ul ul > li::before {
 	content: none;
+	background: transparent;
+	border: 0;
+	width: 0;
+	height: 0;
 }
 rd-toc > ul > li {
 	border-top: 1px solid var(--rd-panel-border);
@@ -50,22 +59,22 @@ rd-toc a {
 	font-family: var(--rd-font-body);
 	transition: color 0.15s;
 }
-rd-toc > ul > li > a::before {
-	content: counter(rd-toc-item, decimal-leading-zero);
+/* Hierarchical numbering: 1, 1.1, 1.2, 1.2.1, 2, 3 … */
+rd-toc a::before {
+	content: counters(rd-toc-item, ".");
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-xs);
-	letter-spacing: var(--rd-tracking-caps);
+	letter-spacing: 0;
 	color: var(--rd-fg-subtle);
 	font-variant-numeric: lining-nums tabular-nums;
 	flex: 0 0 auto;
-	width: 2.5em;
+	min-width: 2.5em;
+}
+rd-toc ul ul a::before {
+	min-width: 3em;
 }
 rd-toc ul ul a {
-	font-family: var(--rd-font-display);
-	font-style: italic;
-	font-size: var(--rd-text-sm);
 	color: var(--rd-fg-muted);
-	font-variation-settings: "opsz" 32;
 }
 rd-toc a:hover {
 	color: var(--rd-accent);
