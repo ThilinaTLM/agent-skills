@@ -10,6 +10,7 @@ rd-tabs > ._rd-tab-strip {
 	background: transparent;
 	border-bottom: 1px solid var(--rd-border-strong);
 	overflow-x: auto;
+	overflow-y: hidden;
 	padding-bottom: 0;
 }
 rd-tabs > ._rd-tab-strip > button {
