@@ -27,6 +27,9 @@ function loadHljs(): Promise<HljsApi | null> {
 }
 
 function wrapLines(html: string, start: number, highlighted: Set<number>): string {
+	// Note: line spans are joined with no separator. The parent <pre> uses
+	// white-space: pre, so any literal "\n" between display:block line spans
+	// would render as an extra blank line and double the visual line height.
 	const lines = html.split("\n");
 	const out: string[] = [];
 	for (let i = 0; i < lines.length; i++) {
@@ -36,7 +39,7 @@ function wrapLines(html: string, start: number, highlighted: Set<number>): strin
 			`<span class="_rd-code-line" data-line="${n}"${hl}>${lines[i] || " "}</span>`,
 		);
 	}
-	return out.join("\n");
+	return out.join("");
 }
 
 class RdCode extends HTMLElement implements Upgradeable {

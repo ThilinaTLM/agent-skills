@@ -61,7 +61,7 @@ rd-code > ._rd-code-body {
 	overflow-x: auto;
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-sm);
-	line-height: 1.65;
+	line-height: 1.5;
 	font-feature-settings: "calt";
 	font-variant-numeric: tabular-nums;
 	color: var(--rd-fg);
@@ -79,7 +79,7 @@ rd-code ._rd-code-line {
 	display: block;
 	padding: 0 var(--rd-space-3) 0 0;
 	border-left: 3px solid transparent;
-	min-height: 1.65em;
+	min-height: 1.5em;
 	white-space: pre;
 }
 rd-code ._rd-code-line[data-highlight] {

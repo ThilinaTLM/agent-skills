@@ -1,7 +1,7 @@
 rd-quote {
 	display: block;
-	margin: var(--rd-space-6) 0 var(--rd-space-6);
-	padding: var(--rd-space-2) 0 var(--rd-space-2) var(--rd-space-6);
+	margin: var(--rd-space-7) 0 var(--rd-space-6);
+	padding: var(--rd-space-2) 0 var(--rd-space-2) var(--rd-space-5);
 	background: transparent;
 	border: 0;
 	border-left: 0;
@@ -19,7 +19,10 @@ rd-quote {
 rd-quote::before {
 	content: "\201C";
 	position: absolute;
-	left: -0.15em;
+	/* Anchor to rd-quote's outer-left edge so the glyph sits flush with the
+	   page's content max-width boundary instead of bleeding into the
+	   surrounding rd-page padding gutter. */
+	left: 0;
 	top: -0.35em;
 	font-size: 4em;
 	font-style: normal;

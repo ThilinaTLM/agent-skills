@@ -108,8 +108,10 @@ class RdDiff extends HTMLElement implements Upgradeable {
 			lineEl.setAttribute("data-kind", kind);
 			if (showLineNumbers) lineEl.setAttribute("data-line", String(i + 1));
 			lineEl.innerHTML = `<span class="_rd-diff-marker">${escapeHtml(marker)}</span><span class="_rd-diff-content">${bodyHtml}</span>`;
+			// No "\n" text node between lines — the parent <pre> preserves
+			// whitespace, which would render the newline as an extra blank line
+			// between display:block line spans.
 			pre.appendChild(lineEl);
-			pre.appendChild(document.createTextNode("\n"));
 		}
 
 		this.appendChild(pre);

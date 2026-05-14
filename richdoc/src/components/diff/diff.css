@@ -52,7 +52,7 @@ rd-diff > ._rd-diff-body {
 	border: 0;
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-sm);
-	line-height: 1.65;
+	line-height: 1.5;
 	background: transparent;
 	overflow-x: auto;
 	font-feature-settings: "calt";
