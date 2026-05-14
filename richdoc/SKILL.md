@@ -33,6 +33,8 @@ Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https
 | `richdoc init [dir]` | Copy `richdoc.css` and `richdoc.js` into a directory. |
 | `richdoc lint <file>` | Validate a `.html` file against the rd-* schema. |
 | `richdoc components [--tag <name>]` | Print the vocabulary from the live schema. |
+| `richdoc export-md <file> [-o out.md]` | Convert a richdoc HTML file to GitHub-flavored markdown. |
+| `richdoc bundle <file> [-o out.html]` | Inline every relative-path dep into a self-contained HTML file. |
 
 ### Typical authoring flow
 
@@ -50,7 +52,17 @@ richdoc lint docs/auth-plan.html
 
 # Open in any browser. No server needed.
 xdg-open docs/auth-plan.html
+
+# Convert to markdown for chat / GitHub / email.
+richdoc export-md docs/auth-plan.html
+
+# Produce a self-contained HTML you can share as a single file.
+richdoc bundle docs/auth-plan.html
 ```
+
+`bundle` inlines `richdoc.css`, `richdoc.js`, and any relative-path image / font / media reference as inline `<style>` / `<script>` / `data:` URIs. Absolute URLs (Google Fonts, jsDelivr) stay as-is — the recipient is expected to have internet when opening the file. Pass `-o -` to either command to write the result to stdout (the JSON envelope is suppressed in that mode).
+
+`export-md` maps every `rd-*` component to its closest markdown idiom: callouts to GFM admonitions (`> [!NOTE]`), `rd-compare` / `rd-rubric` / `rd-roadmap` / `rd-api` to tables, `rd-code` / `rd-diff` / `rd-shell` to fenced code blocks, `rd-checklist` to GFM task lists, `rd-footnote` and `rd-cite` to footnotes, `rd-detail` to a raw `<details>` block. Components without a natural markdown form (`rd-chart`, `rd-icon`, `rd-toc`) are dropped and reported in the JSON envelope's `dropped[]` field.
 
 `richdoc new` writes a relative `<link href="./richdoc.css">` and `<script src="./richdoc.js" defer>`. The assets must exist next to the doc — run `richdoc init <dir>` once in that directory.
 
