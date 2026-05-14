@@ -1,10 +1,9 @@
 rd-figure {
 	display: block;
-	margin: 0 0 var(--rd-space-5);
-	padding: var(--rd-space-4);
-	background: var(--rd-bg-elev);
-	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius-md);
+	margin: 0 0 var(--rd-space-6);
+	padding: 0;
+	background: transparent;
+	border: 0;
 	text-align: center;
 }
 rd-figure > img,
@@ -25,8 +24,21 @@ rd-figure > ._rd-figure-cap {
 	display: block;
 	text-align: center;
 	margin-top: var(--rd-space-3);
+	font-family: var(--rd-font-display);
+	font-style: italic;
 	font-size: var(--rd-text-sm);
 	color: var(--rd-fg-muted);
-	font-style: italic;
-	font-family: var(--rd-font-display);
+	font-variation-settings: "opsz" 14;
+	letter-spacing: var(--rd-tracking-snug);
+	text-wrap: balance;
+}
+rd-figure > ._rd-figure-cap::before {
+	content: "Fig. \2014  ";
+	font-family: var(--rd-font-body);
+	font-style: normal;
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-accent);
 }

@@ -1,27 +1,55 @@
 rd-kv {
 	display: grid;
-	grid-template-columns: max-content 1fr;
-	gap: var(--rd-space-2) var(--rd-space-4);
-	margin: 0 0 var(--rd-space-4);
-	padding: var(--rd-space-3) var(--rd-space-4);
-	background: var(--rd-bg-sunken);
-	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius-md);
+	grid-template-columns: minmax(8rem, max-content) 1fr;
+	gap: var(--rd-space-3) var(--rd-space-5);
+	margin: 0 0 var(--rd-space-5);
+	padding: var(--rd-space-4) 0;
+	background: transparent;
+	border: 0;
+	border-top: var(--rd-rule-strong) solid var(--rd-fg);
+	border-bottom: 1px solid var(--rd-border-strong);
+	font-variant-numeric: lining-nums tabular-nums;
 }
 rd-kv > rd-row {
 	display: contents;
 }
 rd-kv > rd-row > ._rd-kv-key {
 	color: var(--rd-fg-muted);
+	font-family: var(--rd-font-body);
 	font-size: var(--rd-text-xs);
 	text-transform: uppercase;
-	letter-spacing: var(--rd-tracking-wide);
+	letter-spacing: var(--rd-tracking-caps);
 	font-weight: var(--rd-weight-semibold);
-	padding-top: 0.1em;
+	padding-top: 0.4em;
+	align-self: start;
 }
 rd-kv > rd-row > ._rd-kv-value {
 	color: var(--rd-fg);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-base);
+	line-height: var(--rd-leading-snug);
 }
 rd-kv > rd-row > ._rd-kv-value > :last-child {
 	margin-bottom: 0;
+}
+/* Hairline between rows. Apply via top-border on every row beyond the
+   first (the grid items inherit from their rd-row parent via :nth-of-type). */
+rd-kv > rd-row:not(:first-of-type) > ._rd-kv-key,
+rd-kv > rd-row:not(:first-of-type) > ._rd-kv-value {
+	border-top: 1px dotted var(--rd-border-strong);
+	padding-top: var(--rd-space-3);
+}
+
+@media (max-width: 640px) {
+	rd-kv {
+		grid-template-columns: 1fr;
+		gap: var(--rd-space-1) 0;
+	}
+	rd-kv > rd-row > ._rd-kv-key {
+		padding-top: var(--rd-space-3);
+	}
+	rd-kv > rd-row:not(:first-of-type) > ._rd-kv-value {
+		border-top: 0;
+		padding-top: 0;
+	}
 }

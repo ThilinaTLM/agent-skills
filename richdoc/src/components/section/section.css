@@ -1,18 +1,51 @@
 rd-section {
 	display: block;
-	margin-bottom: var(--rd-space-6);
+	margin-bottom: var(--rd-space-7);
+	counter-increment: rd-section;
 }
 rd-section > ._rd-section-title {
 	font-family: var(--rd-font-display);
-	font-size: var(--rd-text-2xl);
+	font-size: var(--rd-text-3xl);
 	font-weight: var(--rd-weight-semibold);
-	letter-spacing: var(--rd-tracking-snug);
-	line-height: var(--rd-leading-snug);
-	margin: var(--rd-space-6) 0 var(--rd-space-3);
-	padding-bottom: var(--rd-space-2);
-	border-bottom: 1px solid var(--rd-border);
-	font-variation-settings: "opsz" 72;
+	letter-spacing: var(--rd-tracking-tight);
+	line-height: var(--rd-leading-tight);
+	margin: var(--rd-space-7) 0 var(--rd-space-4);
+	padding: 0;
+	border: 0;
+	color: var(--rd-fg);
+	font-variation-settings: "opsz" 96;
+	text-wrap: balance;
+	position: relative;
 }
-rd-section:first-child > ._rd-section-title {
+rd-section:first-child > ._rd-section-title,
+rd-page > rd-section:first-of-type > ._rd-section-title {
 	margin-top: 0;
+}
+/* Editorial eyebrow: section numeral above the title. Uses the page-level
+   counter set on rd-page so numbering survives nested wrappers. */
+rd-section > ._rd-section-title::before {
+	content: "\00a7  " counter(rd-section, decimal-leading-zero);
+	display: block;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-accent);
+	margin-bottom: var(--rd-space-2);
+	font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Thin top rule + ornament above each section title (skip for first). */
+rd-section + rd-section > ._rd-section-title {
+	padding-top: var(--rd-space-6);
+}
+rd-section + rd-section > ._rd-section-title::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: var(--rd-space-7);
+	height: var(--rd-rule-strong);
+	background: var(--rd-fg);
 }

@@ -1,44 +1,77 @@
 rd-callout {
 	display: block;
-	border-left: 4px solid var(--rd-info);
-	background: var(--rd-info-soft);
-	border-radius: var(--rd-radius-sm);
-	padding: var(--rd-space-3) var(--rd-space-4);
-	margin: 0 0 var(--rd-space-4);
+	border-left: var(--rd-rule-strong) solid var(--rd-info);
+	background: color-mix(in oklab, var(--rd-info) 6%, transparent);
+	padding: var(--rd-space-3) var(--rd-space-5);
+	margin: 0 0 var(--rd-space-5);
 	position: relative;
 }
 rd-callout > ._rd-callout-title {
-	font-weight: var(--rd-weight-semibold);
 	display: flex;
 	align-items: center;
 	gap: var(--rd-space-2);
-	margin-bottom: var(--rd-space-1);
-	color: var(--rd-fg);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-info);
+	margin-bottom: var(--rd-space-2);
 }
 rd-callout > ._rd-callout-title > ._rd-callout-icon {
-	font-size: var(--rd-text-base);
+	display: inline-flex;
 	flex: 0 0 auto;
+	color: var(--rd-info);
+}
+rd-callout > ._rd-callout-title > ._rd-callout-text {
+	color: var(--rd-fg);
+	letter-spacing: var(--rd-tracking-caps);
 }
 rd-callout > :last-child {
 	margin-bottom: 0;
 }
+
 rd-callout[type="info"] {
 	border-left-color: var(--rd-info);
-	background: var(--rd-info-soft);
+	background: color-mix(in oklab, var(--rd-info) 6%, transparent);
 }
+rd-callout[type="info"] > ._rd-callout-title,
+rd-callout[type="info"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-info);
+}
+
 rd-callout[type="success"] {
 	border-left-color: var(--rd-success);
-	background: var(--rd-success-soft);
+	background: color-mix(in oklab, var(--rd-success) 6%, transparent);
 }
+rd-callout[type="success"] > ._rd-callout-title,
+rd-callout[type="success"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-success);
+}
+
 rd-callout[type="warn"] {
 	border-left-color: var(--rd-warn);
-	background: var(--rd-warn-soft);
+	background: color-mix(in oklab, var(--rd-warn) 7%, transparent);
 }
+rd-callout[type="warn"] > ._rd-callout-title,
+rd-callout[type="warn"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-warn);
+}
+
 rd-callout[type="danger"] {
 	border-left-color: var(--rd-danger);
-	background: var(--rd-danger-soft);
+	background: color-mix(in oklab, var(--rd-danger) 7%, transparent);
 }
+rd-callout[type="danger"] > ._rd-callout-title,
+rd-callout[type="danger"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-danger);
+}
+
 rd-callout[type="note"] {
 	border-left-color: var(--rd-note);
-	background: var(--rd-note-soft);
+	background: color-mix(in oklab, var(--rd-note) 6%, transparent);
+}
+rd-callout[type="note"] > ._rd-callout-title,
+rd-callout[type="note"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-note);
 }

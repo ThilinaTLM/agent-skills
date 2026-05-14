@@ -1,0 +1,40 @@
+rd-math {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	padding: var(--rd-space-3) 0;
+	overflow-x: auto;
+	text-align: center;
+	color: var(--rd-fg);
+	border-top: 1px solid var(--rd-border);
+	border-bottom: 1px solid var(--rd-border);
+}
+rd-math[display="inline"] {
+	display: inline;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	text-align: inherit;
+}
+
+/* KaTeX overrides — keep math reading in the editorial palette. */
+rd-math .katex {
+	color: var(--rd-fg);
+	font-size: 1.05em;
+}
+rd-math[display="inline"] .katex {
+	font-size: 1em;
+}
+rd-math .katex-display {
+	margin: 0;
+}
+
+/* Fallback when KaTeX cannot load — render the raw TeX in mono. */
+rd-math > ._rd-math-fallback {
+	text-align: left;
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	color: var(--rd-fg-muted);
+	white-space: pre-wrap;
+	margin: 0;
+	padding: 0 var(--rd-space-4);
+}

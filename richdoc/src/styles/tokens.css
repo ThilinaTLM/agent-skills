@@ -8,31 +8,28 @@
  *      editorial-warm light (the default). Named selectors override when
  *      <html data-theme=…> or <html data-mode=…> is set.
  *
- * Conventions:
- *   - All tokens carry the --rd- prefix.
- *   - Component CSS must read from tokens — no literal sizes or colors.
- *   - Use color-mix(in oklab, ...) for runtime alpha; do not hand-roll
- *     channel-based color tricks.
- *   - To add a theme: append two blocks (light + dark) below and add the
- *     name to the theme enum in src/components/page/page.schema.ts. See
- *     AUTHORING.md → "Adding a theme".
+ * Aesthetic: modern editorial. Warm cream paper, ink-leaning foreground,
+ * a confident rust accent. Fraunces for display, Geist for body, Fira Code
+ * for mono. Every component reads from these tokens — no literal sizes
+ * or colors anywhere in component CSS.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Geist:wght@100..900&family=Fira+Code:wght@300..700&display=swap");
 
 /* ──────────────────────────────────────────────────────────────────────────
    Layer 2 — theme-agnostic tokens
    ────────────────────────────────────────────────────────────────────────── */
 
 :root {
-	/* Font stacks. Body uses Inter with a strong system fallback so
-	   offline file:// docs still render coherently. */
+	/* Font stacks. Body uses Geist with a strong system fallback so
+	   offline file:// docs still render coherently. Fraunces handles
+	   every display moment (h1, stats, pull-quotes, captions). */
 	--rd-font-display: "Fraunces", ui-serif, Georgia, Cambria,
 		"Times New Roman", serif;
-	--rd-font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
+	--rd-font-body: "Geist", ui-sans-serif, system-ui, -apple-system,
 		"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-	--rd-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-		"Liberation Mono", monospace;
+	--rd-font-mono: "Fira Code", ui-monospace, SFMono-Regular, "SF Mono",
+		Menlo, Consolas, "Liberation Mono", monospace;
 
 	/* Type scale — rem-based modular scale. */
 	--rd-text-xs: 0.75rem;
@@ -44,6 +41,11 @@
 	--rd-text-2xl: 1.5rem;
 	--rd-text-3xl: 1.875rem;
 	--rd-text-4xl: 2.5rem;
+	/* Editorial display sizes — reserved for genuine display moments
+	   (rd-stat numerals, future hero numerals). Component CSS must use
+	   these tokens rather than introduce literal sizes. */
+	--rd-text-display-xl: 3.25rem;
+	--rd-text-display-2xl: 4.5rem;
 
 	/* Weights — map to nearest variable-font value. */
 	--rd-weight-normal: 400;
@@ -62,6 +64,9 @@
 	--rd-tracking-snug: -0.01em;
 	--rd-tracking-normal: 0;
 	--rd-tracking-wide: 0.05em;
+	/* Small-caps eyebrow tracking — wider, used for tracked-uppercase
+	   labels (KV keys, badge variants, eyebrow numerals). */
+	--rd-tracking-caps: 0.12em;
 
 	/* Spacing scale — keep unchanged for backwards compatibility. */
 	--rd-space-1: 4px;
@@ -73,15 +78,25 @@
 	--rd-space-7: 48px;
 	--rd-space-8: 64px;
 
-	/* Radius scale. */
-	--rd-radius-sm: 6px;
-	--rd-radius-md: 10px;
-	--rd-radius-lg: 16px;
+	/* Radius scale — used sparingly in the editorial redesign. */
+	--rd-radius-sm: 4px;
+	--rd-radius-md: 8px;
+	--rd-radius-lg: 14px;
+
+	/* Hairline widths — semantic names so component CSS stays literal-free. */
+	--rd-rule: 1px;
+	--rd-rule-strong: 2px;
 
 	/* Layout. */
-	--rd-max-width: 960px;
+	--rd-max-width: 1024px;
 	--rd-max-width-prose: 680px;
-	--rd-max-width-wide: 1120px;
+	--rd-max-width-wide: 1180px;
+	/* Right gutter reserved for rd-sidenote on wide viewports. */
+	--rd-gutter: 240px;
+
+	/* Subtle paper grain. Tiny inline SVG, tiled. Alpha is intentionally
+	   low — visible at zoom but invisible at a glance. */
+	--rd-paper-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.08 0 0 0 0 0.07 0 0 0 0 0.05 0 0 0 0.045 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -89,49 +104,50 @@
    ────────────────────────────────────────────────────────────────────────── */
 
 /* editorial-warm — LIGHT (default).
-   Applies when no data-theme is set, or when data-theme="editorial-warm"
-   without an explicit dark mode. */
+   Cream paper, ink-leaning foreground, confident rust accent.
+   Applies when no data-theme is set, or when data-theme="editorial-warm". */
 :root,
 :root[data-theme="editorial-warm"],
 :root[data-theme="editorial-warm"][data-mode="light"] {
-	--rd-bg: #fbfaf7;
-	--rd-bg-elev: #ffffff;
-	--rd-bg-sunken: #f3f1ec;
-	--rd-fg: #1c1a17;
-	--rd-fg-muted: #6a655d;
-	--rd-fg-subtle: #908a80;
-	--rd-border: #e6e2d8;
-	--rd-border-strong: #cfc9bb;
+	--rd-bg: #f7f3ea;
+	--rd-bg-elev: #fbfaf6;
+	--rd-bg-sunken: #ece6d7;
+	--rd-fg: #14110d;
+	--rd-fg-muted: #5a554c;
+	--rd-fg-subtle: #8a8478;
+	--rd-border: #ddd6c4;
+	--rd-border-strong: #b9b1a0;
 
-	--rd-accent: #a8501a;
-	--rd-accent-fg: #ffffff;
-	--rd-accent-soft: #f4e3cf;
+	--rd-accent: #8a3a1a;
+	--rd-accent-fg: #fbfaf6;
+	--rd-accent-soft: #ecd9c2;
 
-	--rd-info: #1f6feb;
-	--rd-info-fg: #ffffff;
-	--rd-info-soft: #e3edfc;
-	--rd-success: #1f8a4c;
-	--rd-success-fg: #ffffff;
-	--rd-success-soft: #e0f1e5;
-	--rd-warn: #b8860b;
-	--rd-warn-fg: #ffffff;
-	--rd-warn-soft: #faf0d1;
-	--rd-danger: #c2362b;
-	--rd-danger-fg: #ffffff;
-	--rd-danger-soft: #fae3e1;
-	--rd-note: #6f42c1;
-	--rd-note-fg: #ffffff;
-	--rd-note-soft: #ede4fa;
+	/* Status — print-signal colors, less Bootstrap-soft. */
+	--rd-info: #1b5cbf;
+	--rd-info-fg: #fbfaf6;
+	--rd-info-soft: #dde7f7;
+	--rd-success: #1c7240;
+	--rd-success-fg: #fbfaf6;
+	--rd-success-soft: #d9eddd;
+	--rd-warn: #9c6a13;
+	--rd-warn-fg: #fbfaf6;
+	--rd-warn-soft: #f5e6c4;
+	--rd-danger: #a8281f;
+	--rd-danger-fg: #fbfaf6;
+	--rd-danger-soft: #f3d8d4;
+	--rd-note: #5c3aa2;
+	--rd-note-fg: #fbfaf6;
+	--rd-note-soft: #e2d8f0;
 
 	--rd-ring: color-mix(in oklab, var(--rd-accent) 60%, transparent);
 
 	--rd-shadow-xs: 0 1px 1px rgba(20, 18, 14, 0.04);
-	--rd-shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.04),
+	--rd-shadow-sm: 0 1px 2px rgba(20, 18, 14, 0.05),
 		0 1px 1px rgba(20, 18, 14, 0.03);
-	--rd-shadow-md: 0 2px 6px rgba(20, 18, 14, 0.06),
+	--rd-shadow-md: 0 2px 6px rgba(20, 18, 14, 0.07),
 		0 1px 2px rgba(20, 18, 14, 0.04);
-	--rd-shadow-lg: 0 8px 24px rgba(20, 18, 14, 0.08),
-		0 2px 6px rgba(20, 18, 14, 0.05);
+	--rd-shadow-lg: 0 8px 24px rgba(20, 18, 14, 0.09),
+		0 2px 6px rgba(20, 18, 14, 0.06);
 }
 
 /* editorial-warm — DARK. Warm brown-black, not neutral, to keep the
@@ -139,33 +155,33 @@
    regardless of theme (since editorial-warm is the only theme today). */
 :root[data-mode="dark"],
 :root[data-theme="editorial-warm"][data-mode="dark"] {
-	--rd-bg: #1a1612;
-	--rd-bg-elev: #221d18;
-	--rd-bg-sunken: #14110d;
-	--rd-fg: #eee8da;
+	--rd-bg: #15110c;
+	--rd-bg-elev: #1d1813;
+	--rd-bg-sunken: #100c08;
+	--rd-fg: #efe9dc;
 	--rd-fg-muted: #a8a294;
 	--rd-fg-subtle: #7a7466;
-	--rd-border: #2f2a24;
-	--rd-border-strong: #423c33;
+	--rd-border: #2c2620;
+	--rd-border-strong: #463f35;
 
-	--rd-accent: #e08a3c;
-	--rd-accent-fg: #1a1612;
+	--rd-accent: #d97a3a;
+	--rd-accent-fg: #15110c;
 	--rd-accent-soft: #3a2614;
 
-	--rd-info: #7aa7f0;
-	--rd-info-fg: #0f0c08;
+	--rd-info: #7ba8f0;
+	--rd-info-fg: #0c0908;
 	--rd-info-soft: #1a2640;
-	--rd-success: #6ec083;
-	--rd-success-fg: #0f0c08;
+	--rd-success: #74c389;
+	--rd-success-fg: #0c0908;
 	--rd-success-soft: #142a1c;
-	--rd-warn: #d9b25a;
-	--rd-warn-fg: #0f0c08;
+	--rd-warn: #dcb45c;
+	--rd-warn-fg: #0c0908;
 	--rd-warn-soft: #2e2614;
 	--rd-danger: #e88078;
-	--rd-danger-fg: #0f0c08;
+	--rd-danger-fg: #0c0908;
 	--rd-danger-soft: #321714;
 	--rd-note: #b09ce0;
-	--rd-note-fg: #0f0c08;
+	--rd-note-fg: #0c0908;
 	--rd-note-soft: #221a36;
 
 	--rd-ring: color-mix(in oklab, var(--rd-accent) 60%, transparent);
@@ -174,39 +190,43 @@
 	--rd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
 	--rd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
 	--rd-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+	/* Grain is invisible on dark paper — replace with a near-zero alpha
+	   noise so the page surface still has texture. */
+	--rd-paper-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.91 0 0 0 0 0.85 0 0 0 0.025 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
 }
 
 /* System-preference fallback — applies only when no explicit data-mode
    is set on <html>. data-mode="light" or data-mode="dark" wins. */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-mode="light"]):not([data-mode="dark"]) {
-		--rd-bg: #1a1612;
-		--rd-bg-elev: #221d18;
-		--rd-bg-sunken: #14110d;
-		--rd-fg: #eee8da;
+		--rd-bg: #15110c;
+		--rd-bg-elev: #1d1813;
+		--rd-bg-sunken: #100c08;
+		--rd-fg: #efe9dc;
 		--rd-fg-muted: #a8a294;
 		--rd-fg-subtle: #7a7466;
-		--rd-border: #2f2a24;
-		--rd-border-strong: #423c33;
+		--rd-border: #2c2620;
+		--rd-border-strong: #463f35;
 
-		--rd-accent: #e08a3c;
-		--rd-accent-fg: #1a1612;
+		--rd-accent: #d97a3a;
+		--rd-accent-fg: #15110c;
 		--rd-accent-soft: #3a2614;
 
-		--rd-info: #7aa7f0;
-		--rd-info-fg: #0f0c08;
+		--rd-info: #7ba8f0;
+		--rd-info-fg: #0c0908;
 		--rd-info-soft: #1a2640;
-		--rd-success: #6ec083;
-		--rd-success-fg: #0f0c08;
+		--rd-success: #74c389;
+		--rd-success-fg: #0c0908;
 		--rd-success-soft: #142a1c;
-		--rd-warn: #d9b25a;
-		--rd-warn-fg: #0f0c08;
+		--rd-warn: #dcb45c;
+		--rd-warn-fg: #0c0908;
 		--rd-warn-soft: #2e2614;
 		--rd-danger: #e88078;
-		--rd-danger-fg: #0f0c08;
+		--rd-danger-fg: #0c0908;
 		--rd-danger-soft: #321714;
 		--rd-note: #b09ce0;
-		--rd-note-fg: #0f0c08;
+		--rd-note-fg: #0c0908;
 		--rd-note-soft: #221a36;
 
 		--rd-ring: color-mix(in oklab, var(--rd-accent) 60%, transparent);
@@ -215,5 +235,7 @@
 		--rd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
 		--rd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
 		--rd-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+
+		--rd-paper-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.91 0 0 0 0 0.85 0 0 0 0.025 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
 	}
 }

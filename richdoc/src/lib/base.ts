@@ -5,12 +5,17 @@
  * weight by being used in at least two components.
  */
 
-export const ICONS: Record<string, string> = {
-	info: "ⓘ",
-	success: "✓",
-	warn: "⚠",
-	danger: "✕",
-	note: "✎",
+/**
+ * Mapping from callout type to a Lucide icon name (vendored in icons.ts).
+ * Callout renders <rd-icon name="…"> rather than a Unicode glyph so the
+ * marker has consistent stroke weight and inherits text color.
+ */
+export const CALLOUT_ICONS: Record<string, string> = {
+	info: "info",
+	success: "check",
+	warn: "alert-triangle",
+	danger: "x-octagon",
+	note: "edit-3",
 };
 
 type ElProps = Record<string, string | number | boolean | null | undefined | ((ev: Event) => void)>;
@@ -72,4 +77,72 @@ export function stripCommonIndent(s: string): string {
 /** Idempotency flag used by every component to guard against double-upgrade. */
 export interface Upgradeable extends HTMLElement {
 	_upgraded?: boolean;
+}
+
+/**
+ * Shared CDN script loader. Resolves to the global your code exposes
+ * (e.g. window.mermaid, window.katex, window.hljs) or null on failure.
+ * Idempotent: parallel calls for the same URL share a single promise.
+ */
+const cdnLoaders = new Map<string, Promise<unknown>>();
+export function loadCdnScript<T = unknown>(
+	url: string,
+	getGlobal: () => T | undefined,
+): Promise<T | null> {
+	const existing = cdnLoaders.get(url) as Promise<T | null> | undefined;
+	if (existing) return existing;
+	const p = new Promise<T | null>((resolve) => {
+		const already = getGlobal();
+		if (already) return resolve(already);
+		const s = document.createElement("script");
+		s.src = url;
+		s.async = true;
+		s.onload = () => resolve(getGlobal() ?? null);
+		s.onerror = () => {
+			console.warn(`[richdoc] CDN script load failed: ${url}`);
+			resolve(null);
+		};
+		document.head.appendChild(s);
+	});
+	cdnLoaders.set(url, p);
+	return p;
+}
+
+/** Inject a stylesheet from a CDN once. Tagged to avoid duplicates. */
+export function loadCdnStyle(url: string): void {
+	if (document.querySelector(`link[data-rd-cdn="${url}"]`)) return;
+	const l = document.createElement("link");
+	l.rel = "stylesheet";
+	l.href = url;
+	l.setAttribute("data-rd-cdn", url);
+	document.head.appendChild(l);
+}
+
+/**
+ * Parse a "line-range" attribute like "3,5-7,11" into a set of 1-based
+ * line numbers. Used by <rd-code highlight="…"> and friends.
+ */
+export function parseLineRanges(spec: string | null | undefined): Set<number> {
+	const out = new Set<number>();
+	if (!spec) return out;
+	for (const part of spec.split(",")) {
+		const t = part.trim();
+		if (!t) continue;
+		const m = t.match(/^(\d+)(?:-(\d+))?$/);
+		if (!m) continue;
+		const a = Number(m[1]);
+		const b = m[2] ? Number(m[2]) : a;
+		for (let i = Math.min(a, b); i <= Math.max(a, b); i++) out.add(i);
+	}
+	return out;
+}
+
+/** Escape HTML special characters for safe innerHTML interpolation. */
+export function escapeHtml(s: string): string {
+	return s
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }

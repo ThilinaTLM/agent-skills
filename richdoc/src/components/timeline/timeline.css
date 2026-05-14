@@ -2,7 +2,7 @@ rd-timeline {
 	display: block;
 	position: relative;
 	margin: 0 0 var(--rd-space-5);
-	padding-left: var(--rd-space-5);
+	padding-left: var(--rd-space-6);
 }
 rd-timeline::before {
 	content: "";
@@ -11,13 +11,21 @@ rd-timeline::before {
 	top: 8px;
 	bottom: 8px;
 	width: 2px;
-	background: var(--rd-border-strong);
+	background-image: linear-gradient(
+		to bottom,
+		var(--rd-border-strong) 0,
+		var(--rd-border-strong) 4px,
+		transparent 4px,
+		transparent 8px
+	);
+	background-size: 2px 8px;
+	background-repeat: repeat-y;
 	border-radius: 1px;
 }
 rd-event {
 	display: block;
 	position: relative;
-	padding: 0 0 var(--rd-space-4) var(--rd-space-4);
+	padding: 0 0 var(--rd-space-5) var(--rd-space-4);
 }
 rd-event:last-child {
 	padding-bottom: 0;
@@ -25,30 +33,39 @@ rd-event:last-child {
 rd-event::before {
 	content: "";
 	position: absolute;
-	left: calc(-1 * var(--rd-space-5) + 1px);
-	top: 6px;
-	width: 12px;
-	height: 12px;
+	left: calc(-1 * var(--rd-space-6) + 1px);
+	top: 4px;
+	width: 14px;
+	height: 14px;
 	background: var(--rd-bg);
 	border: 2px solid var(--rd-accent);
 	border-radius: 50%;
+	box-shadow: 0 0 0 3px var(--rd-bg);
 }
 rd-event > ._rd-event-meta {
 	display: flex;
 	align-items: baseline;
 	gap: var(--rd-space-3);
 	margin-bottom: var(--rd-space-1);
+	flex-wrap: wrap;
 }
 rd-event > ._rd-event-meta > ._rd-event-date {
 	font-family: var(--rd-font-mono);
-	font-size: var(--rd-text-sm);
+	font-size: var(--rd-text-xs);
 	color: var(--rd-fg-muted);
 	font-weight: var(--rd-weight-semibold);
-	letter-spacing: var(--rd-tracking-snug);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	font-variant-numeric: lining-nums tabular-nums;
 }
 rd-event > ._rd-event-meta > ._rd-event-title {
+	font-family: var(--rd-font-display);
+	font-style: italic;
 	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-lg);
 	color: var(--rd-fg);
+	font-variation-settings: "opsz" 32;
+	letter-spacing: var(--rd-tracking-snug);
 }
 rd-event > :last-child {
 	margin-bottom: 0;

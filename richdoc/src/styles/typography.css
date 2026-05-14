@@ -1,8 +1,7 @@
 /* Typography for plain prose inside an <rd-page>.
  *
- * Headings use --rd-font-display (Fraunces). Body, lists, tables, and code
- * pick up --rd-font-body via inheritance from <body> (set in reset.css),
- * except <code>/<pre>/<th> which override.
+ * Headings use --rd-font-display (Fraunces). Body, lists, tables pick up
+ * --rd-font-body (Geist) via inheritance from <body>. Code uses Fira Code.
  *
  * Every size, weight, leading and tracking flows from a token. Component
  * CSS may reference the same tokens but must not introduce new literals.
@@ -18,35 +17,38 @@ rd-page h6 {
 	font-weight: var(--rd-weight-semibold);
 	line-height: var(--rd-leading-tight);
 	letter-spacing: var(--rd-tracking-snug);
-	margin: var(--rd-space-6) 0 var(--rd-space-3);
+	margin: var(--rd-space-7) 0 var(--rd-space-3);
 	color: var(--rd-fg);
+	text-wrap: balance;
 }
 rd-page h1 {
 	font-size: var(--rd-text-4xl);
 	letter-spacing: var(--rd-tracking-tight);
 	margin-top: 0;
+	margin-bottom: var(--rd-space-5);
 	font-variation-settings: "opsz" 144;
+	line-height: 1.05;
 }
 rd-page h2 {
 	font-size: var(--rd-text-2xl);
 	line-height: var(--rd-leading-snug);
-	padding-bottom: var(--rd-space-2);
-	border-bottom: 1px solid var(--rd-border);
 	font-variation-settings: "opsz" 72;
+	margin-top: var(--rd-space-7);
 }
 rd-page h3 {
 	font-size: var(--rd-text-xl);
 	line-height: var(--rd-leading-snug);
 	font-variation-settings: "opsz" 32;
+	font-style: italic;
 }
 rd-page h4 {
 	font-family: var(--rd-font-body);
-	font-size: var(--rd-text-sm);
+	font-size: var(--rd-text-xs);
 	font-weight: var(--rd-weight-semibold);
 	line-height: var(--rd-leading-snug);
 	color: var(--rd-fg-muted);
 	text-transform: uppercase;
-	letter-spacing: var(--rd-tracking-wide);
+	letter-spacing: var(--rd-tracking-caps);
 }
 rd-page h5,
 rd-page h6 {
@@ -56,6 +58,28 @@ rd-page h6 {
 
 rd-page p {
 	margin: 0 0 var(--rd-space-4);
+	hyphens: auto;
+}
+
+/* Drop cap on the opening paragraph. Editorial signal: three-line cap
+   in display face. We cover the most common opener structures; if the
+   agent puts something exotic between <h1> and the first <p>, the cap
+   gracefully doesn't apply. */
+rd-page > h1 + p::first-letter,
+rd-page > h1 + rd-kv + p::first-letter,
+rd-page > h1 + rd-callout + p::first-letter,
+rd-page > h1 + rd-toc + p::first-letter,
+rd-page > h1 + rd-quote + p::first-letter {
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	font-size: 3.6em;
+	line-height: 0.86;
+	float: left;
+	padding: 0.06em 0.08em 0 0;
+	margin: 0.02em 0.08em 0 0;
+	color: var(--rd-accent);
+	font-variation-settings: "opsz" 144;
+	font-style: normal;
 }
 
 rd-page a {
@@ -63,8 +87,11 @@ rd-page a {
 	text-decoration: underline;
 	text-decoration-thickness: 1px;
 	text-underline-offset: 3px;
+	text-decoration-color: color-mix(in oklab, var(--rd-accent) 50%, transparent);
+	transition: text-decoration-color 0.15s ease;
 }
 rd-page a:hover {
+	text-decoration-color: var(--rd-accent);
 	text-decoration-thickness: 2px;
 }
 
@@ -80,14 +107,53 @@ rd-page li > ul,
 rd-page li > ol {
 	margin: var(--rd-space-1) 0 var(--rd-space-2);
 }
+rd-page ol {
+	list-style: none;
+	counter-reset: rd-ol;
+	padding-left: var(--rd-space-6);
+}
+rd-page ol > li {
+	counter-increment: rd-ol;
+	position: relative;
+}
+rd-page ol > li::before {
+	content: counter(rd-ol, decimal-leading-zero);
+	position: absolute;
+	left: calc(-1 * var(--rd-space-6));
+	width: var(--rd-space-6);
+	padding-right: var(--rd-space-2);
+	text-align: right;
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-xs);
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+	font-variant-numeric: tabular-nums;
+	top: 0.35em;
+}
+rd-page ul {
+	list-style: none;
+	padding-left: var(--rd-space-5);
+}
+rd-page ul > li {
+	position: relative;
+}
+rd-page ul > li::before {
+	content: "—";
+	position: absolute;
+	left: calc(-1 * var(--rd-space-5));
+	width: var(--rd-space-5);
+	color: var(--rd-fg-subtle);
+	font-weight: var(--rd-weight-medium);
+}
 
 rd-page code {
 	font-family: var(--rd-font-mono);
-	font-size: 0.92em;
-	background: var(--rd-bg-sunken);
+	font-size: 0.9em;
+	background: color-mix(in oklab, var(--rd-fg) 4%, transparent);
 	border: 1px solid var(--rd-border);
 	border-radius: var(--rd-radius-sm);
-	padding: 0.1em 0.35em;
+	padding: 0.08em 0.4em;
+	font-feature-settings: "calt";
 }
 
 rd-page pre {
@@ -95,11 +161,11 @@ rd-page pre {
 	font-size: var(--rd-text-sm);
 	line-height: var(--rd-leading-normal);
 	background: var(--rd-bg-sunken);
-	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius-md);
-	padding: var(--rd-space-4);
+	border-top: var(--rd-rule-strong) solid var(--rd-border-strong);
+	padding: var(--rd-space-4) 0;
 	overflow-x: auto;
-	margin: 0 0 var(--rd-space-4);
+	margin: 0 0 var(--rd-space-5);
+	font-feature-settings: "calt";
 }
 rd-page pre code {
 	background: transparent;
@@ -110,26 +176,42 @@ rd-page pre code {
 
 rd-page blockquote {
 	font-family: var(--rd-font-display);
-	font-size: var(--rd-text-md);
+	font-size: var(--rd-text-lg);
 	line-height: var(--rd-leading-relaxed);
-	margin: 0 0 var(--rd-space-4);
-	padding: var(--rd-space-2) var(--rd-space-4);
-	border-left: 3px solid var(--rd-border-strong);
+	margin: 0 0 var(--rd-space-5);
+	padding: 0 0 0 var(--rd-space-5);
 	color: var(--rd-fg-muted);
 	font-style: italic;
+	font-variation-settings: "opsz" 72;
 }
 
+/* Editorial divider — centred ornament. */
 rd-page hr {
 	border: 0;
-	border-top: 1px solid var(--rd-border);
+	height: var(--rd-space-6);
 	margin: var(--rd-space-6) 0;
+	text-align: center;
+	position: relative;
+}
+rd-page hr::after {
+	content: "✦   ✦   ✦";
+	display: inline-block;
+	color: var(--rd-fg-subtle);
+	letter-spacing: 0.6em;
+	font-size: var(--rd-text-xs);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	white-space: nowrap;
 }
 
 rd-page table {
 	width: 100%;
 	border-collapse: collapse;
-	margin: 0 0 var(--rd-space-4);
+	margin: 0 0 var(--rd-space-5);
 	font-size: var(--rd-text-sm);
+	font-variant-numeric: tabular-nums lining-nums;
 }
 rd-page th,
 rd-page td {
@@ -140,11 +222,21 @@ rd-page td {
 }
 rd-page th {
 	font-weight: var(--rd-weight-semibold);
-	background: var(--rd-bg-sunken);
+	font-size: var(--rd-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+	border-bottom: var(--rd-rule-strong) solid var(--rd-border-strong);
 }
 
 rd-page img {
 	max-width: 100%;
 	height: auto;
-	border-radius: var(--rd-radius-sm);
+}
+
+rd-page strong {
+	font-weight: var(--rd-weight-semibold);
+}
+rd-page em {
+	font-style: italic;
 }

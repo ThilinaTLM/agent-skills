@@ -1,35 +1,65 @@
 rd-badge {
-	display: inline-block;
-	padding: 0.15em 0.6em;
-	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 0.2em 0.6em;
+	border-radius: var(--rd-radius-sm);
+	font-family: var(--rd-font-body);
 	font-size: var(--rd-text-xs);
 	font-weight: var(--rd-weight-semibold);
-	line-height: var(--rd-leading-snug);
-	background: var(--rd-bg-sunken);
+	line-height: 1.4;
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	background: transparent;
 	color: var(--rd-fg-muted);
-	border: 1px solid var(--rd-border);
+	border: 1px solid var(--rd-border-strong);
 	vertical-align: 0.1em;
 }
+rd-badge::before {
+	content: "";
+	display: inline-block;
+	width: 0.5em;
+	height: 0.5em;
+	border-radius: 50%;
+	background: var(--rd-fg-subtle);
+	flex: 0 0 auto;
+}
 rd-badge[variant="info"] {
-	background: var(--rd-info-soft);
 	color: var(--rd-info);
-	border-color: transparent;
+	border-color: color-mix(in oklab, var(--rd-info) 40%, transparent);
+	background: color-mix(in oklab, var(--rd-info) 5%, transparent);
+}
+rd-badge[variant="info"]::before {
+	background: var(--rd-info);
 }
 rd-badge[variant="success"] {
-	background: var(--rd-success-soft);
 	color: var(--rd-success);
-	border-color: transparent;
+	border-color: color-mix(in oklab, var(--rd-success) 40%, transparent);
+	background: color-mix(in oklab, var(--rd-success) 5%, transparent);
+}
+rd-badge[variant="success"]::before {
+	background: var(--rd-success);
 }
 rd-badge[variant="warn"] {
-	background: var(--rd-warn-soft);
 	color: var(--rd-warn);
-	border-color: transparent;
+	border-color: color-mix(in oklab, var(--rd-warn) 40%, transparent);
+	background: color-mix(in oklab, var(--rd-warn) 5%, transparent);
+}
+rd-badge[variant="warn"]::before {
+	background: var(--rd-warn);
 }
 rd-badge[variant="danger"] {
-	background: var(--rd-danger-soft);
 	color: var(--rd-danger);
-	border-color: transparent;
+	border-color: color-mix(in oklab, var(--rd-danger) 40%, transparent);
+	background: color-mix(in oklab, var(--rd-danger) 5%, transparent);
+}
+rd-badge[variant="danger"]::before {
+	background: var(--rd-danger);
 }
 rd-badge[variant="muted"] {
 	color: var(--rd-fg-subtle);
+	border-color: var(--rd-border);
+}
+rd-badge[variant="muted"]::before {
+	background: var(--rd-fg-subtle);
 }

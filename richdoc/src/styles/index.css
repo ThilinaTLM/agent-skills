@@ -12,23 +12,40 @@
 @import "./reset.css";
 @import "./typography.css";
 
+/* Structure */
 @import "../components/page/page.css";
 @import "../components/section/section.css";
 @import "../components/cols/cols.css";
 @import "../components/card/card.css";
+
+/* Decoration / inline (icon first so callout's nested <rd-icon> picks
+   up its styling immediately). */
+@import "../components/icon/icon.css";
+
+/* Information blocks */
 @import "../components/callout/callout.css";
 @import "../components/kv/kv.css";
 @import "../components/badge/badge.css";
+@import "../components/stat/stat.css";
+@import "../components/quote/quote.css";
+@import "../components/sidenote/sidenote.css";
+@import "../components/defs/defs.css";
+
+/* Comparison & code */
 @import "../components/compare/compare.css";
 @import "../components/code/code.css";
+@import "../components/diff/diff.css";
+@import "../components/math/math.css";
+
+/* Sequenced & interactive */
 @import "../components/tabs/tabs.css";
 @import "../components/timeline/timeline.css";
-@import "../components/mermaid/mermaid.css";
-@import "../components/toc/toc.css";
-@import "../components/quote/quote.css";
 @import "../components/detail/detail.css";
-@import "../components/stat/stat.css";
-@import "../components/figure/figure.css";
 @import "../components/checklist/checklist.css";
+
+/* Diagrams, media */
+@import "../components/mermaid/mermaid.css";
+@import "../components/figure/figure.css";
+@import "../components/toc/toc.css";
 
 @import "./print.css";

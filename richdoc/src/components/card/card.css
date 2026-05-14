@@ -2,41 +2,80 @@ rd-card {
 	display: block;
 	background: var(--rd-bg-elev);
 	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius-md);
-	box-shadow: var(--rd-shadow-sm);
-	padding: var(--rd-space-4) var(--rd-space-5);
+	border-radius: var(--rd-radius-sm);
+	padding: var(--rd-space-5) var(--rd-space-5);
 	margin: 0 0 var(--rd-space-4);
 	position: relative;
-	overflow: hidden;
 }
 rd-cols > rd-card {
 	margin: 0;
 	height: 100%;
 }
 rd-card > ._rd-card-header {
-	font-weight: var(--rd-weight-semibold);
-	font-size: var(--rd-text-lg);
-	color: var(--rd-fg);
+	display: flex;
+	flex-direction: column;
+	gap: var(--rd-space-1);
 	margin: 0 0 var(--rd-space-3);
-	padding-bottom: var(--rd-space-2);
+	padding-bottom: var(--rd-space-3);
 	border-bottom: 1px solid var(--rd-border);
+}
+rd-card > ._rd-card-header > ._rd-card-kicker {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-card > ._rd-card-header > ._rd-card-title {
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-xl);
+	color: var(--rd-fg);
+	line-height: var(--rd-leading-tight);
+	letter-spacing: var(--rd-tracking-snug);
+	font-variation-settings: "opsz" 32;
 }
 rd-card > :last-child {
 	margin-bottom: 0;
 }
+
+/* Accent: a 2 px top rule in the accent color, and the kicker takes
+   the accent color so the two read as a single editorial signal. */
+rd-card[accent] {
+	border-top-width: var(--rd-rule-strong);
+}
 rd-card[accent="info"] {
-	border-top: 3px solid var(--rd-info);
+	border-top-color: var(--rd-info);
+}
+rd-card[accent="info"] > ._rd-card-header > ._rd-card-kicker {
+	color: var(--rd-info);
 }
 rd-card[accent="success"] {
-	border-top: 3px solid var(--rd-success);
+	border-top-color: var(--rd-success);
+}
+rd-card[accent="success"] > ._rd-card-header > ._rd-card-kicker {
+	color: var(--rd-success);
 }
 rd-card[accent="warn"] {
-	border-top: 3px solid var(--rd-warn);
+	border-top-color: var(--rd-warn);
+}
+rd-card[accent="warn"] > ._rd-card-header > ._rd-card-kicker {
+	color: var(--rd-warn);
 }
 rd-card[accent="danger"] {
-	border-top: 3px solid var(--rd-danger);
+	border-top-color: var(--rd-danger);
+}
+rd-card[accent="danger"] > ._rd-card-header > ._rd-card-kicker {
+	color: var(--rd-danger);
 }
 rd-card[accent="muted"] {
 	background: var(--rd-bg-sunken);
-	box-shadow: none;
+	border: 0;
+	font-style: italic;
+	color: var(--rd-fg-muted);
+}
+rd-card[accent="muted"] > ._rd-card-header > ._rd-card-title {
+	color: var(--rd-fg-muted);
+	font-style: italic;
 }

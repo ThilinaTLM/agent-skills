@@ -29,10 +29,18 @@ class RdTask extends HTMLElement implements Upgradeable {
 
 		const meta: HTMLElement[] = [];
 		if (assignee) {
-			meta.push(el("span", { class: "_rd-task-meta-item" }, `@${assignee}`));
+			meta.push(
+				el(
+					"span",
+					{ class: "_rd-task-meta-item", "data-kind": "assignee" },
+					assignee,
+				),
+			);
 		}
 		if (due) {
-			meta.push(el("span", { class: "_rd-task-meta-item" }, due));
+			meta.push(
+				el("span", { class: "_rd-task-meta-item", "data-kind": "due" }, due),
+			);
 		}
 		if (meta.length > 0) {
 			body.appendChild(el("span", { class: "_rd-task-meta" }, ...meta));

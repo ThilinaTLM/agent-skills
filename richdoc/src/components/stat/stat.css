@@ -1,10 +1,9 @@
 rd-stat {
 	display: block;
-	background: var(--rd-bg-elev);
-	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius-md);
-	box-shadow: var(--rd-shadow-sm);
-	padding: var(--rd-space-4) var(--rd-space-5);
+	background: transparent;
+	border: 0;
+	border-top: var(--rd-rule-strong) solid var(--rd-fg);
+	padding: var(--rd-space-3) 0 var(--rd-space-2);
 	margin: 0 0 var(--rd-space-4);
 }
 rd-cols > rd-stat {
@@ -12,40 +11,66 @@ rd-cols > rd-stat {
 	height: 100%;
 }
 rd-stat > ._rd-stat-label {
+	font-family: var(--rd-font-body);
 	font-size: var(--rd-text-xs);
 	text-transform: uppercase;
-	letter-spacing: var(--rd-tracking-wide);
+	letter-spacing: var(--rd-tracking-caps);
 	color: var(--rd-fg-muted);
 	font-weight: var(--rd-weight-semibold);
 	margin-bottom: var(--rd-space-2);
 }
 rd-stat > ._rd-stat-value {
 	font-family: var(--rd-font-display);
-	font-size: var(--rd-text-3xl);
+	font-size: var(--rd-text-display-xl);
 	font-weight: var(--rd-weight-semibold);
-	line-height: var(--rd-leading-tight);
+	line-height: 0.95;
 	letter-spacing: var(--rd-tracking-tight);
 	color: var(--rd-fg);
-	font-variant-numeric: tabular-nums;
-	font-variation-settings: "opsz" 72;
+	font-variant-numeric: lining-nums tabular-nums;
+	font-variation-settings: "opsz" 144;
+	display: block;
 }
 rd-stat > ._rd-stat-meta {
 	display: flex;
-	align-items: center;
-	gap: var(--rd-space-1);
-	margin-top: var(--rd-space-2);
-	font-size: var(--rd-text-sm);
+	align-items: baseline;
+	gap: var(--rd-space-2);
+	margin-top: var(--rd-space-3);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
 	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
 	color: var(--rd-fg-muted);
 }
 rd-stat > ._rd-stat-meta > ._rd-stat-trend {
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.25em;
+	height: 1.25em;
+	border-radius: 50%;
+	background: color-mix(in oklab, var(--rd-fg) 8%, transparent);
+	font-size: 0.85em;
 	font-weight: var(--rd-weight-bold);
+	color: var(--rd-fg-muted);
+	letter-spacing: 0;
+	flex: 0 0 auto;
+}
+rd-stat > ._rd-stat-meta > ._rd-stat-delta {
+	font-variant-numeric: lining-nums tabular-nums;
 }
 rd-stat[data-tone="positive"] > ._rd-stat-meta {
 	color: var(--rd-success);
 }
+rd-stat[data-tone="positive"] > ._rd-stat-meta > ._rd-stat-trend {
+	background: color-mix(in oklab, var(--rd-success) 15%, transparent);
+	color: var(--rd-success);
+}
 rd-stat[data-tone="negative"] > ._rd-stat-meta {
+	color: var(--rd-danger);
+}
+rd-stat[data-tone="negative"] > ._rd-stat-meta > ._rd-stat-trend {
+	background: color-mix(in oklab, var(--rd-danger) 15%, transparent);
 	color: var(--rd-danger);
 }
 rd-stat[data-tone="neutral"] > ._rd-stat-meta {

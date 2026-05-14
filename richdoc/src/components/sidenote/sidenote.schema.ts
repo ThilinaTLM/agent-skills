@@ -1,8 +1,7 @@
 import type { TagSpec } from "../../lib/types.ts";
 
-export const tagName = "rd-cols";
+export const tagName = "rd-sidenote";
 export const spec: TagSpec = {
-	optional: ["n", "template"],
+	optional: ["mark"],
 	customChildren: "any",
-	enums: { n: ["2", "3", "4"] },
 };

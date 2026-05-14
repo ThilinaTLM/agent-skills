@@ -1,4 +1,10 @@
-import { type Upgradeable, define, el, stripCommonIndent } from "../../lib/base.ts";
+import {
+	type Upgradeable,
+	define,
+	el,
+	loadCdnScript,
+	stripCommonIndent,
+} from "../../lib/base.ts";
 import { spec, tagName } from "./mermaid.schema.ts";
 
 interface MermaidApi {
@@ -6,44 +12,30 @@ interface MermaidApi {
 	render: (id: string, src: string) => Promise<{ svg: string }>;
 }
 
-let loader: Promise<MermaidApi | null> | null = null;
+const MERMAID_URL = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
 
-function loadMermaid(): Promise<MermaidApi | null> {
-	if (loader) return loader;
-	loader = new Promise((resolve) => {
-		const win = window as typeof window & { mermaid?: MermaidApi };
-		if (win.mermaid) {
-			resolve(win.mermaid);
-			return;
-		}
-		const script = document.createElement("script");
-		script.src = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
-		script.async = true;
-		script.onload = () => {
-			const m = win.mermaid;
-			if (!m) {
-				resolve(null);
-				return;
-			}
-			const isDark =
-				document.documentElement.getAttribute("data-theme") === "dark" ||
-				(!document.documentElement.hasAttribute("data-theme") &&
-					window.matchMedia &&
-					window.matchMedia("(prefers-color-scheme: dark)").matches);
-			m.initialize({
-				startOnLoad: false,
-				theme: isDark ? "dark" : "default",
-				securityLevel: "loose",
-			});
-			resolve(m);
-		};
-		script.onerror = (err) => {
-			console.warn("[richdoc] mermaid CDN load failed:", err);
-			resolve(null);
-		};
-		document.head.appendChild(script);
-	});
-	return loader;
+let initialised = false;
+
+async function loadMermaid(): Promise<MermaidApi | null> {
+	const win = window as typeof window & { mermaid?: MermaidApi };
+	const m = await loadCdnScript<MermaidApi>(MERMAID_URL, () => win.mermaid);
+	if (!m) return null;
+	if (!initialised) {
+		const html = document.documentElement;
+		const explicit = html.getAttribute("data-mode");
+		const isDark =
+			explicit === "dark" ||
+			(!explicit &&
+				window.matchMedia &&
+				window.matchMedia("(prefers-color-scheme: dark)").matches);
+		m.initialize({
+			startOnLoad: false,
+			theme: isDark ? "dark" : "default",
+			securityLevel: "loose",
+		});
+		initialised = true;
+	}
+	return m;
 }
 
 class RdMermaid extends HTMLElement implements Upgradeable {

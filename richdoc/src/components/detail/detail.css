@@ -1,49 +1,69 @@
 rd-detail {
 	display: block;
 	margin: 0 0 var(--rd-space-4);
-	border: 1px solid var(--rd-border);
-	border-radius: var(--rd-radius-md);
-	background: var(--rd-bg-elev);
-	overflow: hidden;
+	border: 0;
+	border-top: 1px solid var(--rd-border-strong);
+	border-bottom: 1px solid var(--rd-border-strong);
+	background: transparent;
+}
+rd-detail + rd-detail {
+	border-top: 0;
+	margin-top: calc(-1 * var(--rd-space-4));
 }
 rd-detail > details {
 	display: block;
 }
 rd-detail > details > ._rd-detail-summary {
 	cursor: pointer;
-	padding: var(--rd-space-3) var(--rd-space-4);
+	padding: var(--rd-space-3) 0;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
 	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
 	color: var(--rd-fg);
-	background: var(--rd-bg-sunken);
+	background: transparent;
 	user-select: none;
 	list-style: none;
 	display: flex;
 	align-items: center;
-	gap: var(--rd-space-2);
+	gap: var(--rd-space-3);
 }
 rd-detail > details > ._rd-detail-summary::-webkit-details-marker {
 	display: none;
 }
-rd-detail > details > ._rd-detail-summary::before {
-	content: "\25B6";
-	display: inline-block;
-	font-size: 0.7em;
+rd-detail > details > ._rd-detail-summary::after {
+	content: "+";
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.4em;
+	height: 1.4em;
+	border: 1px solid var(--rd-border-strong);
+	border-radius: 50%;
 	color: var(--rd-fg-muted);
-	transition: transform 0.15s ease;
-	width: 0.9em;
+	font-size: 0.85em;
+	letter-spacing: 0;
+	text-transform: none;
+	transition: transform 0.2s ease, background 0.15s, color 0.15s;
 }
-rd-detail > details[open] > ._rd-detail-summary::before {
-	transform: rotate(90deg);
+rd-detail > details[open] > ._rd-detail-summary::after {
+	content: "\2212";
+	background: var(--rd-fg);
+	color: var(--rd-bg);
+	border-color: var(--rd-fg);
 }
-rd-detail > details > ._rd-detail-summary:hover {
-	background: var(--rd-bg-elev);
+rd-detail > details > ._rd-detail-summary:hover::after {
+	color: var(--rd-fg);
+	border-color: var(--rd-fg);
 }
 rd-detail > details > :not(._rd-detail-summary) {
-	padding: 0 var(--rd-space-4);
+	padding: 0;
 }
 rd-detail > details > ._rd-detail-summary + * {
 	padding-top: var(--rd-space-3);
 }
 rd-detail > details > :last-child:not(._rd-detail-summary) {
-	padding-bottom: var(--rd-space-3);
+	padding-bottom: var(--rd-space-4);
 }

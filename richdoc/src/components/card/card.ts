@@ -5,9 +5,20 @@ class RdCard extends HTMLElement implements Upgradeable {
 	_upgraded = false;
 	connectedCallback() {
 		if (this._upgraded) return;
-		const title = this.getAttribute("title");
-		if (title) this.prepend(el("div", { class: "_rd-card-header" }, title));
 		this._upgraded = true;
+		const title = this.getAttribute("title");
+		const accent = this.getAttribute("accent");
+		if (!title && !accent) return;
+		const header = el("div", { class: "_rd-card-header" });
+		if (accent && accent !== "muted") {
+			header.appendChild(el("span", { class: "_rd-card-kicker" }, accent));
+		}
+		if (title) {
+			header.appendChild(el("span", { class: "_rd-card-title" }, title));
+		}
+		if (header.childNodes.length > 0) {
+			this.prepend(header);
+		}
 	}
 }
 

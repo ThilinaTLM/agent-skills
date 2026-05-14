@@ -1,0 +1,77 @@
+rd-sidenote {
+	display: inline;
+	counter-increment: rd-sidenote;
+}
+rd-sidenote > ._rd-sidenote-marker {
+	display: inline;
+	font-family: var(--rd-font-body);
+	font-size: 0.7em;
+	font-weight: var(--rd-weight-semibold);
+	vertical-align: super;
+	line-height: 1;
+	color: var(--rd-accent);
+	font-variant-numeric: lining-nums tabular-nums;
+	margin: 0 0.05em;
+	letter-spacing: 0;
+}
+rd-sidenote > ._rd-sidenote-marker::before {
+	content: "[" counter(rd-sidenote) "]";
+}
+rd-sidenote > ._rd-sidenote-marker[data-custom-mark]::before {
+	content: "";
+}
+rd-sidenote > ._rd-sidenote-body {
+	display: inline;
+	font-style: italic;
+	color: var(--rd-fg-muted);
+	font-size: var(--rd-text-sm);
+	background: color-mix(in oklab, var(--rd-accent) 4%, transparent);
+	padding: 0.1em 0.5em;
+	border-left: 2px solid var(--rd-accent-soft);
+	margin: 0 0.25em;
+	border-radius: var(--rd-radius-sm);
+}
+rd-sidenote > ._rd-sidenote-body::before {
+	content: counter(rd-sidenote);
+	font-family: var(--rd-font-mono);
+	font-size: 0.8em;
+	font-weight: var(--rd-weight-semibold);
+	color: var(--rd-accent);
+	margin-right: 0.4em;
+	font-variant-numeric: lining-nums tabular-nums;
+	font-style: normal;
+	vertical-align: 0.05em;
+}
+rd-sidenote > ._rd-sidenote-body[data-custom-mark]::before {
+	content: "";
+}
+
+/* Wide viewport: float the note body to the right and pull it into the
+   reserved gutter via negative margin. The float interrupts the line
+   so the marker stays inline with body prose while the note sits to
+   the right of the paragraph it appears in. */
+@media (min-width: 1100px) {
+	rd-sidenote > ._rd-sidenote-body {
+		float: right;
+		clear: right;
+		display: block;
+		width: var(--rd-gutter);
+		margin: 0 calc(-1 * (var(--rd-gutter) + var(--rd-space-5))) var(--rd-space-3) var(--rd-space-5);
+		padding: 0 0 0 var(--rd-space-4);
+		border-left: 1px solid var(--rd-border-strong);
+		border-top: 0;
+		background: transparent;
+		font-size: var(--rd-text-xs);
+		line-height: var(--rd-leading-snug);
+		text-align: left;
+		font-style: italic;
+		color: var(--rd-fg-muted);
+		border-radius: 0;
+	}
+	rd-sidenote > ._rd-sidenote-body::before {
+		display: block;
+		margin: 0 0 var(--rd-space-1);
+		font-size: var(--rd-text-xs);
+		letter-spacing: var(--rd-tracking-caps);
+	}
+}

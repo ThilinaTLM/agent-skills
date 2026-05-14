@@ -1,0 +1,113 @@
+rd-diff {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	border-top: var(--rd-rule-strong) solid var(--rd-fg);
+	border-bottom: 1px solid var(--rd-border-strong);
+	background: transparent;
+	font-family: var(--rd-font-mono);
+}
+rd-diff > ._rd-code-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--rd-space-3);
+	padding: var(--rd-space-2) 0;
+	border-bottom: 1px solid var(--rd-border);
+}
+rd-diff > ._rd-code-header > ._rd-code-label {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-diff > ._rd-code-header > ._rd-code-copy {
+	appearance: none;
+	border: 1px solid var(--rd-border-strong);
+	background: transparent;
+	color: var(--rd-fg-muted);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-medium);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	padding: 0.3em 0.9em;
+	border-radius: var(--rd-radius-sm);
+	cursor: pointer;
+	transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+rd-diff > ._rd-code-header > ._rd-code-copy:hover {
+	color: var(--rd-fg);
+	border-color: var(--rd-fg);
+}
+rd-diff > ._rd-code-header > ._rd-code-copy[data-copied] {
+	color: var(--rd-success);
+	border-color: var(--rd-success);
+}
+
+rd-diff > ._rd-diff-body {
+	margin: 0;
+	padding: var(--rd-space-3) 0;
+	border: 0;
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	line-height: 1.65;
+	background: transparent;
+	overflow-x: auto;
+	font-feature-settings: "calt";
+	font-variant-numeric: tabular-nums;
+	color: var(--rd-fg);
+	counter-reset: rd-diff-line;
+}
+rd-diff ._rd-diff-line {
+	display: block;
+	padding: 0 var(--rd-space-4) 0 0;
+	border-left: 3px solid transparent;
+	white-space: pre;
+}
+rd-diff ._rd-diff-marker {
+	display: inline-block;
+	width: 1.5em;
+	margin-right: 0.25em;
+	color: var(--rd-fg-subtle);
+	text-align: right;
+	padding-right: 0.5em;
+	user-select: none;
+}
+rd-diff ._rd-diff-line[data-line]::before {
+	counter-increment: rd-diff-line;
+	content: counter(rd-diff-line);
+	display: inline-block;
+	width: 2.5em;
+	padding-right: var(--rd-space-2);
+	text-align: right;
+	color: var(--rd-fg-subtle);
+	user-select: none;
+	font-size: 0.9em;
+}
+rd-diff ._rd-diff-line[data-kind="add"] {
+	background: color-mix(in oklab, var(--rd-success) 11%, transparent);
+	border-left-color: var(--rd-success);
+}
+rd-diff ._rd-diff-line[data-kind="add"] ._rd-diff-marker {
+	color: var(--rd-success);
+	font-weight: var(--rd-weight-bold);
+}
+rd-diff ._rd-diff-line[data-kind="del"] {
+	background: color-mix(in oklab, var(--rd-danger) 11%, transparent);
+	border-left-color: var(--rd-danger);
+}
+rd-diff ._rd-diff-line[data-kind="del"] ._rd-diff-marker {
+	color: var(--rd-danger);
+	font-weight: var(--rd-weight-bold);
+}
+rd-diff ._rd-diff-line[data-kind="hunk"] {
+	color: var(--rd-fg-muted);
+	font-style: italic;
+	padding-top: var(--rd-space-2);
+	padding-bottom: var(--rd-space-1);
+}
+rd-diff ._rd-diff-line[data-kind="hunk"] ._rd-diff-marker {
+	display: none;
+}

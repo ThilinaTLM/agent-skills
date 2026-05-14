@@ -37,7 +37,16 @@ class RdToc extends HTMLElement implements Upgradeable {
 			if (!h.id) {
 				h.id = slugify(h.textContent || "") || `h-${Math.random().toString(36).slice(2, 7)}`;
 			}
-			const li = el("li", {}, el("a", { href: `#${h.id}` }, h.textContent || ""));
+			const li = el(
+				"li",
+				{},
+				el(
+					"a",
+					{ href: `#${h.id}` },
+					el("span", { class: "_rd-toc-text" }, h.textContent || ""),
+					el("span", { class: "_rd-toc-leader", "aria-hidden": "true" }),
+				),
+			);
 
 			if (depth === 0) {
 				rootUl.appendChild(li);
