@@ -47,7 +47,9 @@ rd-tooltip {
 	color: var(--rd-fg);
 	opacity: 0;
 	transform: translateY(-4px);
-	transition: opacity 0.12s ease, transform 0.12s ease;
+	transition:
+		opacity var(--rd-motion-fast) var(--rd-ease-out),
+		transform var(--rd-motion-fast) var(--rd-ease-out);
 }
 ._rd-tooltip-layer > [role="tooltip"][data-placement="top"] {
 	transform: translateY(4px);

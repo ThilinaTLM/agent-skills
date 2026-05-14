@@ -75,3 +75,20 @@ rd-callout[type="note"] > ._rd-callout-title,
 rd-callout[type="note"] > ._rd-callout-title > ._rd-callout-icon {
 	color: var(--rd-note);
 }
+
+/* One-shot attention pulse for warn / danger callouts. The icon
+   container ripples once on first reveal, then returns to rest. Looping
+   is intentionally avoided — a doc full of pulsing chrome reads as a
+   dashboard, not a piece of writing. */
+@keyframes _rd-callout-pulse {
+	0% {
+		box-shadow: 0 0 0 0 color-mix(in oklab, currentColor 45%, transparent);
+	}
+	100% {
+		box-shadow: 0 0 0 10px color-mix(in oklab, currentColor 0%, transparent);
+	}
+}
+rd-callout._rd-pulse > ._rd-callout-title > ._rd-callout-icon {
+	border-radius: 50%;
+	animation: _rd-callout-pulse var(--rd-motion-slow) var(--rd-ease-out) 1;
+}

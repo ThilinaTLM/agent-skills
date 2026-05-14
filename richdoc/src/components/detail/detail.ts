@@ -8,7 +8,23 @@ class RdDetail extends HTMLElement implements Upgradeable {
 		const summary = this.getAttribute("summary") || "Details";
 		const open = this.hasAttribute("open");
 		const details = el("details", open ? { open: true } : {});
-		const summaryEl = el("summary", { class: "_rd-detail-summary" }, summary);
+
+		// Summary structure: label on the left, chevron-down on the right.
+		// The chevron is a real <rd-icon> so its stroke weight, size, and
+		// theming match every other glyph in the framework. CSS rotates it
+		// 180° when [open].
+		const chevron = document.createElement("rd-icon");
+		chevron.setAttribute("name", "chevron-down");
+		chevron.setAttribute("size", "sm");
+		chevron.setAttribute("aria-hidden", "true");
+		chevron.className = "_rd-detail-chevron";
+
+		const summaryEl = el(
+			"summary",
+			{ class: "_rd-detail-summary" },
+			el("span", { class: "_rd-detail-text" }, summary),
+			chevron,
+		);
 		details.appendChild(summaryEl);
 		// Move existing children into the details wrapper.
 		while (this.firstChild) details.appendChild(this.firstChild);

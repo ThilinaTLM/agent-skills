@@ -120,7 +120,7 @@ class RdDiff extends HTMLElement implements Upgradeable {
 				}
 			}
 
-			const marker = kind === "hunk" ? "" : line[0] ?? " ";
+			const marker = kind === "hunk" ? "" : (line[0] ?? " ");
 			const body = kind === "hunk" ? line : line.slice(1);
 			let bodyHtml: string;
 			if (hljs && lang && hljs.getLanguage(lang) && kind !== "hunk") {

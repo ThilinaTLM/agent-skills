@@ -87,11 +87,7 @@ class RdFootnote extends HTMLElement implements Upgradeable {
 		// at the foot of the page remains untouched.
 		const preview = document.createElement("div");
 		for (const node of Array.from(item.childNodes)) {
-			if (
-				node instanceof HTMLElement &&
-				node.classList.contains("_rd-fn-back")
-			)
-				continue;
+			if (node instanceof HTMLElement && node.classList.contains("_rd-fn-back")) continue;
 			preview.appendChild(node.cloneNode(true));
 		}
 

@@ -1,10 +1,4 @@
-import {
-	type Upgradeable,
-	define,
-	el,
-	loadCdnScript,
-	stripCommonIndent,
-} from "../../lib/base.ts";
+import { type Upgradeable, define, el, loadCdnScript, stripCommonIndent } from "../../lib/base.ts";
 import { spec, tagName } from "./mermaid.schema.ts";
 
 interface MermaidApi {
@@ -25,9 +19,7 @@ async function loadMermaid(): Promise<MermaidApi | null> {
 		const explicit = html.getAttribute("data-mode");
 		const isDark =
 			explicit === "dark" ||
-			(!explicit &&
-				window.matchMedia &&
-				window.matchMedia("(prefers-color-scheme: dark)").matches);
+			(!explicit && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
 		m.initialize({
 			startOnLoad: false,
 			theme: isDark ? "dark" : "default",

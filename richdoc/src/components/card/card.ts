@@ -1,4 +1,4 @@
-import { type Upgradeable, define, el } from "../../lib/base.ts";
+import { type Upgradeable, define, el, reveal } from "../../lib/base.ts";
 import { spec, tagName } from "./card.schema.ts";
 
 class RdCard extends HTMLElement implements Upgradeable {
@@ -8,6 +8,7 @@ class RdCard extends HTMLElement implements Upgradeable {
 		this._upgraded = true;
 		const title = this.getAttribute("title");
 		const accent = this.getAttribute("accent");
+		reveal(this);
 		if (!title && !accent) return;
 		const header = el("div", { class: "_rd-card-header" });
 		if (accent && accent !== "muted") {

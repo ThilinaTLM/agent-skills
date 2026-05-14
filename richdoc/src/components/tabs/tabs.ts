@@ -16,6 +16,22 @@ class RdTabs extends HTMLElement implements Upgradeable {
 
 		const strip = el("div", { class: "_rd-tab-strip", role: "tablist" });
 		const buttons: HTMLButtonElement[] = [];
+		const indicator = el("span", {
+			class: "_rd-tab-indicator",
+			"aria-hidden": "true",
+		});
+
+		const moveIndicator = (idx: number) => {
+			const btn = buttons[idx];
+			if (!btn) return;
+			const stripRect = strip.getBoundingClientRect();
+			const btnRect = btn.getBoundingClientRect();
+			// Position relative to the strip so the indicator slides
+			// regardless of how the strip itself is positioned on the page.
+			const x = btnRect.left - stripRect.left;
+			indicator.style.setProperty("--rd-tab-indicator-x", `${x}px`);
+			indicator.style.setProperty("--rd-tab-indicator-w", `${btnRect.width}px`);
+		};
 
 		const select = (idx: number) => {
 			tabs.forEach((tab, i) => {
@@ -24,6 +40,7 @@ class RdTabs extends HTMLElement implements Upgradeable {
 				buttons[i].setAttribute("aria-selected", String(i === idx));
 				buttons[i].setAttribute("tabindex", i === idx ? "0" : "-1");
 			});
+			moveIndicator(idx);
 		};
 
 		tabs.forEach((tab, i) => {
@@ -61,8 +78,21 @@ class RdTabs extends HTMLElement implements Upgradeable {
 			strip.appendChild(btn);
 		});
 
+		strip.appendChild(indicator);
 		this.prepend(strip);
 		select(activeIdx);
+
+		// Re-measure on resize so the indicator stays glued to the active
+		// tab even as the strip reflows under responsive breakpoints.
+		const ro = new ResizeObserver(() => {
+			const current = buttons.findIndex((b) => b.getAttribute("aria-selected") === "true");
+			if (current >= 0) moveIndicator(current);
+		});
+		ro.observe(strip);
+
+		// First measurement after the strip lays out.
+		requestAnimationFrame(() => moveIndicator(activeIdx));
+
 		this._upgraded = true;
 	}
 }

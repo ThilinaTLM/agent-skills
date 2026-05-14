@@ -14,14 +14,14 @@ class RdTask extends HTMLElement implements Upgradeable {
 		const due = this.getAttribute("due");
 		if (done) this.setAttribute("data-done", "");
 
-		const box = el(
-			"span",
-			{
-				class: "_rd-task-box",
-				"aria-hidden": "true",
-			},
-			done ? "\u2713" : "",
-		);
+		// The box always carries the check icon; it's revealed via CSS when
+		// the task is marked done. Using <rd-icon> keeps the stroke weight
+		// and rendering identical to every other glyph in the system.
+		const checkIcon = document.createElement("rd-icon");
+		checkIcon.setAttribute("name", "check");
+		checkIcon.setAttribute("size", "sm");
+		checkIcon.setAttribute("aria-hidden", "true");
+		const box = el("span", { class: "_rd-task-box", "aria-hidden": "true" }, checkIcon);
 
 		// Move existing inline content into a body wrapper so we can append meta.
 		const body = el("span", { class: "_rd-task-body" });
@@ -29,18 +29,10 @@ class RdTask extends HTMLElement implements Upgradeable {
 
 		const meta: HTMLElement[] = [];
 		if (assignee) {
-			meta.push(
-				el(
-					"span",
-					{ class: "_rd-task-meta-item", "data-kind": "assignee" },
-					assignee,
-				),
-			);
+			meta.push(el("span", { class: "_rd-task-meta-item", "data-kind": "assignee" }, assignee));
 		}
 		if (due) {
-			meta.push(
-				el("span", { class: "_rd-task-meta-item", "data-kind": "due" }, due),
-			);
+			meta.push(el("span", { class: "_rd-task-meta-item", "data-kind": "due" }, due));
 		}
 		if (meta.length > 0) {
 			body.appendChild(el("span", { class: "_rd-task-meta" }, ...meta));

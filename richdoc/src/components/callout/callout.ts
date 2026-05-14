@@ -1,4 +1,4 @@
-import { CALLOUT_ICONS, type Upgradeable, define, el } from "../../lib/base.ts";
+import { CALLOUT_ICONS, type Upgradeable, define, el, reveal } from "../../lib/base.ts";
 import { spec, tagName } from "./callout.schema.ts";
 
 class RdCallout extends HTMLElement implements Upgradeable {
@@ -23,6 +23,17 @@ class RdCallout extends HTMLElement implements Upgradeable {
 				el("span", { class: "_rd-callout-text" }, titleText),
 			),
 		);
+		// Warn/danger callouts fire a one-shot pulse on the icon when they
+		// enter view. Info/success/note stay neutral — motion is reserved
+		// for callouts that genuinely demand attention.
+		if (type === "warn" || type === "danger") {
+			reveal(this, () => {
+				this.classList.add("_rd-pulse");
+				window.setTimeout(() => this.classList.remove("_rd-pulse"), 800);
+			});
+		} else {
+			reveal(this);
+		}
 	}
 }
 

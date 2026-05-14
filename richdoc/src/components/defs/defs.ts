@@ -1,10 +1,5 @@
 import { type Upgradeable, define, el } from "../../lib/base.ts";
-import {
-	defSpec,
-	defTagName,
-	spec,
-	tagName,
-} from "./defs.schema.ts";
+import { defSpec, defTagName, spec, tagName } from "./defs.schema.ts";
 
 class RdDefs extends HTMLElement implements Upgradeable {
 	_upgraded = false;

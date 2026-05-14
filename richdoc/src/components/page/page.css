@@ -22,3 +22,21 @@ rd-page {
 		padding: var(--rd-space-6) var(--rd-space-4) var(--rd-space-7);
 	}
 }
+
+/* Page-enter cascade. The first N direct children fade + lift in on
+   initial upgrade. Each child carries an inline --rd-enter-delay so the
+   stagger is computed in JS (see components/page/page.ts) and the CSS
+   stays declarative. The transition target flips when <rd-page> gains
+   data-rd-entered. */
+rd-page > [data-rd-enter] {
+	opacity: 0;
+	transform: translateY(6px);
+	transition:
+		opacity 180ms var(--rd-ease-out) var(--rd-enter-delay, 0ms),
+		transform 180ms var(--rd-ease-out) var(--rd-enter-delay, 0ms);
+	will-change: opacity, transform;
+}
+rd-page[data-rd-entered] > [data-rd-enter] {
+	opacity: 1;
+	transform: none;
+}

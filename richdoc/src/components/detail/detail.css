@@ -28,6 +28,7 @@ rd-detail > details > ._rd-detail-summary {
 	display: flex;
 	align-items: center;
 	gap: var(--rd-space-3);
+	transition: background var(--rd-motion-fast) var(--rd-ease-out);
 }
 rd-detail > details:not([open]) > ._rd-detail-summary {
 	border-bottom-color: transparent;
@@ -35,31 +36,27 @@ rd-detail > details:not([open]) > ._rd-detail-summary {
 rd-detail > details > ._rd-detail-summary::-webkit-details-marker {
 	display: none;
 }
-rd-detail > details > ._rd-detail-summary::after {
-	content: "+";
+rd-detail > details > ._rd-detail-summary:hover {
+	background: color-mix(in oklab, var(--rd-panel-header-bg) 75%, var(--rd-fg) 6%);
+}
+rd-detail > details > ._rd-detail-summary > ._rd-detail-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+rd-detail > details > ._rd-detail-summary > ._rd-detail-chevron {
+	flex: 0 0 auto;
 	margin-left: auto;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 1.4em;
-	height: 1.4em;
-	border: 1px solid var(--rd-border-strong);
-	border-radius: 50%;
 	color: var(--rd-fg-muted);
-	font-size: 0.85em;
-	letter-spacing: 0;
-	text-transform: none;
-	transition: transform 0.2s ease, background 0.15s, color 0.15s;
+	font-size: 1.1em;
+	transition:
+		transform var(--rd-motion-base) var(--rd-ease-out),
+		color var(--rd-motion-fast);
 }
-rd-detail > details[open] > ._rd-detail-summary::after {
-	content: "\2212";
-	background: var(--rd-fg);
-	color: var(--rd-bg);
-	border-color: var(--rd-fg);
-}
-rd-detail > details > ._rd-detail-summary:hover::after {
+rd-detail > details > ._rd-detail-summary:hover > ._rd-detail-chevron {
 	color: var(--rd-fg);
-	border-color: var(--rd-fg);
+}
+rd-detail > details[open] > ._rd-detail-summary > ._rd-detail-chevron {
+	transform: rotate(180deg);
 }
 rd-detail > details > :not(._rd-detail-summary) {
 	padding: 0 var(--rd-space-4);
@@ -69,4 +66,25 @@ rd-detail > details > ._rd-detail-summary + * {
 }
 rd-detail > details > :last-child:not(._rd-detail-summary) {
 	padding-bottom: var(--rd-space-4);
+}
+
+/* Animated open/close where supported (Chrome 129+, ~mid-2024). Other
+   browsers get today's instant toggle. */
+@supports (interpolate-size: allow-keywords) {
+	:root {
+		interpolate-size: allow-keywords;
+	}
+	rd-detail > details::details-content {
+		block-size: 0;
+		overflow: clip;
+		opacity: 0;
+		transition:
+			block-size var(--rd-motion-base) var(--rd-ease-out),
+			opacity var(--rd-motion-fast) var(--rd-ease-out),
+			content-visibility var(--rd-motion-base) allow-discrete;
+	}
+	rd-detail > details[open]::details-content {
+		block-size: auto;
+		opacity: 1;
+	}
 }

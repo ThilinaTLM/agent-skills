@@ -27,11 +27,7 @@ class RdTooltip extends HTMLElement implements Upgradeable {
 		while (this.firstChild) content.appendChild(this.firstChild);
 
 		// Build the inline trigger span.
-		const trigger = el(
-			"span",
-			{ class: "_rd-tooltip-trigger", tabindex: "0" },
-			term,
-		);
+		const trigger = el("span", { class: "_rd-tooltip-trigger", tabindex: "0" }, term);
 		this.appendChild(trigger);
 
 		attachTooltip(trigger, content, {

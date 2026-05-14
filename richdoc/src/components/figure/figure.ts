@@ -1,4 +1,4 @@
-import { type Upgradeable, define, el } from "../../lib/base.ts";
+import { type Upgradeable, define, el, reveal } from "../../lib/base.ts";
 import { spec, tagName } from "./figure.schema.ts";
 
 class RdFigure extends HTMLElement implements Upgradeable {
@@ -9,6 +9,7 @@ class RdFigure extends HTMLElement implements Upgradeable {
 		if (caption) {
 			this.appendChild(el("figcaption", { class: "_rd-figure-cap" }, caption));
 		}
+		reveal(this);
 		this._upgraded = true;
 	}
 }

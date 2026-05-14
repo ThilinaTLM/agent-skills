@@ -106,7 +106,7 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | `<rd-task>` | `done?`, `assignee?`, `due?` | One item with checkbox and optional metadata. |
 | `<rd-mermaid>` | — | Lazy-loads mermaid from CDN; renders the diagram from text content. |
 | `<rd-toc>` | `levels?` (default `"2,3"`), `title?` (default `"On this page"`) | Auto-generated TOC from `<h2>`/`<h3>` inside the parent `<rd-page>`. |
-| `<rd-icon>` | **`name`** (enum), `size?` (`sm\|md\|lg`), `label?` | Inline SVG from vendored Lucide subset. Run `richdoc components --tag rd-icon` for the available names. |
+| `<rd-icon>` | **`name`** (enum), `size?` (`sm\|md\|lg`), `label?` | Inline SVG from the full Lucide library at a pinned version. A small core set is bundled inline; everything else is lazy-loaded from jsDelivr on first reference and cached. Run `richdoc components --tag rd-icon` for the ~1,900 available names. Offline: non-core icons render as empty slots until the network is back. |
 | `<rd-tooltip>` | **`term`** (text), `placement?` (`auto\|top\|bottom`) | Inline definition popup. The `term` renders with a dotted underline; the children render as a rich tooltip body on hover, focus, or tap. |
 
 ## Minimal example
@@ -159,9 +159,23 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 
 Scaffold with `richdoc new <output> --template <name>`.
 
+## Motion
+
+richdoc has a small, consistent motion vocabulary driven by tokens in `richdoc.css`:
+
+- **Page-enter cascade** — the first ~8 direct children of `<rd-page>` fade and lift in on load (~180 ms with a 20 ms stagger).
+- **Viewport-entry reveal** — `<rd-stat>`, `<rd-card>`, `<rd-callout>`, `<rd-figure>`, `<rd-quote>`, and `<rd-event>` reveal as they scroll into view.
+- **`<rd-stat>` count-up** — numeric values animate from zero on entry. Non-numeric values (`"complete"`, `"42 days"`) render immediately.
+- **`<rd-detail>`** — chevron rotates and content height interpolates (in browsers that support it).
+- **`<rd-tabs>`** — active underline slides between tabs.
+- **`<rd-checklist>`** — the check icon scales in when a task is marked done.
+- **`<rd-callout type="warn">` / `"danger"`** — a one-shot pulse on entry. Other variants stay still.
+
+All motion is gated on `prefers-reduced-motion: reduce` and collapses to instant transitions for users who opt out at the OS level.
+
 ## Limitations
 
-- **JS required** for tabs, mermaid, math, syntax highlighting, TOC, and the copy button. Other components render with CSS alone.
-- **Internet required on first render** of `rd-mermaid`, `rd-math`, and any `rd-code` with `lang` set (mermaid / KaTeX / highlight.js load from CDN). Each falls back to raw source if offline.
+- **JS required** for tabs, mermaid, math, syntax highlighting, TOC, the count-up animation, the tabs underline indicator, and the copy button. Other components render with CSS alone.
+- **Internet required on first render** of `rd-mermaid`, `rd-math`, any `rd-code` with `lang` set, and any `<rd-icon>` outside the inlined core set (mermaid / KaTeX / highlight.js / lucide-static load from jsDelivr). All fall back gracefully if offline — code blocks show raw source, math shows the source, icons show an empty slot of the right size.
 - **One document per file.** No multi-page nav.
 - **Browser-only consumer.** Use markdown if the doc must render on GitHub, in plaintext email, or in a CLI pager.

@@ -44,7 +44,10 @@ rd-code > ._rd-code-header > ._rd-code-copy {
 	padding: 0.3em 0.9em;
 	border-radius: var(--rd-radius-sm);
 	cursor: pointer;
-	transition: color 0.15s, border-color 0.15s, background 0.15s;
+	transition:
+		color var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out),
+		background var(--rd-motion-fast) var(--rd-ease-out);
 }
 rd-code > ._rd-code-header > ._rd-code-copy:hover {
 	color: var(--rd-fg);

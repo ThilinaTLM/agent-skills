@@ -1,4 +1,4 @@
-import { type Upgradeable, define, el } from "../../lib/base.ts";
+import { type Upgradeable, define, el, reveal } from "../../lib/base.ts";
 import { eventSpec, eventTagName, spec, tagName } from "./timeline.schema.ts";
 
 class RdTimeline extends HTMLElement {}
@@ -7,6 +7,7 @@ class RdEvent extends HTMLElement implements Upgradeable {
 	_upgraded = false;
 	connectedCallback() {
 		if (this._upgraded) return;
+		reveal(this);
 		const date = this.getAttribute("date") || "";
 		const title = this.getAttribute("title") || "";
 		if (date || title) {

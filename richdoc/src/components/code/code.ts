@@ -35,9 +35,7 @@ function wrapLines(html: string, start: number, highlighted: Set<number>): strin
 	for (let i = 0; i < lines.length; i++) {
 		const n = start + i;
 		const hl = highlighted.has(n) ? ' data-highlight=""' : "";
-		out.push(
-			`<span class="_rd-code-line" data-line="${n}"${hl}>${lines[i] || " "}</span>`,
-		);
+		out.push(`<span class="_rd-code-line" data-line="${n}"${hl}>${lines[i] || " "}</span>`);
 	}
 	return out.join("");
 }

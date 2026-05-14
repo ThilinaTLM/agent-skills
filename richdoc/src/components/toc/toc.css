@@ -57,7 +57,7 @@ rd-toc a {
 	color: var(--rd-fg);
 	text-decoration: none;
 	font-family: var(--rd-font-body);
-	transition: color 0.15s;
+	transition: color var(--rd-motion-fast) var(--rd-ease-out);
 }
 /* Hierarchical numbering: 1, 1.1, 1.2, 1.2.1, 2, 3 … */
 rd-toc a::before {

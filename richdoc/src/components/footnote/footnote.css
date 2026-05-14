@@ -89,7 +89,7 @@ rd-footnotes ._rd-fn-back {
 	text-decoration: none;
 	font-size: 0.95em;
 	margin-left: 0.4em;
-	transition: color 0.15s;
+	transition: color var(--rd-motion-fast) var(--rd-ease-out);
 }
 rd-footnotes ._rd-fn-back:hover {
 	color: var(--rd-accent);

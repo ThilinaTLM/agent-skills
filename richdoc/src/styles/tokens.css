@@ -96,6 +96,16 @@
 	--rd-rule: 1px;
 	--rd-rule-strong: 2px;
 
+	/* Motion. Three durations + two easing curves. Component CSS must
+	   reference these tokens rather than introduce ad-hoc timing literals
+	   so the prefers-reduced-motion override at the bottom of this file
+	   can collapse them globally. */
+	--rd-motion-fast: 120ms;
+	--rd-motion-base: 220ms;
+	--rd-motion-slow: 480ms;
+	--rd-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+	--rd-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
 	/* Layout. Single page max-width — generous for modern monitors but
 	   still capped so prose stays readable on ultrawide displays. */
 	--rd-max-width: 1280px;
@@ -244,4 +254,40 @@
 
 		--rd-paper-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.91 0 0 0 0 0.85 0 0 0 0.025 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
 	}
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Motion killswitch — honour prefers-reduced-motion globally.
+   Collapses every motion token to ~0ms so components that read them get
+   instant transitions, and force-zeroes any standalone keyframe animation
+   in case a component forgot to wire through the tokens.
+   ───────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--rd-motion-fast: 0.01ms;
+		--rd-motion-base: 0.01ms;
+		--rd-motion-slow: 0.01ms;
+	}
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Viewport-entry reveal — shared primitive used by rd-card, rd-callout,
+   rd-figure, rd-quote, rd-event, rd-stat, and anything else that opts in
+   via `reveal(this)` in lib/base.ts. The helper sets data-rd-reveal
+   immediately and data-rd-revealed when the element scrolls into view. */
+[data-rd-reveal] {
+	transition:
+		opacity var(--rd-motion-slow) var(--rd-ease-out),
+		transform var(--rd-motion-slow) var(--rd-ease-out);
+}
+[data-rd-reveal]:not([data-rd-revealed]) {
+	opacity: 0;
+	transform: translateY(8px);
 }

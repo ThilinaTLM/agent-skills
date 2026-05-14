@@ -204,28 +204,45 @@
 	</rd-section>
 
 	<rd-section title="Icons">
-		<p>Inline SVG icons from a vendored Lucide subset. Use <code>rd-icon</code> in headings, lists, badges, or anywhere you would otherwise reach for an emoji.</p>
-		<p>
-			<rd-icon name="check"></rd-icon> check
-			&nbsp; <rd-icon name="x"></rd-icon> x
-			&nbsp; <rd-icon name="alert-triangle"></rd-icon> alert-triangle
-			&nbsp; <rd-icon name="info"></rd-icon> info
-			&nbsp; <rd-icon name="sparkles"></rd-icon> sparkles
-			&nbsp; <rd-icon name="zap"></rd-icon> zap
-			&nbsp; <rd-icon name="bookmark"></rd-icon> bookmark
-			&nbsp; <rd-icon name="star"></rd-icon> star
-			&nbsp; <rd-icon name="target"></rd-icon> target
-			&nbsp; <rd-icon name="shield"></rd-icon> shield
-			&nbsp; <rd-icon name="code"></rd-icon> code
-			&nbsp; <rd-icon name="terminal"></rd-icon> terminal
-			&nbsp; <rd-icon name="file-text"></rd-icon> file-text
-			&nbsp; <rd-icon name="folder"></rd-icon> folder
-			&nbsp; <rd-icon name="hash"></rd-icon> hash
-			&nbsp; <rd-icon name="tag"></rd-icon> tag
-			&nbsp; <rd-icon name="bell"></rd-icon> bell
-			&nbsp; <rd-icon name="github"></rd-icon> github
-			&nbsp; <rd-icon name="external-link"></rd-icon> external-link
-		</p>
+		<p>Inline SVG glyphs from the full Lucide library (~1,900 names at the pinned <code>lucide-static</code> version). A core set ships inline in <code>richdoc.js</code>; everything else is lazy-loaded from jsDelivr on first reference and cached. Run <code>richdoc components --tag rd-icon</code> for the authoritative list.</p>
+		<rd-cols n="4">
+			<rd-card title="Status" accent="muted">
+				<p>
+					<rd-icon name="check"></rd-icon> check
+					&nbsp;<rd-icon name="x"></rd-icon> x
+					&nbsp;<rd-icon name="alert-triangle"></rd-icon> warn
+					&nbsp;<rd-icon name="info"></rd-icon> info
+				</p>
+			</rd-card>
+			<rd-card title="Direction" accent="muted">
+				<p>
+					<rd-icon name="arrow-up"></rd-icon> up
+					&nbsp;<rd-icon name="arrow-down"></rd-icon> down
+					&nbsp;<rd-icon name="chevron-right"></rd-icon> next
+					&nbsp;<rd-icon name="external-link"></rd-icon> out
+				</p>
+			</rd-card>
+			<rd-card title="Editorial" accent="muted">
+				<p>
+					<rd-icon name="sparkles"></rd-icon> sparkles
+					&nbsp;<rd-icon name="zap"></rd-icon> zap
+					&nbsp;<rd-icon name="star"></rd-icon> star
+					&nbsp;<rd-icon name="bookmark"></rd-icon> bookmark
+				</p>
+			</rd-card>
+			<rd-card title="Lazy (CDN)" accent="info">
+				<p>
+					<rd-icon name="heart"></rd-icon> heart
+					&nbsp;<rd-icon name="compass"></rd-icon> compass
+					&nbsp;<rd-icon name="cloud"></rd-icon> cloud
+					&nbsp;<rd-icon name="database"></rd-icon> database
+					&nbsp;<rd-icon name="cpu"></rd-icon> cpu
+					&nbsp;<rd-icon name="package"></rd-icon> package
+					&nbsp;<rd-icon name="rocket"></rd-icon> rocket
+					&nbsp;<rd-icon name="telescope"></rd-icon> telescope
+				</p>
+			</rd-card>
+		</rd-cols>
 		<p>Sizes: <rd-icon name="zap" size="sm"></rd-icon> small, <rd-icon name="zap"></rd-icon> medium, <rd-icon name="zap" size="lg"></rd-icon> large.</p>
 	</rd-section>
 

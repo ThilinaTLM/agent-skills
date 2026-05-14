@@ -25,18 +25,29 @@ rd-task > ._rd-task-box {
 	height: 1.1em;
 	border: 1px solid var(--rd-border-strong);
 	border-radius: var(--rd-radius-sm);
-	font-family: var(--rd-font-display);
-	font-size: 0.85em;
-	font-weight: var(--rd-weight-bold);
-	color: transparent;
+	color: var(--rd-bg);
 	background: transparent;
 	margin-top: 0.3em;
-	transition: background 0.15s, border-color 0.15s, color 0.15s;
+	transition:
+		background var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-task > ._rd-task-box > rd-icon {
+	width: 0.85em;
+	height: 0.85em;
+	opacity: 0;
+	transform: scale(0.5);
+	transition:
+		opacity var(--rd-motion-fast) var(--rd-ease-out),
+		transform var(--rd-motion-base) var(--rd-ease-out);
 }
 rd-task[data-done] > ._rd-task-box {
 	background: var(--rd-fg);
 	border-color: var(--rd-fg);
-	color: var(--rd-bg);
+}
+rd-task[data-done] > ._rd-task-box > rd-icon {
+	opacity: 1;
+	transform: scale(1);
 }
 rd-task > ._rd-task-body {
 	flex: 1 1 auto;

@@ -1,10 +1,11 @@
-import { type Upgradeable, define, el } from "../../lib/base.ts";
+import { type Upgradeable, define, el, reveal } from "../../lib/base.ts";
 import { spec, tagName } from "./quote.schema.ts";
 
 class RdQuote extends HTMLElement implements Upgradeable {
 	_upgraded = false;
 	connectedCallback() {
 		if (this._upgraded) return;
+		reveal(this);
 		const author = this.getAttribute("author");
 		const cite = this.getAttribute("cite");
 		const url = this.getAttribute("source-url");
