@@ -12,7 +12,7 @@
 		"skipLibCheck": true,
 		"isolatedModules": true,
 		"resolveJsonModule": true,
-		"types": ["bun-types"]
+		"types": ["node"]
 	},
 	"include": ["src/**/*", "build.ts"],
 	"exclude": ["node_modules", "richdoc-cli", "assets"]

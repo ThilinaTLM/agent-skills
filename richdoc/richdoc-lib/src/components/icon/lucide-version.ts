@@ -11,8 +11,8 @@
  *      using `LUCIDE_CDN_BASE` so the doc only carries ~30 inlined icons
  *      yet can reference any of ~1900 Lucide glyphs.
  *
- * Bumping the pin is a one-line change here followed by `bun install` and
- * `bun run build`. Keep the version aligned with the `lucide-static`
+ * Bumping the pin is a one-line change here followed by `pnpm install` and
+ * `pnpm build`. Keep the version aligned with the `lucide-static`
  * devDependency in `package.json`.
  */
 

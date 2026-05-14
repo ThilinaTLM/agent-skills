@@ -4,17 +4,26 @@
 	"private": true,
 	"type": "module",
 	"description": "Framework for AI-authored HTML documents",
+	"packageManager": "pnpm@10.33.0",
+	"engines": {
+		"node": ">=20.11"
+	},
 	"scripts": {
-		"build": "bun run build.ts",
-		"build:dev": "bun run build.ts --dev",
+		"build": "tsx build.ts",
+		"build:dev": "tsx build.ts --dev",
 		"lint": "biome check .",
 		"lint:fix": "biome check --fix .",
 		"format": "biome format --write ."
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
-		"@types/bun": "latest",
+		"@types/node": "^22.9.0",
+		"esbuild": "^0.24.0",
 		"lucide-static": "1.16.0",
+		"tsx": "^4.19.2",
 		"typescript": "^5.6.3"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
 	}
 }

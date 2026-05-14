@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S npx tsx
 /**
  * richdoc build pipeline.
  *
@@ -17,11 +17,14 @@
  * that source changes never break the canonical example.
  */
 
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { build as esbuild } from "esbuild";
 
-const ROOT = import.meta.dir;
+const ROOT = import.meta.dirname;
 const ASSETS_DIR = resolve(ROOT, "assets");
 const SRC_DIR = resolve(ROOT, "src");
 
@@ -42,7 +45,7 @@ async function main(): Promise<void> {
 	console.log(`▸ building richdoc (${isDev ? "dev" : "production"})…`);
 
 	// Codegen must run before the bundle so the generated names file is
-	// available to icon.schema.ts when Bun resolves imports.
+	// available to icon.schema.ts when esbuild resolves imports.
 	const iconCount = await generateLucideNames();
 	console.log(`  generated lucide names file (${iconCount} icons)`);
 
@@ -84,7 +87,7 @@ async function main(): Promise<void> {
 async function generateLucideNames(): Promise<number> {
 	const iconsDir = resolve(ROOT, "node_modules", "lucide-static", "icons");
 	if (!existsSync(iconsDir)) {
-		throw new Error("lucide-static is not installed. Run `bun install` before `bun run build`.");
+		throw new Error("lucide-static is not installed. Run `pnpm install` before `pnpm build`.");
 	}
 	const entries = await readdir(iconsDir);
 	const names = entries
@@ -106,44 +109,38 @@ export type LucideName = (typeof LUCIDE_NAMES)[number];
 }
 
 async function buildJs(): Promise<BuildArtifact> {
-	const result = await Bun.build({
-		entrypoints: [join(SRC_DIR, "index.ts")],
-		target: "browser",
+	const outfile = join(ASSETS_DIR, "richdoc.js");
+	await esbuild({
+		entryPoints: [join(SRC_DIR, "index.ts")],
+		bundle: true,
 		format: "iife",
+		target: "es2022",
+		platform: "browser",
 		minify: !isDev,
-		sourcemap: "linked",
-		outdir: ASSETS_DIR,
-		naming: "richdoc.js",
+		sourcemap: true,
+		outfile,
+		logLevel: "silent",
 	});
 
-	if (!result.success) {
-		for (const log of result.logs) console.error(log);
-		throw new Error("JS bundle failed");
-	}
-
-	const file = join(ASSETS_DIR, "richdoc.js");
-	const bytes = (await readFile(file)).byteLength;
+	const bytes = (await readFile(outfile)).byteLength;
 	return { path: "assets/richdoc.js", bytes };
 }
 
 async function buildCss(): Promise<BuildArtifact> {
-	// Bun's CSS bundler resolves @imports relative to the entry. We bundle from
-	// `src/styles/index.css`. If the bundler ever drops files, switch to the
-	// manual flatten path documented in the plan.
-	const result = await Bun.build({
-		entrypoints: [join(SRC_DIR, "styles", "index.css")],
+	// esbuild's CSS bundler resolves @imports relative to the importing file.
+	// We bundle from `src/styles/index.css`; same model as the previous Bun
+	// pipeline.
+	const outfile = join(ASSETS_DIR, "richdoc.css");
+	await esbuild({
+		entryPoints: [join(SRC_DIR, "styles", "index.css")],
+		bundle: true,
+		loader: { ".css": "css" },
 		minify: !isDev,
-		outdir: ASSETS_DIR,
-		naming: "richdoc.css",
+		outfile,
+		logLevel: "silent",
 	});
 
-	if (!result.success) {
-		for (const log of result.logs) console.error(log);
-		throw new Error("CSS bundle failed");
-	}
-
-	const file = join(ASSETS_DIR, "richdoc.css");
-	const bytes = (await readFile(file)).byteLength;
+	const bytes = (await readFile(outfile)).byteLength;
 	return { path: "assets/richdoc.css", bytes };
 }
 
@@ -172,7 +169,7 @@ async function writeVersion(
 ): Promise<{ hash: string; builtAt: string }> {
 	// Combine the produced bytes into one digest so the hash represents
 	// exactly what was shipped this build.
-	const hasher = new Bun.CryptoHasher("sha256");
+	const hasher = createHash("sha256");
 	for (const a of artifacts) {
 		const file = resolve(ROOT, a.path);
 		hasher.update(await readFile(file));
@@ -202,14 +199,9 @@ async function sanityCheck(htmlPath: string): Promise<boolean> {
 		console.warn("  (sanity check skipped — richdoc-cli not built yet)");
 		return true;
 	}
-	const proc = Bun.spawn([cli, "lint", htmlPath], {
-		stdout: "pipe",
-		stderr: "pipe",
-	});
-	const stdout = await new Response(proc.stdout).text();
-	await proc.exited;
+	const proc = spawnSync(cli, ["lint", htmlPath], { encoding: "utf8" });
 	try {
-		const result = JSON.parse(stdout) as {
+		const result = JSON.parse(proc.stdout) as {
 			ok: boolean;
 			issues: Array<{ severity: string; line?: number; rule: string; message: string }>;
 		};

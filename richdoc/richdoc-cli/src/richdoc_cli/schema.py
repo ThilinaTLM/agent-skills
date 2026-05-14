@@ -1,6 +1,6 @@
 """Load the rd-* component schema from <framework>/assets/schema.json.
 
-The schema is produced by `bun run build` from the per-component sources. The
+The schema is produced by `pnpm build` from the per-component sources. The
 CLI never hand-maintains the vocabulary — single source of truth.
 """
 
@@ -34,7 +34,7 @@ def load_schema() -> SchemaFile:
     except FileNotFoundError as exc:
         raise SchemaLoadError(
             f"Could not load richdoc schema from {SCHEMA_PATH}: {exc}. "
-            "Run `bun run build` from the richdoc/ root to generate it."
+            "Run `pnpm build` from richdoc/richdoc-lib/ to generate it."
         ) from exc
     except OSError as exc:
         raise SchemaLoadError(

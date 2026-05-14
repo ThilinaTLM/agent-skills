@@ -1,7 +1,7 @@
 /**
  * Pure schema registry — no DOM imports.
  *
- * Used by `build.ts` (running in Bun / Node) to emit `assets/schema.json`,
+ * Used by `build.ts` (running in Node) to emit `assets/schema.json`,
  * and by the CLI linter at build time. The browser bundle uses
  * `src/registry.ts`, which imports the component implementations as well.
  *
