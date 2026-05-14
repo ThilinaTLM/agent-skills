@@ -80,6 +80,7 @@ class RdDiff extends HTMLElement implements Upgradeable {
 		this.appendChild(header);
 
 		const pre = el("pre", { class: "_rd-diff-body" });
+		if (showLineNumbers) pre.setAttribute("data-line-numbers", "");
 		const lines = source.split("\n");
 
 		// Highlight line content (excluding marker) if a language is set.
@@ -88,9 +89,37 @@ class RdDiff extends HTMLElement implements Upgradeable {
 			hljs = await loadHljs();
 		}
 
+		// Walk the diff with paired (old, new) cursors so each line carries the
+		// real file line number it represents. `+` lines have only a new number,
+		// `-` lines only an old number, context has both. Hunk markers reseed
+		// the cursors from `@@ -X,Y +A,B @@`.
+		let oldLine = 1;
+		let newLine = 1;
+
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
 			const kind = classify(line);
+			if (kind === "hunk") {
+				const m = line.match(/^@@\s+-(\d+)(?:,\d+)?\s+\+(\d+)/);
+				if (m) {
+					oldLine = Number(m[1]);
+					newLine = Number(m[2]);
+				}
+			}
+
+			let oldNum = "";
+			let newNum = "";
+			if (showLineNumbers && kind !== "hunk") {
+				if (kind === "add") {
+					newNum = String(newLine++);
+				} else if (kind === "del") {
+					oldNum = String(oldLine++);
+				} else {
+					oldNum = String(oldLine++);
+					newNum = String(newLine++);
+				}
+			}
+
 			const marker = kind === "hunk" ? "" : line[0] ?? " ";
 			const body = kind === "hunk" ? line : line.slice(1);
 			let bodyHtml: string;
@@ -106,8 +135,10 @@ class RdDiff extends HTMLElement implements Upgradeable {
 			const lineEl = document.createElement("span");
 			lineEl.className = "_rd-diff-line";
 			lineEl.setAttribute("data-kind", kind);
-			if (showLineNumbers) lineEl.setAttribute("data-line", String(i + 1));
-			lineEl.innerHTML = `<span class="_rd-diff-marker">${escapeHtml(marker)}</span><span class="_rd-diff-content">${bodyHtml}</span>`;
+			const numsHtml = showLineNumbers
+				? `<span class="_rd-diff-nums" aria-hidden="true"><span class="_rd-diff-num _rd-diff-num-old">${escapeHtml(oldNum)}</span><span class="_rd-diff-num _rd-diff-num-new">${escapeHtml(newNum)}</span></span>`
+				: "";
+			lineEl.innerHTML = `${numsHtml}<span class="_rd-diff-marker">${escapeHtml(marker)}</span><span class="_rd-diff-content">${bodyHtml}</span>`;
 			// No "\n" text node between lines — the parent <pre> preserves
 			// whitespace, which would render the newline as an extra blank line
 			// between display:block line spans.

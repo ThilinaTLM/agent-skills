@@ -7,17 +7,16 @@ rd-figure {
 	text-align: center;
 }
 rd-figure > img,
-rd-figure > rd-mermaid,
 rd-figure > svg {
 	display: block;
 	max-width: 100%;
 	height: auto;
 	margin: 0 auto;
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	background: var(--rd-panel-bg);
 }
 rd-figure > rd-mermaid {
-	background: transparent;
-	border: 0;
-	padding: 0;
 	margin: 0 auto;
 }
 rd-figure > ._rd-figure-cap {

@@ -174,7 +174,8 @@
 
 	<rd-section title="Diffs">
 		<p><code>rd-diff</code> renders a unified diff with additions and deletions colour-coded. If <code>lang</code> is set, the line bodies are syntax-highlighted by the same engine that powers <code>rd-code</code>.</p>
-		<rd-diff lang="typescript" title="auth.ts">
+		<rd-diff lang="typescript" title="auth.ts" line-numbers>
+			@@ -3,5 +3,10 @@
 			 import { signToken } from "./jwt.ts";
 			 import type { TokenPayload } from "./types.ts";
 

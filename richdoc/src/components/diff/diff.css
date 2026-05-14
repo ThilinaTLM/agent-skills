@@ -60,7 +60,12 @@ rd-diff > ._rd-diff-body {
 	font-feature-settings: "calt";
 	font-variant-numeric: tabular-nums;
 	color: var(--rd-fg);
-	counter-reset: rd-diff-line;
+}
+/* Drop the body's left padding when line numbers are present so the gutter
+   sits flush against the panel edge — the colored +/- backgrounds run to
+   the very left of the panel, like GitHub's diff view. */
+rd-diff > ._rd-diff-body[data-line-numbers] {
+	padding-left: 0;
 }
 rd-diff ._rd-diff-line {
 	display: block;
@@ -77,16 +82,25 @@ rd-diff ._rd-diff-marker {
 	padding-right: 0.5em;
 	user-select: none;
 }
-rd-diff ._rd-diff-line[data-line]::before {
-	counter-increment: rd-diff-line;
-	content: counter(rd-diff-line);
-	display: inline-block;
-	width: 2.5em;
-	padding-right: var(--rd-space-2);
-	text-align: right;
-	color: var(--rd-fg-subtle);
+/* Dual-column line numbers (old / new) — only rendered by the JS when the
+   parent gets [data-line-numbers]. Both columns are tabular so figures line
+   up; a hairline divider separates the gutter from the marker + content. */
+rd-diff ._rd-diff-nums {
+	display: inline-flex;
+	flex: 0 0 auto;
 	user-select: none;
+	margin-right: var(--rd-space-3);
+	padding-right: var(--rd-space-3);
+	border-right: 1px solid var(--rd-border);
+	color: var(--rd-fg-subtle);
 	font-size: 0.9em;
+	font-variant-numeric: tabular-nums;
+}
+rd-diff ._rd-diff-num {
+	display: inline-block;
+	width: 2.4em;
+	padding-left: var(--rd-space-2);
+	text-align: right;
 }
 rd-diff ._rd-diff-line[data-kind="add"] {
 	background: color-mix(in oklab, var(--rd-success) 11%, transparent);
@@ -107,8 +121,13 @@ rd-diff ._rd-diff-line[data-kind="del"] ._rd-diff-marker {
 rd-diff ._rd-diff-line[data-kind="hunk"] {
 	color: var(--rd-fg-muted);
 	font-style: italic;
-	padding-top: var(--rd-space-2);
 	padding-bottom: var(--rd-space-1);
+}
+/* Extra top padding only when separating hunks within the diff body — the
+   first line already gets the body's padding-top, so a leading hunk header
+   shouldn't double up. */
+rd-diff ._rd-diff-line[data-kind="hunk"]:not(:first-child) {
+	padding-top: var(--rd-space-2);
 }
 rd-diff ._rd-diff-line[data-kind="hunk"] ._rd-diff-marker {
 	display: none;
