@@ -1,4 +1,4 @@
-"""Asset-inlining engine for `richdoc bundle`.
+"""Asset-inlining engine for `richdoc export html`.
 
 Walks an HTML document and replaces every *relative-path* asset reference
 with an inline equivalent: CSS becomes `<style>`, JS becomes inline

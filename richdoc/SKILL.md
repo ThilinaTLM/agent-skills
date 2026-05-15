@@ -34,8 +34,9 @@ Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https
 | `richdoc update [dir] [--apply]` | Find existing doc folders with stale shipped assets and (optionally) refresh them. |
 | `richdoc lint <file>` | Validate a `.html` file against the rd-* schema. |
 | `richdoc components [--tag <name>]` | Print the vocabulary from the live schema. |
-| `richdoc export-md <file> [-o out.md]` | Convert a richdoc HTML file to GitHub-flavored markdown. |
-| `richdoc bundle <file> [-o out.html]` | Inline every relative-path dep into a self-contained HTML file. |
+| `richdoc export md <file> [-o out_dir]` | Export to a folder of markdown files (book chapters auto-detected) with a shared `assets/` directory. |
+| `richdoc export html <file> [-o out.html]` | Export to a single self-contained `.html` file (relative deps inlined as `data:` URIs, CDN deps preserved). |
+| `richdoc export docx <file> [-o out.docx]` | Export to a single `.docx` file with embedded images, intended for Confluence “Import Word document”. |
 
 ### Typical authoring flow
 
@@ -59,16 +60,53 @@ xdg-open docs/auth-plan.html
 richdoc update .            # report
 richdoc update . --apply    # refresh stale folders
 
-# Convert to markdown for chat / GitHub / email.
-richdoc export-md docs/auth-plan.html
+# Convert to a folder of markdown files (one per chapter for books).
+richdoc export md docs/auth-plan.html
 
 # Produce a self-contained HTML you can share as a single file.
-richdoc bundle docs/auth-plan.html
+richdoc export html docs/auth-plan.html
+
+# Produce a .docx for Confluence import.
+richdoc export docx docs/auth-plan.html
 ```
 
-`bundle` inlines `richdoc.css`, `richdoc.js`, and any relative-path image / font / media reference as inline `<style>` / `<script>` / `data:` URIs. Absolute URLs (Google Fonts, jsDelivr) stay as-is — the recipient is expected to have internet when opening the file. Pass `-o -` to either command to write the result to stdout (the JSON envelope is suppressed in that mode).
+## Export
 
-`export-md` maps every `rd-*` component to its closest markdown idiom: callouts to GFM admonitions (`> [!NOTE]`), `rd-compare` / `rd-rubric` / `rd-roadmap` / `rd-api` to tables, `rd-code` / `rd-diff` / `rd-shell` to fenced code blocks, `rd-checklist` to GFM task lists, `rd-footnote` and `rd-cite` to footnotes, `rd-detail` to a raw `<details>` block. Components without a natural markdown form (`rd-chart`, `rd-icon`, `rd-toc`) are dropped and reported in the JSON envelope's `dropped[]` field.
+The richdoc CLI ships exactly three export formats. Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these three.
+
+### `richdoc export md <file> [-o <dir>]`
+
+Writes a folder. Default location: `<input-stem>-md/` next to the source file. Layout:
+
+```
+<out>/
+  <stem>.md
+  assets/
+    <hash>.png
+    …
+```
+
+For a book (the source has an `<rd-toc>` with `<rd-chapter href=…>` children), every chapter file is followed and exported under its relative tree. Subdirectories are preserved. `assets/` is shared across the whole book. Pass `--no-book` to export only the entry file.
+
+Relative image references are copied into `assets/` automatically. Remote (http/https) image URLs are left as-is by default; pass `--include-remote-images` to fetch and copy them too.
+
+Every `rd-*` component maps to the closest markdown idiom: callouts to GFM admonitions (`> [!NOTE]`), `rd-compare` / `rd-rubric` / `rd-roadmap` / `rd-api` to tables, `rd-code` / `rd-diff` / `rd-shell` to fenced code blocks, `rd-checklist` to GFM task lists, `rd-footnote` and `rd-cite` to footnotes, `rd-detail` to a raw `<details>` block. Components without a natural markdown form (`rd-chart`, `rd-icon`, single-file `rd-toc`) are dropped and reported in the JSON envelope's `dropped[]` field.
+
+### `richdoc export html <file> [-o <out.html>]`
+
+Writes one self-contained `.html` file. Default suffix: `.bundle.html`. Inlines `richdoc.css`, `richdoc.js`, and every relative-path image / font / media reference as inline `<style>` / `<script>` / `data:` URIs. Absolute URLs (Google Fonts, jsDelivr) stay as-is — the recipient is expected to have internet when opening the file. Pass `-o -` to write to stdout (the JSON envelope is suppressed in that mode).
+
+### `richdoc export docx <file> [-o <out.docx>]`
+
+Writes one `.docx`. Default name: `<stem>.docx`. Designed for Confluence's “Import Word document”: headings become Heading 1–6, lists become Word bullet / number lists, tables become Table Grid, and **every image is embedded inside the docx package** (relative AND remote) so Confluence renders them on import without further attachment uploads.
+
+Book mode is auto-detected: when the entry has an `<rd-toc>` with linked chapters, every chapter is concatenated into one DOCX with page breaks between chapters. Suppress with `--no-book`.
+
+`rd-mermaid` and `rd-plantuml` are rendered server-side via Kroki (`https://kroki.io` by default) and embedded as PNG. Override the server with `--diagram-endpoint <url>`; skip rendering and embed source as a code block with `--no-render-diagrams`. The diagram source is POSTed to the configured endpoint — same trust contract as `rd-plantuml` in browser mode.
+
+`-o -` writes the docx bytes to stdout. Mapping notes: `rd-cols` linearises to sequential blocks (Confluence's importer doesn't preserve Word columns); `rd-tabs` linearises with the tab label as a Heading 3; `rd-detail` becomes a Heading 3 summary plus its body (collapsibility is lost); `rd-icon` is dropped (its `label`, if any, renders inline); `rd-chart` data renders as a native Word table.
+
+A network-isolated host can't produce a complete docx — image fetches and diagram renders will fail and surface as `missing[]` and `diagrams_failed` in the JSON envelope.
 
 `richdoc new` writes a relative `<link href="./richdoc.css">` and `<script src="./richdoc.js" defer>`. The assets must exist next to the doc — run `richdoc init <dir>` once in that directory.
 

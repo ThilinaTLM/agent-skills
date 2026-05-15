@@ -14,24 +14,48 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Callable
 
 import lxml.etree as ET
 import lxml.html as LH
+
+from .export_assets import AssetStore
 
 # ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
 
 
-def html_to_markdown(source: str) -> tuple[str, list[str]]:
-    """Render the document body as markdown. Returns (text, dropped_tag_names)."""
+def html_to_markdown(
+    source: str,
+    *,
+    asset_store: AssetStore | None = None,
+    asset_base: Path | None = None,
+    include_remote_images: bool = False,
+    assets_subdir: str = "assets",
+) -> tuple[str, list[str]]:
+    """Render the document body as markdown.
+
+    When `asset_store` is supplied, every image reference is registered with
+    the store and the markdown src is rewritten to `<assets_subdir>/<local>`.
+    `asset_base` must be the directory the HTML lives in so relative paths
+    resolve correctly. Remote (http/https) image URLs are fetched only when
+    `include_remote_images` is True; otherwise they're kept as-is.
+
+    Returns (text, dropped_tag_names).
+    """
     parser = LH.HTMLParser(recover=True)
     root = LH.document_fromstring(source, parser=parser)
     body = root.find(".//body")
     target = body if body is not None else root
 
-    conv = _Converter()
+    conv = _Converter(
+        asset_store=asset_store,
+        asset_base=asset_base,
+        include_remote_images=include_remote_images,
+        assets_subdir=assets_subdir,
+    )
     conv.render_children(target)
     return conv.finalise(), conv.dropped
 
@@ -65,7 +89,29 @@ class _Converter:
     refs_section_title: str = "References"
     refs_collected: dict[str, dict[str, str]] = field(default_factory=dict)  # key -> attrs
     dropped: list[str] = field(default_factory=list)
+    # asset rewriting (optional)
+    asset_store: AssetStore | None = None
+    asset_base: Path | None = None
+    include_remote_images: bool = False
+    assets_subdir: str = "assets"
     _cite_counter: int = 0
+
+    def rewrite_image_src(self, src: str) -> str:
+        """If asset collection is active, register the image and return the
+        rewritten path. Otherwise return `src` unchanged."""
+        if not src or self.asset_store is None or self.asset_base is None:
+            return src
+        if src.startswith("data:") or src.startswith("#"):
+            return src
+        ref = self.asset_store.add(
+            src,
+            base_dir=self.asset_base,
+            fetch_remote=self.include_remote_images,
+        )
+        if ref is None:
+            return src
+        subdir = self.assets_subdir.strip("/")
+        return f"{subdir}/{ref.local_name}" if subdir else ref.local_name
 
     # ---- output helpers ---------------------------------------------------
 
@@ -88,17 +134,26 @@ class _Converter:
         self.chunks.append(text)
         self.chunks.append("\n\n")
 
-    def render_inline(self, el: ET._Element) -> str:  # noqa: SLF001
-        """Render `el` and its children as an inline string (no block separators)."""
-        sub = _Converter()
+    def _spawn_sub(self) -> "_Converter":
+        sub = _Converter(
+            asset_store=self.asset_store,
+            asset_base=self.asset_base,
+            include_remote_images=self.include_remote_images,
+            assets_subdir=self.assets_subdir,
+        )
         sub.in_pre = self.in_pre
         sub.list_stack = self.list_stack[:]
         sub._cite_counter = self._cite_counter
-        sub.footnotes = self.footnotes  # share state
+        sub.footnotes = self.footnotes
         sub.refs_collected = self.refs_collected
         sub.ref_order = self.ref_order
         sub.ref_entries = self.ref_entries
         sub.dropped = self.dropped
+        return sub
+
+    def render_inline(self, el: ET._Element) -> str:  # noqa: SLF001
+        """Render `el` and its children as an inline string (no block separators)."""
+        sub = self._spawn_sub()
         # render only children, including the element's text
         if el.text:
             sub.write(_inline_text(el.text))
@@ -111,15 +166,7 @@ class _Converter:
 
     def render_block_inner(self, el: ET._Element) -> str:  # noqa: SLF001
         """Render the children of `el` to markdown (block-level), returning the chunk."""
-        sub = _Converter()
-        sub.in_pre = self.in_pre
-        sub.list_stack = self.list_stack[:]
-        sub._cite_counter = self._cite_counter
-        sub.footnotes = self.footnotes
-        sub.refs_collected = self.refs_collected
-        sub.ref_order = self.ref_order
-        sub.ref_entries = self.ref_entries
-        sub.dropped = self.dropped
+        sub = self._spawn_sub()
         sub.render_children(el)
         self._cite_counter = sub._cite_counter
         body = _strip_outer_blanks(sub.finalise_body())
@@ -202,6 +249,26 @@ class _Converter:
 def _inline_text(text: str) -> str:
     """Normalise whitespace in inline text nodes."""
     return _WHITESPACE.sub(" ", text)
+
+
+def _element_source(el: ET._Element) -> str:  # noqa: SLF001
+    """Return the literal source text of a leaf code-like element.
+
+    Authors can embed source either as direct text content or inside a
+    `<script type="text/...">` child (which avoids HTML escaping of `<` and
+    `&`). At runtime the components read `this.textContent`, which collects
+    text from all descendants — including scripts. We mirror that by
+    preferring a script child's text when present, falling back to the
+    element's own concatenated descendant text.
+    """
+    for child in el:
+        if not isinstance(child.tag, str):
+            continue
+        if child.tag.lower() == "script":
+            script_text = "".join(child.itertext())
+            if script_text.strip():
+                return script_text
+    return "".join(el.itertext())
 
 
 def _dedent(text: str) -> str:
@@ -364,6 +431,22 @@ def _h_blockquote(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write_block(quoted)
 
 
+_REL_HTML = re.compile(r"^([^:/?#][^?#]*?)\.html?(#[^?]*)?(\?.*)?$")
+
+
+def _rewrite_doc_link(href: str) -> str:
+    """Relative `.html` / `.htm` hrefs are rewritten to `.md` so a folder of
+    exported markdown files is internally navigable. Absolute URLs and any
+    href without an .html / .htm suffix pass through untouched."""
+    if not href or href.startswith(("#", "//")) or ":" in href.split("/", 1)[0]:
+        return href
+    m = _REL_HTML.match(href)
+    if not m:
+        return href
+    stem, fragment, query = m.group(1), m.group(2) or "", m.group(3) or ""
+    return f"{stem}.md{query}{fragment}"
+
+
 def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     href = el.get("href") or ""
     inner = c.render_inline(el).strip()
@@ -372,7 +455,7 @@ def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     if not href:
         c.write(inner)
         return
-    c.write(f"[{inner}]({href})")
+    c.write(f"[{inner}]({_rewrite_doc_link(href)})")
 
 
 def _h_img(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
@@ -381,6 +464,7 @@ def _h_img(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     title = el.get("title")
     if not src:
         return
+    src = c.rewrite_image_src(src)
     if title:
         c.write(f'![{alt}]({src} "{title}")')
     else:
@@ -773,13 +857,13 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 def _h_rd_code(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     lang = el.get("lang") or ""
     title = el.get("title") or ""
-    body = _dedent(el.text or "")
+    body = _dedent(_element_source(el))
     _emit_fenced(c, body, lang, title)
 
 
 def _h_rd_diff(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     title = el.get("title") or ""
-    body = _dedent(el.text or "")
+    body = _dedent(_element_source(el))
     _emit_fenced(c, body, "diff", title)
 
 
@@ -801,7 +885,7 @@ def _h_rd_shell(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     display = (el.get("display") or "block").lower()
-    text = _dedent(el.text or "")
+    text = _dedent(_element_source(el))
     if display == "inline":
         c.write(f"${text}$")
     else:
@@ -820,7 +904,7 @@ def _h_rd_figure(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 def _h_rd_chart(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     title = el.get("title") or ""
     caption = el.get("caption") or ""
-    data_attr = el.get("data") or (el.text or "")
+    data_attr = el.get("data") or _element_source(el)
     if title:
         c.write_block(f"**{title}**")
     rendered = _chart_to_table(data_attr)
@@ -894,6 +978,7 @@ def _h_rd_gallery(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         src = shot.get("src") or ""
         alt = shot.get("alt") or ""
         caption = shot.get("caption") or ""
+        src = c.rewrite_image_src(src)
         item = f"- ![{alt}]({src})"
         if caption:
             item += f" — {caption}"
@@ -1016,12 +1101,12 @@ def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_mermaid(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    text = _dedent(el.text or "")
+    text = _dedent(_element_source(el))
     _emit_fenced(c, text, "mermaid")
 
 
 def _h_rd_plantuml(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    text = _dedent(el.text or "")
+    text = _dedent(_element_source(el))
     _emit_fenced(c, text, "plantuml")
 
 
@@ -1037,8 +1122,8 @@ def _h_rd_toc(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.dropped.append("rd-toc")
         return
     # Book mode: emit a markdown list reflecting the chapter tree. Relative
-    # .html / .htm links are rewritten to .md so a sibling `richdoc export-md`
-    # run on each chapter produces a navigable markdown set.
+    # .html / .htm links are rewritten to .md so the sibling chapters that
+    # `richdoc export md` emits are reachable from this index.
     title = el.get("title") or "Contents"
     lines: list[str] = [f"**{title}**", ""]
     _emit_chapter_list(lines, chapters, depth=0)

@@ -13,9 +13,8 @@ from typing import NoReturn
 import click
 
 from . import __version__
-from .commands.bundle import cmd as bundle_cmd
 from .commands.components import cmd as components_cmd
-from .commands.export_md import cmd as export_md_cmd
+from .commands.export import group as export_group
 from .commands.init_ import cmd as init_cmd
 from .commands.lint import cmd as lint_cmd
 from .commands.new_ import cmd as new_cmd
@@ -41,8 +40,7 @@ main.add_command(init_cmd)
 main.add_command(update_cmd)
 main.add_command(lint_cmd)
 main.add_command(components_cmd)
-main.add_command(export_md_cmd)
-main.add_command(bundle_cmd)
+main.add_command(export_group)
 
 
 def entrypoint() -> NoReturn:
