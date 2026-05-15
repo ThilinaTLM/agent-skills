@@ -60,7 +60,7 @@ rd-page rd-toc ul ul ul > li::before {
 rd-toc a {
 	position: relative;
 	display: flex;
-	align-items: baseline;
+	align-items: flex-start;
 	gap: var(--rd-space-2);
 	padding: var(--rd-space-1) var(--rd-space-3);
 	color: var(--rd-fg-muted);
@@ -91,9 +91,11 @@ rd-toc ul ul a::before {
 rd-toc a > ._rd-toc-text {
 	flex: 1 1 auto;
 	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	/* Allow long entries to wrap onto multiple lines rather than being
+	   truncated mid-word. `overflow-wrap: anywhere` keeps unbroken tokens
+	   (URLs, long identifiers) from forcing the rail wider than its
+	   column. */
+	overflow-wrap: anywhere;
 }
 rd-toc a:hover {
 	color: var(--rd-fg);
@@ -106,19 +108,30 @@ rd-toc a:focus-visible {
 /* Active entry — ink up the label, accent the numeral, drop a marker dot
    on the left rule (rendered against the rail; in the popover it sits on
    the popover's own hairline). The marker uses ::after so we don't fight
-   with the existing ::before that paints the numeral. */
-rd-toc a[aria-current="true"] {
+   with the existing ::before that paints the numeral.
+
+   aria-current="true" marks the active in-page heading (updated by the
+   IntersectionObserver as the reader scrolls). aria-current="page" marks
+   the active chapter anchor in book mode (set once at mount). Both get
+   the same visual treatment. */
+rd-toc a[aria-current="true"],
+rd-toc a[aria-current="page"] {
 	color: var(--rd-fg);
 	font-weight: var(--rd-weight-semibold);
 }
-rd-toc a[aria-current="true"]::before {
+rd-toc a[aria-current="true"]::before,
+rd-toc a[aria-current="page"]::before {
 	color: var(--rd-accent);
 }
-rd-toc a[aria-current="true"]::after {
+rd-toc a[aria-current="true"]::after,
+rd-toc a[aria-current="page"]::after {
 	content: "";
 	position: absolute;
 	left: -1px;
-	top: 50%;
+	/* Pin the marker to the first line of a (potentially wrapped) entry
+	   rather than the vertical midpoint, so multi-line items still look
+	   anchored at their heading. */
+	top: calc(var(--rd-space-1) + 0.65em);
 	transform: translate(-50%, -50%);
 	width: 6px;
 	height: 6px;
@@ -360,6 +373,27 @@ rd-toc ._rd-toc-pop a::before {
 	}
 }
 
+/* Book-mode group headers — <rd-chapter> with no href becomes a non-
+   clickable section label in the chapter tree. Styled like a sub-eyebrow
+   so it reads as structure rather than a missing link. */
+rd-toc ._rd-toc-group {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--rd-space-2);
+	padding: var(--rd-space-3) var(--rd-space-3) var(--rd-space-1);
+	color: var(--rd-fg-muted);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+}
+/* Group-header <li> shouldn't carry a numeric counter — it's structure,
+   not a navigable item. Defeat the counter on its label's ::before. */
+rd-toc ._rd-toc-group::before {
+	content: none;
+}
+
 /* ──────────────────────────────────────────────────────────────────────
    Reduced-motion — the global killswitch in tokens.css already zeroes
    --rd-motion-*. Belt-and-braces: also disable the progress-fill
@@ -370,5 +404,89 @@ rd-toc ._rd-toc-pop a::before {
 	rd-toc ._rd-toc-rail::after,
 	rd-toc ._rd-toc-bar::after {
 		transition: none;
+	}
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Prev / next page navigation bands.
+
+   Auto-injected by rd-toc in book mode at the top of <rd-page> (after
+   <rd-banner> if present) and the bottom of <rd-page>. Two-column on
+   wide; stacks on narrow. The strip itself carries the hairline that
+   visually separates it from page content.
+   ────────────────────────────────────────────────────────────────────── */
+
+._rd-pagenav {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: var(--rd-space-4);
+}
+._rd-pagenav[data-rd-pagenav="top"] {
+	padding-bottom: var(--rd-space-5);
+	border-bottom: 1px solid var(--rd-border);
+	margin-bottom: var(--rd-space-6);
+}
+._rd-pagenav[data-rd-pagenav="bottom"] {
+	padding-top: var(--rd-space-5);
+	border-top: 1px solid var(--rd-border);
+	margin-top: var(--rd-space-7);
+}
+._rd-pagenav-side {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rd-space-1);
+	padding: var(--rd-space-3) var(--rd-space-4);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius-md);
+	text-decoration: none;
+	color: var(--rd-fg);
+	transition:
+		border-color var(--rd-motion-fast) var(--rd-ease-out),
+		background-color var(--rd-motion-fast) var(--rd-ease-out);
+}
+._rd-pagenav-prev {
+	text-align: left;
+	grid-column: 1;
+	align-items: flex-start;
+}
+._rd-pagenav-next {
+	text-align: right;
+	grid-column: 2;
+	align-items: flex-end;
+}
+._rd-pagenav-empty {
+	border: 0;
+	background: transparent;
+	pointer-events: none;
+}
+._rd-pagenav-side:hover {
+	border-color: var(--rd-border-strong);
+	background: var(--rd-bg-elev);
+}
+._rd-pagenav-side:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 2px;
+}
+._rd-pagenav-eyebrow {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+}
+._rd-pagenav-title {
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-md);
+	font-weight: var(--rd-weight-semibold);
+	line-height: var(--rd-leading-snug);
+}
+@media (max-width: 640px) {
+	._rd-pagenav {
+		grid-template-columns: 1fr;
+	}
+	._rd-pagenav-next {
+		grid-column: 1;
+		text-align: left;
+		align-items: flex-start;
 	}
 }

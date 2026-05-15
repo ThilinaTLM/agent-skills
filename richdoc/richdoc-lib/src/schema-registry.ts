@@ -135,6 +135,7 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 	{ tagName: gallery.shotTagName, spec: gallery.shotSpec },
 	{ tagName: embed.tagName, spec: embed.spec },
 	{ tagName: toc.tagName, spec: toc.spec },
+	{ tagName: toc.chapterTagName, spec: toc.chapterSpec },
 	{ tagName: icon.tagName, spec: icon.spec },
 	{ tagName: tooltip.tagName, spec: tooltip.spec },
 ];

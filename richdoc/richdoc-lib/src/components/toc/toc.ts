@@ -1,25 +1,41 @@
 import { type Upgradeable, define, el } from "../../lib/dom.ts";
 import { slugify } from "../../lib/text.ts";
-import { spec, tagName } from "./toc.schema.ts";
+import { chapterSpec, chapterTagName, spec, tagName } from "./toc.schema.ts";
 
 /* rd-toc — floating, sticky table of contents.
  *
+ * Two modes, auto-detected at upgrade time:
+ *
+ *   headings (default)
+ *     Walks <rd-page> headings and renders a single-file TOC. This is the
+ *     original behaviour.
+ *
+ *   book
+ *     Triggered when the host element has any <rd-chapter> descendant.
+ *     Renders a cross-file chapter tree; the active chapter is auto-
+ *     detected by matching `location.pathname` against each chapter's
+ *     `href`. In-page headings are still discovered and merged inline as
+ *     a sub-tree under the active chapter (Sphinx-style). Prev / next
+ *     bands are auto-injected at the top and bottom of <rd-page>.
+ *
  * Lifecycle:
- *   1. _build()        Walk <rd-page> headings, build the entry list, ensure
- *                      every indexed heading has an id.
- *   2. _mount()        Render the shared markup: rail (wide), bar + popover
- *                      (narrow). Both presentations are always in the DOM;
- *                      CSS decides which is visible.
- *   3. _observe()      IntersectionObserver tracks which heading is active.
- *                      The most recently passed heading wins.
- *   4. _observeHero()  In narrow mode, the bar fades in only after <rd-hero>
- *                      (or the first <rd-page> child) scrolls out of view.
- *   5. scroll + rAF    Updates --rd-toc-progress for the rail / bar fill.
+ *   1. _detectMode()  Peek for <rd-chapter> to decide the branch.
+ *   2. _buildBook()   (book mode) Parse the chapter tree from light DOM.
+ *   3. _build()       Walk <rd-page> headings (always — headings mode
+ *                     uses them for the whole TOC, book mode uses them
+ *                     for the active-chapter expansion).
+ *   4. _mount()       Render the shared rail/bar/popover chrome, with
+ *                     the inner list built by either the headings or
+ *                     book tree builder.
+ *   5. _observe()     IntersectionObserver tracks the active heading.
+ *   6. _injectPageNav() (book mode) Insert prev/next bands.
+ *   7. _observeHero() Narrow-mode bar visibility.
+ *   8. scroll + rAF   Update --rd-toc-progress.
  *
  * The host element is `display: contents`; the rail, bar and popover are
- * the actual painted children. The page.css :has(rd-toc) grid rule flips
- * the host to `display: block` at the breakpoint so the rail has a
- * sticking context.
+ * the painted children. The page.css :has(rd-toc) grid rule flips the
+ * host to `display: block` at the breakpoint so the rail has a sticking
+ * context.
  */
 
 interface TocEntry {
@@ -29,17 +45,38 @@ interface TocEntry {
 	level: number;
 }
 
+interface BookEntry {
+	href: string | null; // null = group header
+	title: string;
+	url: URL | null; // resolved against location.href; null if no href / invalid
+	level: number; // nesting depth, 0-based
+	children: BookEntry[];
+	parent: BookEntry | null;
+	isActive: boolean;
+}
+
 /** Chevron-down icon, drawn inline so we don't pull in <rd-icon>'s CDN
  *  fetch for a single static glyph that's always visible. */
 const CHEVRON_DOWN_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 	stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
 	aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"/></svg>`;
 
+/** Treat a trailing slash like /index.html so chapter hrefs match the
+ *  current page regardless of how the server canonicalises the path. */
+function _normalizePath(u: URL): string {
+	const p = u.pathname.endsWith("/") ? `${u.pathname}index.html` : u.pathname;
+	return `${u.origin}${p}`;
+}
+
 class RdToc extends HTMLElement implements Upgradeable {
 	_upgraded = false;
 
+	private _mode: "headings" | "book" = "headings";
 	private _entries: TocEntry[] = [];
 	private _activeId: string | null = null;
+	private _book: BookEntry[] = [];
+	private _bookFlat: BookEntry[] = [];
+	private _activeBookEntry: BookEntry | null = null;
 	private _headingIo?: IntersectionObserver;
 	private _heroIo?: IntersectionObserver;
 	private _rafPending = false;
@@ -89,20 +126,103 @@ class RdToc extends HTMLElement implements Upgradeable {
 	// ─── Initialisation ──────────────────────────────────────────────────
 
 	private _init(): void {
+		this._detectMode();
+		if (this._mode === "book") {
+			this._buildBook();
+			// If chapter parsing produced nothing usable, fall back to
+			// headings mode so the page still gets a TOC.
+			if (this._book.length === 0) this._mode = "headings";
+		}
+
+		// In both modes we want the in-page heading list: headings mode
+		// uses it as the whole TOC, book mode splices it under the active
+		// chapter.
 		this._build();
-		if (this._entries.length === 0) return;
+
+		const haveBook = this._mode === "book" && this._book.length > 0;
+		const haveHeadings = this._entries.length > 0;
+		if (!haveBook && !haveHeadings) return;
+
 		this._mount();
-		this._observe();
+		if (haveHeadings) this._observe();
+		if (haveBook) this._injectPageNav();
 		this._observeHero();
 		this._recomputeDocMax();
 		this._updateProgress();
+		this._wireListeners();
+	}
+
+	private _detectMode(): void {
+		this._mode = this.querySelector("rd-chapter") ? "book" : "headings";
+	}
+
+	private _wireListeners(): void {
 		window.addEventListener("scroll", this._onScroll, { passive: true });
 		window.addEventListener("resize", this._onResize, { passive: true });
 		document.addEventListener("click", this._onDocClick, true);
 		document.addEventListener("keydown", this._onKey);
 	}
 
-	// ─── Tree building ───────────────────────────────────────────────────
+	// ─── Book parsing ────────────────────────────────────────────────────
+
+	private _buildBook(): void {
+		const hereKey = _normalizePath(new URL(location.href));
+
+		const walk = (root: Element, depth: number, parent: BookEntry | null): BookEntry[] => {
+			const out: BookEntry[] = [];
+			for (const node of Array.from(root.children)) {
+				if (node.tagName.toLowerCase() !== "rd-chapter") continue;
+				const ch = node as HTMLElement;
+				const href = ch.getAttribute("href");
+				const title = this._chapterTitle(ch);
+				let url: URL | null = null;
+				let active = false;
+				if (href) {
+					try {
+						url = new URL(href, location.href);
+						active = _normalizePath(url) === hereKey;
+					} catch {
+						url = null;
+					}
+				}
+				const entry: BookEntry = {
+					href,
+					title,
+					url,
+					level: depth,
+					children: [],
+					parent,
+					isActive: active,
+				};
+				entry.children = walk(ch, depth + 1, entry);
+				out.push(entry);
+			}
+			return out;
+		};
+
+		this._book = walk(this, 0, null);
+		this._bookFlat = [];
+		const flatten = (xs: BookEntry[]): void => {
+			for (const x of xs) {
+				this._bookFlat.push(x);
+				if (x.children.length) flatten(x.children);
+			}
+		};
+		flatten(this._book);
+		this._activeBookEntry = this._bookFlat.find((e) => e.isActive) || null;
+	}
+
+	private _chapterTitle(ch: HTMLElement): string {
+		// Title is the chapter element's text content excluding any nested
+		// <rd-chapter> sub-trees.
+		const clone = ch.cloneNode(true) as HTMLElement;
+		for (const nested of Array.from(clone.querySelectorAll("rd-chapter"))) {
+			nested.remove();
+		}
+		return (clone.textContent || "").replace(/\s+/g, " ").trim();
+	}
+
+	// ─── Heading tree building ───────────────────────────────────────────
 
 	private _build(): void {
 		const levels = (this.getAttribute("levels") || "2,3")
@@ -144,17 +264,16 @@ class RdToc extends HTMLElement implements Upgradeable {
 	// ─── Rendering ───────────────────────────────────────────────────────
 
 	private _mount(): void {
-		const title = this.getAttribute("title") || "On this page";
+		const title = this.getAttribute("title") || (this._mode === "book" ? "Contents" : "On this page");
 
 		this.innerHTML = "";
 		this.dataset.rdTocOpen = "false";
 		this.dataset.rdTocVisible = "false";
 
-		// Build two parallel trees (rail + popover) so each anchor lives in
-		// its own DOM subtree but indexes the same heading. We track all
-		// anchors per entry so active-state updates touch both.
-		const railList = this._buildTree("rail");
-		const popList = this._buildTree("pop");
+		const railList =
+			this._mode === "book" ? this._buildBookList("rail") : this._buildHeadingsList("rail");
+		const popList =
+			this._mode === "book" ? this._buildBookList("pop") : this._buildHeadingsList("pop");
 
 		// Wide-mode rail.
 		const rail = el(
@@ -166,6 +285,12 @@ class RdToc extends HTMLElement implements Upgradeable {
 
 		// Narrow-mode bar + popover.
 		const barCurrent = el("span", { class: "_rd-toc-bar-current" });
+		// In book mode the bar's current label tracks the chapter (set
+		// once); the heading observer would otherwise overwrite it on
+		// scroll. Headings mode populates it from _setActive().
+		if (this._mode === "book" && this._activeBookEntry) {
+			barCurrent.textContent = this._activeBookEntry.title;
+		}
 		const chev = el("span", { class: "_rd-toc-bar-chev", html: CHEVRON_DOWN_SVG });
 		const button = el(
 			"button",
@@ -199,7 +324,8 @@ class RdToc extends HTMLElement implements Upgradeable {
 		);
 
 		// Click delegation — close popover after navigation, run smooth
-		// scroll honouring reduced-motion.
+		// scroll honouring reduced-motion. Cross-file chapter links (which
+		// do not start with '#') are left alone and navigate normally.
 		const onAnchorClick = (ev: MouseEvent): void => {
 			const a = (ev.target as HTMLElement | null)?.closest(
 				"a[href^='#']",
@@ -235,18 +361,61 @@ class RdToc extends HTMLElement implements Upgradeable {
 		this._popList = popList;
 	}
 
-	/** Build one <ul> tree of anchors for a presentation (rail | pop).
-	 *  Side effect: fills `entry.anchor` on the first call only; on the
-	 *  second call we extend each entry with the secondary anchor in a
-	 *  parallel array stored on the entry (see _setActive). */
-	private _buildTree(kind: "rail" | "pop"): HTMLElement {
-		const levels = Array.from(new Set(this._entries.map((e) => e.level))).sort((a, b) => a - b);
+	/** Build the rail/pop list in headings mode. */
+	private _buildHeadingsList(kind: "rail" | "pop"): HTMLElement {
+		return this._buildHeadingsTree(kind, this._entries);
+	}
+
+	/** Build the rail/pop list in book mode: chapter tree with the active
+	 *  chapter expanded to show in-page headings. */
+	private _buildBookList(kind: "rail" | "pop"): HTMLElement {
+		const rootUl = el("ul");
+		const renderEntry = (entry: BookEntry, into: HTMLElement): void => {
+			const titleNode = el("span", { class: "_rd-toc-text" }, entry.title);
+			const label = entry.href
+				? (el(
+						"a",
+						{
+							href: entry.href,
+							"data-rd-chapter-href": entry.href,
+							...(entry.isActive ? { "aria-current": "page" } : {}),
+						},
+						titleNode,
+					) as HTMLElement)
+				: (el("span", { class: "_rd-toc-group" }, titleNode) as HTMLElement);
+			const li = el("li", {}, label) as HTMLElement;
+
+			// Splice in-page headings under the active chapter.
+			if (entry.isActive && this._entries.length > 0) {
+				li.appendChild(this._buildHeadingsTree(kind, this._entries));
+			}
+
+			if (entry.children.length > 0) {
+				const sub = el("ul");
+				for (const c of entry.children) renderEntry(c, sub);
+				li.appendChild(sub);
+			}
+			into.appendChild(li);
+		};
+		for (const e of this._book) renderEntry(e, rootUl);
+		return rootUl;
+	}
+
+	/** Build one <ul> tree of anchors for a presentation (rail | pop)
+	 *  from the heading entries.
+	 *
+	 *  Side effect: fills `entry.anchor` on the rail call and stashes a
+	 *  `.popAnchor` on the entry on the pop call, so `_setActive` can
+	 *  update both anchors at once.
+	 */
+	private _buildHeadingsTree(kind: "rail" | "pop", entries: TocEntry[]): HTMLElement {
+		const levels = Array.from(new Set(entries.map((e) => e.level))).sort((a, b) => a - b);
 		const depthOf = (lvl: number) => levels.indexOf(lvl);
 
 		const rootUl = el("ul");
 		const ulAtDepth: (HTMLElement | undefined)[] = [rootUl];
 
-		for (const entry of this._entries) {
+		for (const entry of entries) {
 			const depth = depthOf(entry.level);
 			if (depth < 0) continue;
 
@@ -259,8 +428,6 @@ class RdToc extends HTMLElement implements Upgradeable {
 			if (kind === "rail") {
 				entry.anchor = a;
 			} else {
-				// Stash the popover anchor as a sibling pointer so
-				// _setActive can update both at once.
 				(entry as unknown as { popAnchor: HTMLAnchorElement }).popAnchor = a;
 			}
 
@@ -296,6 +463,67 @@ class RdToc extends HTMLElement implements Upgradeable {
 		}
 
 		return rootUl;
+	}
+
+	// ─── Prev/next page navigation (book mode) ───────────────────────────
+
+	private _injectPageNav(): void {
+		if (!this._activeBookEntry) return;
+		// Only navigable chapters (with an href) participate in prev/next.
+		// Group headers are skipped; external URLs are kept so reading
+		// order in the source reflects intent.
+		const flat = this._bookFlat.filter((e) => !!e.href);
+		const idx = flat.indexOf(this._activeBookEntry);
+		if (idx < 0) return;
+		const prev = idx > 0 ? flat[idx - 1] : null;
+		const next = idx < flat.length - 1 ? flat[idx + 1] : null;
+		if (!prev && !next) return;
+
+		const page = this.closest("rd-page");
+		if (!page) return;
+
+		const make = (pos: "top" | "bottom"): HTMLElement => {
+			const nav = el("nav", {
+				class: "_rd-pagenav",
+				"data-rd-pagenav": pos,
+				"aria-label": pos === "top" ? "Top page navigation" : "Bottom page navigation",
+			}) as HTMLElement;
+			nav.appendChild(this._pagenavSide("prev", prev));
+			nav.appendChild(this._pagenavSide("next", next));
+			return nav;
+		};
+
+		// Top band: after <rd-banner> if present, otherwise the first
+		// child of <rd-page>.
+		const banner = page.querySelector(":scope > rd-banner");
+		const top = make("top");
+		if (banner) banner.after(top);
+		else page.prepend(top);
+
+		// Bottom band: append at the end of <rd-page>. Later upgrades
+		// (footnotes, references) append after us — reading order ends
+		// up: …content → pagenav → footnotes → references, which is what
+		// we want.
+		page.appendChild(make("bottom"));
+	}
+
+	private _pagenavSide(kind: "prev" | "next", entry: BookEntry | null): HTMLElement {
+		if (!entry || !entry.href) {
+			return el("span", {
+				class: `_rd-pagenav-side _rd-pagenav-${kind} _rd-pagenav-empty`,
+				"aria-hidden": "true",
+			}) as HTMLElement;
+		}
+		return el(
+			"a",
+			{
+				class: `_rd-pagenav-side _rd-pagenav-${kind}`,
+				href: entry.href,
+				rel: kind === "prev" ? "prev" : "next",
+			},
+			el("span", { class: "_rd-pagenav-eyebrow" }, kind === "prev" ? "Previous" : "Next"),
+			el("span", { class: "_rd-pagenav-title" }, entry.title),
+		) as HTMLElement;
 	}
 
 	// ─── Active-section tracking ─────────────────────────────────────────
@@ -350,14 +578,16 @@ class RdToc extends HTMLElement implements Upgradeable {
 		for (const e of this._entries) {
 			const popAnchor = (e as unknown as { popAnchor?: HTMLAnchorElement }).popAnchor;
 			if (e.id === id) {
-				e.anchor.setAttribute("aria-current", "true");
+				e.anchor?.setAttribute("aria-current", "true");
 				popAnchor?.setAttribute("aria-current", "true");
 			} else {
-				e.anchor.removeAttribute("aria-current");
+				e.anchor?.removeAttribute("aria-current");
 				popAnchor?.removeAttribute("aria-current");
 			}
 		}
-		if (this._barCurrent) {
+		// In book mode the bar's "current" label is pinned to the chapter
+		// title (set at mount time). In headings mode we track the heading.
+		if (this._mode !== "book" && this._barCurrent) {
 			const active = id ? this._entries.find((e) => e.id === id) : null;
 			this._barCurrent.textContent = active ? active.heading.textContent?.trim() || "" : "";
 		}
@@ -433,4 +663,4 @@ class RdToc extends HTMLElement implements Upgradeable {
 export function register(): void {
 	define(tagName, RdToc);
 }
-export { spec, tagName };
+export { chapterSpec, chapterTagName, spec, tagName };

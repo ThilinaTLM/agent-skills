@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import click
 import lxml.etree as ET
@@ -14,6 +15,31 @@ from ..schema import SchemaLoadError, is_rd_tag, load_schema
 
 # Attributes always allowed on any element — never reported as unknown.
 ALWAYS_ALLOWED_ATTRS = frozenset({"id", "class", "style"})
+
+
+def _chapter_title(node: ET._Element) -> str:  # noqa: SLF001
+    """Text content of an <rd-chapter>, excluding any nested <rd-chapter>.
+
+    Mirrors the runtime extraction in toc.ts so author-visible text and the
+    rendered chapter title stay in sync.
+    """
+    parts: list[str] = []
+    if node.text:
+        parts.append(node.text)
+    for child in node:
+        if isinstance(child.tag, str) and child.tag.lower() == "rd-chapter":
+            # Skip nested chapter subtree, but keep its tail text.
+            if child.tail:
+                parts.append(child.tail)
+            continue
+        # Walk other child elements: their full text contribution is allowed.
+        # `itertext()` is fine here because we only descend through non-
+        # chapter elements; nested chapters are still excluded by virtue of
+        # the loop above never recursing into them.
+        parts.extend(child.itertext())
+        if child.tail:
+            parts.append(child.tail)
+    return " ".join("".join(parts).split()).strip()
 
 
 def _add(
@@ -228,6 +254,51 @@ def cmd(file: Path) -> None:
                     line=line,
                     message=f"<{tag}> must be a direct child of {allowed_str} (found inside <{parent_tag or '?'}>).",
                 )
+
+        # rd-chapter-specific checks: book mode integrity.
+        if tag == "rd-chapter":
+            href = node.get("href")
+            title = _chapter_title(node)
+            has_nested = any(
+                isinstance(c.tag, str) and c.tag.lower() == "rd-chapter" for c in node
+            )
+            if not title and not href:
+                _add(
+                    issues,
+                    severity="error",
+                    rule="rd-chapter-empty",
+                    tag=tag,
+                    line=line,
+                    message="<rd-chapter> needs at least a title (text content) or an href.",
+                )
+            elif not title and not has_nested:
+                _add(
+                    issues,
+                    severity="warn",
+                    rule="rd-chapter-empty",
+                    tag=tag,
+                    line=line,
+                    message="<rd-chapter> has an href but no visible title text.",
+                )
+            if href:
+                parts = urlsplit(href)
+                # Only check relative, file-targeting hrefs. Skip absolute
+                # URLs, mailto/tel schemes, and bare fragments.
+                if not parts.scheme and not parts.netloc and parts.path:
+                    target = (file_path.parent / parts.path).resolve()
+                    if not target.exists():
+                        _add(
+                            issues,
+                            severity="warn",
+                            rule="rd-chapter-href-missing",
+                            tag=tag,
+                            attr="href",
+                            line=line,
+                            message=(
+                                f"<rd-chapter href=\"{href}\"> points to a file that does "
+                                f"not exist relative to this document: {target}."
+                            ),
+                        )
 
         # Custom-children constraint: only constrains rd-* children; plain HTML
         # children are always allowed.

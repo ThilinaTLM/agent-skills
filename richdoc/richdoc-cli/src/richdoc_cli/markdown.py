@@ -1026,7 +1026,64 @@ def _h_rd_plantuml(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_toc(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    c.dropped.append("rd-toc")
+    chapters = [
+        child
+        for child in el
+        if isinstance(child.tag, str) and child.tag.lower() == "rd-chapter"
+    ]
+    if not chapters:
+        # Single-file mode: in-page TOC is dropped (the markdown reader can
+        # rely on heading order).
+        c.dropped.append("rd-toc")
+        return
+    # Book mode: emit a markdown list reflecting the chapter tree. Relative
+    # .html / .htm links are rewritten to .md so a sibling `richdoc export-md`
+    # run on each chapter produces a navigable markdown set.
+    title = el.get("title") or "Contents"
+    lines: list[str] = [f"**{title}**", ""]
+    _emit_chapter_list(lines, chapters, depth=0)
+    c.write_block("\n".join(lines).rstrip())
+
+
+def _emit_chapter_list(
+    lines: list[str], chapters: list[ET._Element], depth: int  # noqa: SLF001
+) -> None:
+    indent = "  " * depth
+    for ch in chapters:
+        title = _chapter_title_md(ch)
+        href = ch.get("href")
+        if href and not re.match(r"^(?:https?:|mailto:|tel:|#)", href):
+            href = re.sub(r"\.html?(#|$)", r".md\1", href)
+        if href and title:
+            lines.append(f"{indent}- [{title}]({href})")
+        elif href:
+            lines.append(f"{indent}- [{href}]({href})")
+        else:
+            lines.append(f"{indent}- **{title}**")
+        nested = [
+            c
+            for c in ch
+            if isinstance(c.tag, str) and c.tag.lower() == "rd-chapter"
+        ]
+        if nested:
+            _emit_chapter_list(lines, nested, depth + 1)
+
+
+def _chapter_title_md(node: ET._Element) -> str:  # noqa: SLF001
+    """Mirrors the runtime/lint chapter-title extraction: text content of the
+    element with nested <rd-chapter> sub-trees removed."""
+    parts: list[str] = []
+    if node.text:
+        parts.append(node.text)
+    for child in node:
+        if isinstance(child.tag, str) and child.tag.lower() == "rd-chapter":
+            if child.tail:
+                parts.append(child.tail)
+            continue
+        parts.extend(child.itertext())
+        if child.tail:
+            parts.append(child.tail)
+    return " ".join("".join(parts).split()).strip()
 
 
 def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001

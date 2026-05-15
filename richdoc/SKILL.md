@@ -31,6 +31,7 @@ Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https
 | --- | --- |
 | `richdoc new <output> [-t plan\|research\|comparison]` | Scaffold a new `.html` from a template. |
 | `richdoc init [dir]` | Copy `richdoc.css` and `richdoc.js` into a directory. |
+| `richdoc update [dir] [--apply]` | Find existing doc folders with stale shipped assets and (optionally) refresh them. |
 | `richdoc lint <file>` | Validate a `.html` file against the rd-* schema. |
 | `richdoc components [--tag <name>]` | Print the vocabulary from the live schema. |
 | `richdoc export-md <file> [-o out.md]` | Convert a richdoc HTML file to GitHub-flavored markdown. |
@@ -52,6 +53,11 @@ richdoc lint docs/auth-plan.html
 
 # Open in any browser. No server needed.
 xdg-open docs/auth-plan.html
+
+# After bumping the richdoc skill, find any stale asset copies in the repo
+# (report-only by default; recursive; skips node_modules, .venv, dist, ...).
+richdoc update .            # report
+richdoc update . --apply    # refresh stale folders
 
 # Convert to markdown for chat / GitHub / email.
 richdoc export-md docs/auth-plan.html
@@ -135,7 +141,8 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 | `<rd-task>` | `done?`, `assignee?`, `due?` | One item with checkbox and optional metadata. |
 | `<rd-mermaid>` | — | Lazy-loads mermaid from CDN; renders the diagram from text content. |
 | `<rd-plantuml>` | `endpoint?` (default `https://www.plantuml.com/plantuml/svg`), `theme?` (any PlantUML theme name, or `none`) | Renders PlantUML from text content by encoding the source and fetching SVG from a PlantUML-compatible server. **The source is sent to that server** — set `endpoint` to a self-hosted instance (e.g. `https://kroki.io/plantuml/svg`) for sensitive diagrams. Auto-injects `!theme cyborg-outline` when the doc is in dark mode so the diagram matches the surrounding palette; override with `theme="<name>"` (e.g. `superhero`, `reddress-darkblue`, `plain`) or disable with `theme="none"`. An author-written `!theme` line in the source is always respected. Falls back to a code block if the server is unreachable. |
-| `<rd-toc>` | `levels?` (default `"2,3"`), `title?` (default `"On this page"`) | Auto-generated TOC from `<h2>`/`<h3>` inside the parent `<rd-page>`. |
+| `<rd-toc>` | `levels?` (default `"2,3"`), `title?` | Auto-generated TOC. Default mode walks `<h2>`/`<h3>` inside the parent `<rd-page>`. If the element contains `<rd-chapter>` children, it switches to **book mode**: renders a cross-file chapter sidebar, auto-marks the active chapter by URL match, expands in-page headings inline beneath it, and auto-injects prev/next bands at the top and bottom of `<rd-page>`. See [Multi-file documentation](#multi-file-documentation). |
+| `<rd-chapter>` | `href?` | One entry in a book-mode `<rd-toc>`. Title is the element's text content. With `href` it's a link; without `href` it's a non-clickable group header. Nested `<rd-chapter>` becomes a sub-tree. Inside `<rd-toc>` or another `<rd-chapter>` only. |
 | `<rd-icon>` | **`name`** (enum), `size?` (`sm\|md\|lg`), `label?` | Inline SVG from the full Lucide library at a pinned version (~1,900 names). Every glyph is lazy-loaded from jsDelivr on first reference and cached; framework chrome icons are prewarmed at boot so callouts / checklists / banners never flash. See [ICONS.md](./ICONS.md) for the full name list. Offline or on a failed fetch the element renders an empty slot of the right size and gets `data-rd-icon-missing`. |
 | `<rd-tooltip>` | **`term`** (text), `placement?` (`auto\|top\|bottom`) | Inline definition popup. The `term` renders with a dotted underline; the children render as a rich tooltip body on hover, focus, or tap. |
 
@@ -212,8 +219,48 @@ All custom tags use the `rd-` prefix. Required attributes are marked **bold**. R
 - **`onepager`** — hero, TL;DR callout, stat tiles with sparkline charts, progress bars, line chart, recent updates feed, risks.
 - **`adr`** — hero, decision header, context, considered options, decision, consequences, references.
 - **`runbook`** — hero, TL;DR callout, prerequisites checklist, numbered steps with terminal sessions, failure modes as `<rd-detail variant="question">`, escalation.
+- **`book-index`** — entry page for a multi-file book: shared `<rd-toc>` chapter list, hero, TL;DR, contents tour.
+- **`book-chapter`** — chapter page in a multi-file book: same shared `<rd-toc>` chapter list, hero, TL;DR, body.
 
 Scaffold with `richdoc new <output> --template <name>`.
+
+## Multi-file documentation
+
+For docs that don't fit in a single file — handbooks, runbook sets, reference manuals — use **book mode**: put an `<rd-toc>` with `<rd-chapter>` children in each page. The same shared block lives in every file; `<rd-toc>` does the rest at runtime.
+
+```html
+<rd-page>
+  <rd-toc title="My Handbook">
+    <rd-chapter href="./index.html">Overview</rd-chapter>
+    <rd-chapter href="./01-setup.html">Setup</rd-chapter>
+    <rd-chapter href="./02-api.html">API reference</rd-chapter>
+    <rd-chapter>Operations
+      <rd-chapter href="./ops/runbook.html">Runbook</rd-chapter>
+      <rd-chapter href="./ops/escalation.html">Escalation</rd-chapter>
+    </rd-chapter>
+  </rd-toc>
+
+  <rd-hero title="Setup"/>
+  …content…
+</rd-page>
+```
+
+Implicit behaviors — do **not** write attributes for any of these:
+
+- **Active chapter** is detected by matching `location.pathname` against each `<rd-chapter href>`. Trailing-slash paths are normalised to `index.html`.
+- **In-page headings** for the active chapter are merged inline under that chapter in the sidebar (Sphinx-style). One element produces both kinds of navigation.
+- **Prev / next bands** are auto-injected at the top of `<rd-page>` (after `<rd-banner>` if present) and the bottom. Order comes from the chapter tree in document order; group headers (`<rd-chapter>` with no `href`) are skipped.
+- **Group headers** are non-clickable section labels. Use them to organise chapters into chapter groups.
+- **Title** is the chapter's text content, not a `title=` attribute. Whitespace is collapsed.
+
+Authoring rules for books:
+
+1. **Copy the `<rd-toc>` block verbatim into every page** in the book. There is intentionally no build step and no cross-file fetch — the chapter list must be present in each file. Re-order chapters by editing every page (typically only a handful) or add a `richdoc book sync` helper later. The list is stable and only changes when the book's structure changes.
+2. **Do not hand-write prev/next.** `<rd-toc>` injects them. Hand-written copies will collide.
+3. **Use relative `href` paths** (`./foo.html`, `../bar.html`). `richdoc lint` checks that each relative href resolves to a file on disk. Absolute URLs are allowed (external appendix) but the active-chapter / prev-next math treats them as ordinary entries.
+4. **`<rd-toc title="…">` is the book title.** It shows as the rail's eyebrow and the narrow-mode bar label. The chapter title is the bar's current-item label.
+
+See `examples/book/` for a multi-file walkthrough with subdirectories.
 
 ## Motion
 
@@ -236,5 +283,5 @@ All motion is gated on `prefers-reduced-motion: reduce` and collapses to instant
 - **JS required** for tabs, mermaid, math, syntax highlighting, charts, sparklines, roadmaps, the gallery lightbox, video embeds, citation collection, TOC, the count-up animation, the tabs underline indicator, and the copy button. Other components render with CSS alone.
 - **Internet required on first render** of `rd-mermaid`, `rd-math`, any `rd-code` with `lang` set, `rd-chart` (including `variant="sparkline"`), `rd-gallery`, `rd-embed`, and any `<rd-icon>` whose glyph has not been prewarmed or previously fetched. mermaid / KaTeX / highlight.js / lucide-static / Observable Plot / d3 / PhotoSwipe / lite-youtube / lite-vimeo all load from jsDelivr. `rd-roadmap` renders entirely from local CSS/JS — no CDN. Every component degrades gracefully offline: code blocks show raw source, math shows the source, charts render their data as a table, galleries become a plain image grid, embeds become a link, and icons show an empty slot of the right size.
 - **`rd-plantuml` sends source to a third-party server on every render.** Unlike `rd-mermaid` (pure-JS, renders locally after a one-time CDN load), `rd-plantuml` has no client-only renderer — every diagram is round-tripped through a PlantUML server as a URL-encoded payload. The default endpoint is `https://www.plantuml.com/plantuml/svg`. Set the `endpoint` attribute to a self-hosted instance or a Kroki deployment for confidential content. Requires `CompressionStream` (Chrome 90+, Firefox 113+, Safari 16.4+); falls back to a code block on older engines.
-- **One document per file.** No multi-page nav.
+- **Multi-file books duplicate the chapter list.** Each chapter file contains the same `<rd-toc>` block. This is intentional — the format must work without a CLI build step and without runtime cross-file fetch (modern browsers block `fetch()` from `file://`). Re-ordering chapters means editing every page; lint catches stale `href`s.
 - **Browser-only consumer.** Use markdown if the doc must render on GitHub, in plaintext email, or in a CLI pager.

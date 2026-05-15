@@ -1,6 +1,6 @@
 # richdoc-cli
 
-Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), validate (`lint`), and introspect the component vocabulary (`components`).
+Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), and introspect the component vocabulary (`components`).
 
 - See the parent skill: [`../SKILL.md`](../SKILL.md).
 - Requires `uv` ([install](https://docs.astral.sh/uv/)). First call provisions the Python environment automatically.

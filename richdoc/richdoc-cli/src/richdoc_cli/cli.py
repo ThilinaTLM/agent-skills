@@ -19,6 +19,7 @@ from .commands.export_md import cmd as export_md_cmd
 from .commands.init_ import cmd as init_cmd
 from .commands.lint import cmd as lint_cmd
 from .commands.new_ import cmd as new_cmd
+from .commands.update import cmd as update_cmd
 from .output import json_error
 
 
@@ -37,6 +38,7 @@ def main() -> None:  # pragma: no cover — pure dispatch
 
 main.add_command(new_cmd)
 main.add_command(init_cmd)
+main.add_command(update_cmd)
 main.add_command(lint_cmd)
 main.add_command(components_cmd)
 main.add_command(export_md_cmd)
