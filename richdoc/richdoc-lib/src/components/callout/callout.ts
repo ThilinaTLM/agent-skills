@@ -30,7 +30,18 @@ class RdCallout extends HTMLElement implements Upgradeable {
 			titleChildren.push(icon);
 		}
 		titleChildren.push(el("span", { class: "_rd-callout-text" }, titleText));
-		this.prepend(el("div", { class: "_rd-callout-title" }, ...titleChildren));
+
+		// Wrap the slotted body (everything currently inside this element) in a
+		// single _rd-callout-body div, then prepend the title. This guarantees
+		// exactly two direct children — title + body — so the TL;DR variant's
+		// `display: grid` host always lays out as [title | body] regardless of
+		// whether the author wrapped the body in <p>, used mixed inline content,
+		// or wrote bare text. Layout-neutral for non-tldr (display: block)
+		// variants; uniform DOM shape simplifies CSS and lint reasoning.
+		const body = el("div", { class: "_rd-callout-body" });
+		while (this.firstChild) body.appendChild(this.firstChild);
+		this.appendChild(el("div", { class: "_rd-callout-title" }, ...titleChildren));
+		this.appendChild(body);
 
 		// Warn/danger callouts fire a one-shot pulse on the icon when they
 		// enter view. Info/success/note/tldr stay neutral — motion is

@@ -29,6 +29,11 @@ class RdKv extends HTMLElement {
 		}
 
 		this._upgradeRows();
+		// Flip the layout-gate attribute only after rows are upgraded, so the
+		// CSS grid never paints against an incomplete DOM (pre-upgrade rows
+		// have no _rd-kv-key div, which would otherwise produce a one-cell
+		// shift on first paint).
+		this.setAttribute("data-upgraded", "");
 		if (!this._observer) {
 			this._observer = new MutationObserver(() => this._upgradeRows());
 			this._observer.observe(this, { childList: true });
@@ -47,6 +52,7 @@ class RdKv extends HTMLElement {
 			while (row.firstChild) valueWrap.appendChild(row.firstChild);
 			row.appendChild(el("div", { class: "_rd-kv-key" }, key));
 			row.appendChild(valueWrap);
+			row.setAttribute("data-upgraded", "");
 			row._upgraded = true;
 		}
 	}

@@ -27,7 +27,7 @@ rd-callout > ._rd-callout-title > ._rd-callout-text {
 	color: var(--rd-fg);
 	letter-spacing: var(--rd-tracking-caps);
 }
-rd-callout > :last-child {
+rd-callout > ._rd-callout-body > :last-child {
 	margin-bottom: 0;
 }
 
@@ -99,20 +99,18 @@ rd-callout[type="tldr"] > ._rd-callout-title {
 rd-callout[type="tldr"] > ._rd-callout-title > ._rd-callout-text {
 	color: var(--rd-accent);
 }
-/* Body styling: anything that isn't the title row reads as the TL;DR
-   body — Fraunces, larger, generous leading. */
-rd-callout[type="tldr"] > :not(._rd-callout-title) {
+/* Body styling: the body wrapper reads as the TL;DR body — Fraunces,
+   larger, generous leading. Inner paragraphs inherit and get their own
+   bottom margin. */
+rd-callout[type="tldr"] > ._rd-callout-body {
 	font-family: var(--rd-font-display);
 	font-size: var(--rd-text-lg);
 	line-height: var(--rd-leading-relaxed);
 	color: var(--rd-fg);
 	font-variation-settings: "opsz" 72;
 }
-rd-callout[type="tldr"] > p {
+rd-callout[type="tldr"] > ._rd-callout-body > p {
 	margin-bottom: var(--rd-space-3);
-}
-rd-callout[type="tldr"] > :last-child {
-	margin-bottom: 0;
 }
 @media (max-width: 640px) {
 	rd-callout[type="tldr"] {

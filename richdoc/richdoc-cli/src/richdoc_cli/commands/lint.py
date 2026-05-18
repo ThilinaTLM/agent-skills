@@ -300,6 +300,44 @@ def cmd(file: Path) -> None:
                             ),
                         )
 
+        # rd-callout[type="tldr"] specifically: the host CSS is a 2-col grid.
+        # If the author leaves multiple top-level fragments inside the body
+        # (text + inline element, multiple elements, ...), each fragment
+        # becomes its own grid item and the body cascades across rows instead
+        # of flowing as one block in column 2.
+        #
+        # Newer richdoc.js wraps the body automatically (single _rd-callout-body
+        # div = single grid item), so this is a no-op visually for docs shipped
+        # with up-to-date assets. The rule still warns to protect docs vendored
+        # against an older richdoc.js copy and to nudge authors toward the
+        # documented `<p>`-wrap convention.
+        if tag == "rd-callout" and (node.get("type") or "") == "tldr":
+            grid_items = 0
+            if (node.text or "").strip():
+                grid_items += 1
+            for child in node:
+                if not isinstance(child.tag, str):
+                    continue
+                grid_items += 1
+                if (child.tail or "").strip():
+                    grid_items += 1
+            if grid_items > 1:
+                _add(
+                    issues,
+                    severity="warn",
+                    rule="block-body-required",
+                    tag=tag,
+                    line=line,
+                    message=(
+                        '<rd-callout type="tldr"> has multiple top-level body '
+                        "fragments. Wrap the body in a single <p>\u2026</p> so each "
+                        "fragment isn't laid out as its own grid cell. (Newer "
+                        "richdoc.js wraps the body automatically; this warning "
+                        "protects docs shipped with an older copy of the asset \u2014 "
+                        "refresh with `richdoc update`.)"
+                    ),
+                )
+
         # Custom-children constraint: only constrains rd-* children; plain HTML
         # children are always allowed.
         if isinstance(custom_children, list):
