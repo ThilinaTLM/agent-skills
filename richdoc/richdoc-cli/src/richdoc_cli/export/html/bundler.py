@@ -21,7 +21,7 @@ from urllib.parse import unquote, urlparse
 import lxml.etree as ET
 import lxml.html as LH
 
-from .mimetypes_ext import guess_mime
+from ...mimetypes_ext import guess_mime
 
 # Categories surface in the JSON envelope.
 _CAT_CSS = "css"

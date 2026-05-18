@@ -1,13 +1,19 @@
 """`richdoc export <fmt> <input>` — unified export command.
 
-Three subcommands:
+Three subcommands, one consistent flag layout:
 
-- `md`   — produce a folder of markdown files, with a shared `assets/`.
-           Books (rd-toc with rd-chapter[href]) auto-detected.
-- `html` — produce a single self-contained `.html` file (relative deps
-           inlined as data: URIs; CDN deps preserved).
-- `docx` — produce a single `.docx` file with embedded images, intended
-           for Confluence "Import Word document".
+    richdoc export md   INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
+    richdoc export html INPUT [-o OUT] [-f] [--no-book] [--single|--multi]
+    richdoc export docx INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
+
+- `--single`: produce one output file containing the whole book.
+- `--multi`:  produce one output file per chapter, in a mirrored folder.
+- For a non-book input both flags collapse to the same behavior (one
+  file); the envelope reports `mode_collapsed: true` so the caller knows.
+
+This module is intentionally thin: it parses flags, delegates to the
+appropriate pipeline in `export.<fmt>.pipeline`, and turns the structured
+result into a JSON envelope.
 """
 
 from __future__ import annotations
@@ -17,10 +23,7 @@ from pathlib import Path
 
 import click
 
-from ..export_assets import AssetStore
-from ..book import discover_chapters
-from ..inline import bundle as bundle_html
-from ..markdown import html_to_markdown
+from ..export.common.modes import ExportMode
 from ..output import json_error, json_ok
 
 
@@ -41,89 +44,71 @@ def group() -> None:
     type=click.Path(dir_okay=False, exists=True, path_type=Path),
 )
 @click.option(
-    "-o",
-    "--output",
-    "output",
-    type=click.Path(file_okay=False, path_type=Path),
-    help="Output folder. Default: <input-stem>-md/ next to the input file.",
+    "-o", "--output", "output",
+    type=click.Path(path_type=Path),
+    help="Output path. Single mode → file; multi mode → folder. "
+    "Default: <stem>.md (single) or <stem>-md/ (multi).",
 )
 @click.option(
-    "-f", "--force", is_flag=True, help="Overwrite existing files in the output folder."
+    "-f", "--force", is_flag=True, help="Overwrite existing output."
 )
 @click.option(
-    "--no-book",
-    is_flag=True,
-    help="Disable book auto-detection. Only the entry file is exported, "
-    "even when its rd-toc lists other chapters.",
+    "--no-book", is_flag=True,
+    help="Disable book auto-detection. Only the entry file is exported.",
 )
 @click.option(
-    "--include-remote-images",
-    is_flag=True,
-    help="Fetch http(s) image URLs and copy them into assets/ as well as "
-    "relative ones.",
+    "--single", "single_flag", is_flag=True,
+    help="Combine the whole book into one .md.",
+)
+@click.option(
+    "--multi", "multi_flag", is_flag=True,
+    help="Render one .md per chapter (default for books).",
+)
+@click.option(
+    "--include-remote-images", is_flag=True,
+    help="Fetch http(s) image URLs and copy them into assets/.",
 )
 def cmd_md(
     input_: Path,
     output: Path | None,
     force: bool,
     no_book: bool,
+    single_flag: bool,
+    multi_flag: bool,
     include_remote_images: bool,
 ) -> None:
-    """Export to a folder of markdown files."""
+    """Export to markdown (single .md or a folder of .md per chapter)."""
     in_path = _require_html(input_)
-    out_dir = (
-        output.resolve()
-        if output is not None
-        else in_path.with_name(f"{in_path.stem}-md")
-    )
+    mode = _resolve_mode(single_flag, multi_flag, default=ExportMode.MULTI)
 
-    discovery = discover_chapters(in_path)
-    chapters = discovery.chapters if not no_book else discovery.chapters[:1]
-    is_book = discovery.is_book and not no_book
+    from ..export.md.pipeline import export_md  # noqa: PLC0415
 
-    store = AssetStore()
-    written: list[str] = []
-    dropped: list[str] = []
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    for ch in chapters:
-        rel_md = ch.relative.with_suffix(".md") if is_book else Path(in_path.stem + ".md")
-        # Asset paths are relative to the chapter's directory in the output tree.
-        depth = len(rel_md.parts) - 1
-        assets_subdir = ("../" * depth + "assets") if depth else "assets"
-        md_text, ch_dropped = html_to_markdown(
-            ch.html,
-            asset_store=store,
-            asset_base=ch.path.parent,
+    try:
+        result = export_md(
+            in_path,
+            output=output,
+            mode=mode,
+            no_book=no_book,
             include_remote_images=include_remote_images,
-            assets_subdir=assets_subdir,
+            force=force,
         )
-        dropped.extend(ch_dropped)
-        target = (out_dir / rel_md).resolve()
-        if target.exists() and not force:
-            json_error(
-                f"Output file already exists: {target}",
-                code="FILE_EXISTS",
-                hint="Re-run with --force to overwrite.",
-                file=str(target),
-            )
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(md_text, encoding="utf-8")
-        written.append(str(target.relative_to(out_dir)))
+    except FileExistsError as exc:
+        json_error(str(exc), code="FILE_EXISTS", hint="Re-run with --force to overwrite.")
+    except OSError as exc:
+        json_error(f"Could not write output: {exc}", code="OUTPUT_ERROR")
 
-    asset_map: dict[str, str] = {}
-    if any(True for _ in store.items()):
-        asset_map = store.write_to(out_dir / "assets")
-
-    json_ok(
-        input=str(in_path),
-        output=str(out_dir),
-        book=is_book,
-        chapters=written,
-        assets=len(asset_map),
-        missing=store.missing,
-        dropped=sorted(set(dropped)),
-    )
+    plan = result.plan
+    payload: dict = {
+        "input": str(in_path),
+        "output": str(plan.root),
+        "mode": plan.mode.value,
+        "book": result.is_book,
+        "chapters": _relative_paths(result.chapters_written, plan.root, plan.mode),
+        "assets": result.assets_written,
+        "missing": result.missing,
+        "dropped": result.dropped,
+    }
+    json_ok(**payload)
 
 
 # ---------------------------------------------------------------------------
@@ -138,53 +123,78 @@ def cmd_md(
     type=click.Path(dir_okay=False, exists=True, path_type=Path),
 )
 @click.option(
-    "-o",
-    "--output",
-    "output",
-    type=click.Path(dir_okay=False, path_type=Path),
-    help="Output path. Use '-' for stdout. Default: <input-stem>.bundle.html.",
+    "-o", "--output", "output",
+    type=click.Path(path_type=Path),
+    help="Output path. Single mode → file (use '-' for stdout); "
+    "multi mode → folder. Default: <stem>.bundle.html (single) or "
+    "<stem>-html/ (multi).",
 )
 @click.option(
-    "-f", "--force", is_flag=True, help="Overwrite the output file if it exists."
+    "-f", "--force", is_flag=True, help="Overwrite existing output."
 )
-def cmd_html(input_: Path, output: Path | None, force: bool) -> None:
-    """Export to a single self-contained .html file."""
+@click.option(
+    "--no-book", is_flag=True,
+    help="Disable book auto-detection. Only the entry file is exported.",
+)
+@click.option(
+    "--single", "single_flag", is_flag=True,
+    help="Inline only the entry file (default).",
+)
+@click.option(
+    "--multi", "multi_flag", is_flag=True,
+    help="Bundle each chapter into its own .bundle.html under a folder.",
+)
+def cmd_html(
+    input_: Path,
+    output: Path | None,
+    force: bool,
+    no_book: bool,
+    single_flag: bool,
+    multi_flag: bool,
+) -> None:
+    """Export to a self-contained .html (single) or a folder of bundles (multi)."""
     in_path = _require_html(input_)
-    try:
-        source = in_path.read_text(encoding="utf-8")
-    except OSError as exc:
-        json_error(f"Could not read input: {exc}", code="INPUT_ERROR")
+    mode = _resolve_mode(single_flag, multi_flag, default=ExportMode.SINGLE)
 
-    result = bundle_html(source, base_dir=in_path.parent)
-
+    # `-o -` → stdout (single mode only).
     if output is not None and str(output) == "-":
-        sys.stdout.write(result.html)
+        if mode is ExportMode.MULTI:
+            json_error(
+                "Cannot write to stdout in --multi mode (multiple files).",
+                code="INVALID_PARAMS",
+            )
+        from ..export.html.pipeline import bundle_to_string  # noqa: PLC0415
+
+        try:
+            text = bundle_to_string(in_path)
+        except OSError as exc:
+            json_error(f"Could not read input: {exc}", code="INPUT_ERROR")
+        sys.stdout.write(text)
         sys.stdout.flush()
         return
 
-    out_path = (
-        output.resolve()
-        if output is not None
-        else in_path.with_suffix("").with_suffix(".bundle.html")
-    )
-
-    if out_path.exists() and not force:
-        json_error(
-            f"Output file already exists: {out_path}",
-            code="FILE_EXISTS",
-            hint="Re-run with --force to overwrite.",
-            file=str(out_path),
-        )
+    from ..export.html.pipeline import export_html  # noqa: PLC0415
 
     try:
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(result.html, encoding="utf-8")
+        result = export_html(
+            in_path,
+            output=output,
+            mode=mode,
+            no_book=no_book,
+            force=force,
+        )
+    except FileExistsError as exc:
+        json_error(str(exc), code="FILE_EXISTS", hint="Re-run with --force to overwrite.")
     except OSError as exc:
         json_error(f"Could not write output: {exc}", code="OUTPUT_ERROR")
 
+    plan = result.plan
     payload: dict = {
         "input": str(in_path),
-        "output": str(out_path),
+        "output": str(plan.root),
+        "mode": plan.mode.value,
+        "book": result.is_book,
+        "files": _relative_paths(result.files_written, plan.root, plan.mode),
         "inlined": result.inlined,
         "kept_absolute": result.kept_absolute,
         "missing": result.missing,
@@ -209,30 +219,33 @@ def cmd_html(input_: Path, output: Path | None, force: bool) -> None:
     type=click.Path(dir_okay=False, exists=True, path_type=Path),
 )
 @click.option(
-    "-o",
-    "--output",
-    "output",
-    type=click.Path(dir_okay=False, path_type=Path),
-    help="Output path. Use '-' for stdout (bytes). Default: <input-stem>.docx.",
+    "-o", "--output", "output",
+    type=click.Path(path_type=Path),
+    help="Output path. Single mode → file (use '-' for stdout, bytes); "
+    "multi mode → folder. Default: <stem>.docx (single) or <stem>-docx/ (multi).",
 )
 @click.option(
-    "-f", "--force", is_flag=True, help="Overwrite the output file if it exists."
+    "-f", "--force", is_flag=True, help="Overwrite existing output."
 )
 @click.option(
-    "--no-book",
-    is_flag=True,
+    "--no-book", is_flag=True,
     help="Disable book auto-detection. Only the entry file is rendered.",
 )
 @click.option(
-    "--no-render-diagrams",
-    is_flag=True,
-    help="Skip server-side rendering of rd-mermaid / rd-plantuml; embed source "
-    "as a code block instead.",
+    "--single", "single_flag", is_flag=True,
+    help="Combine the whole book into one .docx with page breaks (default).",
 )
 @click.option(
-    "--diagram-endpoint",
-    default="https://kroki.io",
-    show_default=True,
+    "--multi", "multi_flag", is_flag=True,
+    help="Render one .docx per chapter, mirroring the source tree.",
+)
+@click.option(
+    "--no-render-diagrams", is_flag=True,
+    help="Skip server-side rendering of rd-mermaid / rd-plantuml; embed "
+    "source as a code block instead.",
+)
+@click.option(
+    "--diagram-endpoint", default="https://kroki.io", show_default=True,
     help="Kroki-compatible server used to render diagrams.",
 )
 def cmd_docx(
@@ -240,67 +253,70 @@ def cmd_docx(
     output: Path | None,
     force: bool,
     no_book: bool,
+    single_flag: bool,
+    multi_flag: bool,
     no_render_diagrams: bool,
     diagram_endpoint: str,
 ) -> None:
-    """Export to a single .docx file (Confluence-import compatible)."""
-    # Import lazily — python-docx adds ~50 ms to startup we don't want for the
-    # other subcommands.
-    from ..docx_export import chapters_to_docx, html_to_docx
-
+    """Export to .docx (single concatenated or per-chapter folder)."""
     in_path = _require_html(input_)
-    discovery = discover_chapters(in_path)
+    mode = _resolve_mode(single_flag, multi_flag, default=ExportMode.SINGLE)
+    render_diagrams = not no_render_diagrams
 
-    if discovery.is_book and not no_book:
-        result = chapters_to_docx(
-            discovery.chapters,
-            book_base=in_path.parent,
-            render_diagrams=not no_render_diagrams,
-            diagram_endpoint=diagram_endpoint,
-        )
-    else:
-        source = in_path.read_text(encoding="utf-8")
-        result = html_to_docx(
-            source,
-            base_dir=in_path.parent,
-            render_diagrams=not no_render_diagrams,
-            diagram_endpoint=diagram_endpoint,
-        )
-
+    # `-o -` → stdout bytes (single mode only).
     if output is not None and str(output) == "-":
-        sys.stdout.buffer.write(result.data)
+        if mode is ExportMode.MULTI:
+            json_error(
+                "Cannot write to stdout in --multi mode (multiple files).",
+                code="INVALID_PARAMS",
+            )
+        from ..export.docx.pipeline import render_to_bytes  # noqa: PLC0415
+
+        try:
+            docx = render_to_bytes(
+                in_path,
+                no_book=no_book,
+                render_diagrams=render_diagrams,
+                diagram_endpoint=diagram_endpoint,
+            )
+        except OSError as exc:
+            json_error(f"Could not read input: {exc}", code="INPUT_ERROR")
+        sys.stdout.buffer.write(docx.data)
         sys.stdout.flush()
         return
 
-    out_path = (
-        output.resolve() if output is not None else in_path.with_suffix(".docx")
-    )
-
-    if out_path.exists() and not force:
-        json_error(
-            f"Output file already exists: {out_path}",
-            code="FILE_EXISTS",
-            hint="Re-run with --force to overwrite.",
-            file=str(out_path),
-        )
+    from ..export.docx.pipeline import export_docx  # noqa: PLC0415
 
     try:
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_bytes(result.data)
+        result = export_docx(
+            in_path,
+            output=output,
+            mode=mode,
+            no_book=no_book,
+            render_diagrams=render_diagrams,
+            diagram_endpoint=diagram_endpoint,
+            force=force,
+        )
+    except FileExistsError as exc:
+        json_error(str(exc), code="FILE_EXISTS", hint="Re-run with --force to overwrite.")
     except OSError as exc:
         json_error(f"Could not write output: {exc}", code="OUTPUT_ERROR")
 
-    json_ok(
-        input=str(in_path),
-        output=str(out_path),
-        bytes=len(result.data),
-        book=discovery.is_book and not no_book,
-        images_embedded=result.images_embedded,
-        diagrams_rendered=result.diagrams_rendered,
-        diagrams_failed=result.diagrams_failed,
-        missing=result.missing,
-        dropped=result.dropped,
-    )
+    plan = result.plan
+    payload: dict = {
+        "input": str(in_path),
+        "output": str(plan.root),
+        "mode": plan.mode.value,
+        "book": result.is_book,
+        "files": _relative_paths(result.files_written, plan.root, plan.mode),
+        "bytes": result.bytes_total,
+        "images_embedded": result.images_embedded,
+        "diagrams_rendered": result.diagrams_rendered,
+        "diagrams_failed": result.diagrams_failed,
+        "missing": result.missing,
+        "dropped": result.dropped,
+    }
+    json_ok(**payload)
 
 
 # ---------------------------------------------------------------------------
@@ -315,3 +331,27 @@ def _require_html(path: Path) -> Path:
             f"Input must be a .html file (got '{p}').", code="INVALID_PARAMS"
         )
     return p
+
+
+def _relative_paths(paths: list[Path], root: Path, mode: ExportMode) -> list[str]:
+    """Render written paths as strings relative to the natural display root.
+
+    For MULTI: relative to the output folder (the chapter tree shows through).
+    For SINGLE: just the file name (the root *is* the file).
+    """
+    if mode is ExportMode.MULTI:
+        return [str(p.relative_to(root)) for p in paths]
+    return [p.name for p in paths]
+
+
+def _resolve_mode(single: bool, multi: bool, *, default: ExportMode) -> ExportMode:
+    if single and multi:
+        json_error(
+            "--single and --multi are mutually exclusive.",
+            code="INVALID_PARAMS",
+        )
+    if single:
+        return ExportMode.SINGLE
+    if multi:
+        return ExportMode.MULTI
+    return default

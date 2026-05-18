@@ -74,37 +74,54 @@ richdoc export docx docs/auth-plan.html
 
 The richdoc CLI ships exactly three export formats. Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these three.
 
-### `richdoc export md <file> [-o <dir>]`
+All three subcommands share a `--single` / `--multi` flag pair so the output shape is explicit:
 
-Writes a folder. Default location: `<input-stem>-md/` next to the source file. Layout:
+- `--single` — one output file containing the whole book.
+- `--multi`  — one output file per chapter, mirroring the source tree under a folder.
+
+Defaults match the format: `md` defaults to `--multi`, `html` and `docx` default to `--single`. For a non-book input both modes still work (multi produces a folder with one file). The two flags are mutually exclusive. The JSON envelope reports the resolved `mode`.
+
+`--no-book` overrides auto-detection and renders only the entry file, regardless of the mode flag.
+
+### `richdoc export md <file> [-o <path>] [--single|--multi]`
+
+**Default (`--multi`)** writes a folder. Default location: `<input-stem>-md/`. Layout:
 
 ```
 <out>/
-  <stem>.md
+  <stem>.md             # single-file input
+  01-chapter.md         # one .md per chapter for a book
+  ops/runbook.md        # subdirectories preserved
   assets/
     <hash>.png
     …
 ```
 
-For a book (the source has an `<rd-toc>` with `<rd-chapter href=…>` children), every chapter file is followed and exported under its relative tree. Subdirectories are preserved. `assets/` is shared across the whole book. Pass `--no-book` to export only the entry file.
+Assets are shared across the whole book in one `assets/` at the root.
+
+**`--single`** writes one combined `.md`. Default location: `<input-stem>.md`. The combined file has a single `# Book title` H1, a `## Contents` block linking each chapter, then every chapter's body with all headings demoted by one level (so each chapter sits at `##`). The shared `<rd-toc>` in each chapter is stripped (the `## Contents` block already covers it). Page-rule `---` separators between chapters. Assets land in a single `assets/` directory next to the output `.md`.
 
 Relative image references are copied into `assets/` automatically. Remote (http/https) image URLs are left as-is by default; pass `--include-remote-images` to fetch and copy them too.
 
 Every `rd-*` component maps to the closest markdown idiom: callouts to GFM admonitions (`> [!NOTE]`), `rd-compare` / `rd-rubric` / `rd-roadmap` / `rd-api` to tables, `rd-code` / `rd-diff` / `rd-shell` to fenced code blocks, `rd-checklist` to GFM task lists, `rd-footnote` and `rd-cite` to footnotes, `rd-detail` to a raw `<details>` block. Components without a natural markdown form (`rd-chart`, `rd-icon`, single-file `rd-toc`) are dropped and reported in the JSON envelope's `dropped[]` field.
 
-### `richdoc export html <file> [-o <out.html>]`
+### `richdoc export html <file> [-o <path>] [--single|--multi]`
 
-Writes one self-contained `.html` file. Default suffix: `.bundle.html`. Inlines `richdoc.css`, `richdoc.js`, and every relative-path image / font / media reference as inline `<style>` / `<script>` / `data:` URIs. Absolute URLs (Google Fonts, jsDelivr) stay as-is — the recipient is expected to have internet when opening the file. Pass `-o -` to write to stdout (the JSON envelope is suppressed in that mode).
+**Default (`--single`)** writes one self-contained `.html` file. Default name: `<input-stem>.bundle.html`. Inlines `richdoc.css`, `richdoc.js`, and every relative-path image / font / media reference as inline `<style>` / `<script>` / `data:` URIs. Absolute URLs (Google Fonts, jsDelivr) stay as-is — the recipient is expected to have internet when opening the file. Pass `-o -` to write to stdout (the JSON envelope is suppressed in that mode).
 
-### `richdoc export docx <file> [-o <out.docx>]`
+**`--multi`** writes a folder of self-contained bundles, one per chapter, mirroring the source tree. Default location: `<input-stem>-html/`. Each chapter is inlined against its own directory so intra-book hrefs (`<a href="./02-habitat.html">`) still resolve against the mirrored layout.
 
-Writes one `.docx`. Default name: `<stem>.docx`. Designed for Confluence's “Import Word document”: headings become Heading 1–6, lists become Word bullet / number lists, tables become Table Grid, and **every image is embedded inside the docx package** (relative AND remote) so Confluence renders them on import without further attachment uploads.
+### `richdoc export docx <file> [-o <path>] [--single|--multi]`
 
-Book mode is auto-detected: when the entry has an `<rd-toc>` with linked chapters, every chapter is concatenated into one DOCX with page breaks between chapters. Suppress with `--no-book`.
+**Default (`--single`)** writes one `.docx`. Default name: `<stem>.docx`. Designed for Confluence's “Import Word document”: headings become Heading 1–6, lists become Word bullet / number lists, tables become Table Grid, and **every image is embedded inside the docx package** (relative AND remote) so Confluence renders them on import without further attachment uploads.
+
+For a book, every chapter is concatenated into the one DOCX with page breaks between chapters; the shared rd-toc renders once as a "Contents" heading.
+
+**`--multi`** writes one `.docx` per chapter under a folder mirroring the source tree. Each chapter is fully self-sufficient (assets embedded in every file).
 
 `rd-mermaid` and `rd-plantuml` are rendered server-side via Kroki (`https://kroki.io` by default) and embedded as PNG. Override the server with `--diagram-endpoint <url>`; skip rendering and embed source as a code block with `--no-render-diagrams`. The diagram source is POSTed to the configured endpoint — same trust contract as `rd-plantuml` in browser mode.
 
-`-o -` writes the docx bytes to stdout. Mapping notes: `rd-cols` linearises to sequential blocks (Confluence's importer doesn't preserve Word columns); `rd-tabs` linearises with the tab label as a Heading 3; `rd-detail` becomes a Heading 3 summary plus its body (collapsibility is lost); `rd-icon` is dropped (its `label`, if any, renders inline); `rd-chart` data renders as a native Word table.
+`-o -` writes the docx bytes to stdout (single mode only). Mapping notes: `rd-cols` linearises to sequential blocks (Confluence's importer doesn't preserve Word columns); `rd-tabs` linearises with the tab label as a Heading 3; `rd-detail` becomes a Heading 3 summary plus its body (collapsibility is lost); `rd-icon` is dropped (its `label`, if any, renders inline); `rd-chart` data renders as a native Word table.
 
 A network-isolated host can't produce a complete docx — image fetches and diagram renders will fail and surface as `missing[]` and `diagrams_failed` in the JSON envelope.
 

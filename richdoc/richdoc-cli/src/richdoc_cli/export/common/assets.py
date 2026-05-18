@@ -20,7 +20,7 @@ from typing import Iterator
 from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
-from .mimetypes_ext import guess_mime
+from ...mimetypes_ext import guess_mime
 
 _ABSOLUTE_SCHEMES = frozenset({"http", "https", "data", "mailto", "tel", "javascript", "blob", "ws", "wss"})
 
