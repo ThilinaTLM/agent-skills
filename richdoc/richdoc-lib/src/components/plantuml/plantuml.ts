@@ -2,7 +2,13 @@ import { type Upgradeable, define, el } from "../../lib/dom.ts";
 import { stripCommonIndent } from "../../lib/text.ts";
 import { spec, tagName } from "./plantuml.schema.ts";
 
-const DEFAULT_ENDPOINT = "https://www.plantuml.com/plantuml/svg";
+// Default to Kroki rather than the official PlantUML server: it speaks the
+// same encoded-URL protocol, returns SVG + permissive CORS, and is the same
+// backend `richdoc-cli` uses when pre-rendering diagrams during export, so
+// browser-side and CLI-side output stay consistent. Override per-element
+// with the `endpoint` attribute (e.g. a self-hosted Kroki or PlantUML
+// server for sensitive content).
+const DEFAULT_ENDPOINT = "https://kroki.io/plantuml/svg";
 /** PlantUML built-in dark theme used when the doc is in dark mode and the
  * author hasn't overridden it. Picked for being line-based and neutral so
  * it integrates with the warm editorial palette without fighting it. */
