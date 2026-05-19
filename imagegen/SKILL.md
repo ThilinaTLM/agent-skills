@@ -10,6 +10,7 @@ Text-to-image and image-editing CLI backed by Google Gemini's Nano Banana 2 fami
 ## CLI
 
 - Path: `./imagegen-cli/imagegen` (relative to this SKILL.md).
+- Requires `uv` ([install](https://docs.astral.sh/uv/)). First call provisions the Python environment automatically.
 - Subcommands: `generate` (alias `gen`). Pass `--image <path>` (repeatable) to edit, restyle, or compose existing images instead of generating from scratch.
 - Always run `imagegen generate --help` to discover current flags and defaults. Do not memorize flag values — they evolve with the API.
 

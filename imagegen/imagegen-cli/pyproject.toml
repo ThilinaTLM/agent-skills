@@ -1,0 +1,17 @@
+[project]
+name = "imagegen-cli"
+version = "3.0.0"
+description = "Agent-facing CLI for generating and editing images via Google Gemini."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.1",
+    "google-genai>=1.0",
+]
+
+[project.scripts]
+imagegen = "imagegen_cli.cli:entrypoint"
+
+[build-system]
+requires = ["uv_build>=0.11.12,<0.12.0"]
+build-backend = "uv_build"
