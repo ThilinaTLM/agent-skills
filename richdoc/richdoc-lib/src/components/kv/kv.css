@@ -44,12 +44,17 @@ rd-kv[data-upgraded]:not([data-layout="stacked"]) {
 	border-radius: var(--rd-panel-radius);
 	overflow: hidden;
 }
-/* Title spans both columns of the inline grid. */
+/* Title spans both columns of the inline grid. It sits flush against the
+   first row beneath it — using margin here would leave an unpainted gap
+   that shows the panel-bg through (a thin lighter stripe across the
+   header). Padding keeps the header-bg solid; a hairline border separates
+   the title from the first row. */
 rd-kv[data-upgraded]:not([data-layout="stacked"]) > ._rd-kv-title {
 	grid-column: 1 / -1;
-	padding: var(--rd-space-3) var(--rd-space-4) 0;
-	margin: 0 0 var(--rd-space-2);
+	padding: var(--rd-space-3) var(--rd-space-4);
+	margin: 0;
 	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
 }
 rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row[data-upgraded] {
 	display: contents;
