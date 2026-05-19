@@ -17,8 +17,14 @@ dialog._rd-diagram-viewer {
 	background: var(--rd-bg);
 	color: var(--rd-fg);
 	overflow: hidden;
-	display: flex;
 	flex-direction: column;
+}
+/* Only render the viewer when the <dialog> is open. Without this guard
+   the `display: flex` below would override the UA's
+   `dialog:not([open]) { display: none }` and the closed dialog would
+   stay visible at 100vw × 100vh after `dlg.close()`. */
+dialog._rd-diagram-viewer[open] {
+	display: flex;
 }
 dialog._rd-diagram-viewer::backdrop {
 	background: rgba(0, 0, 0, 0.6);
