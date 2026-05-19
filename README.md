@@ -4,29 +4,21 @@ Reusable AI agent skills — drop a skill directory into your project and your a
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| [droid](./droid) | Android device automation via ADB |
-| [pgtool](./pgtool) | PostgreSQL database exploration and debugging |
-| [imagegen](./imagegen) | AI image generation via Google Gemini |
-| [playbook](./playbook) | Create and refine repo-specific `AGENTS.md` files |
+| Skill                  | Description                                                                                      |
+| ---------------------- | ------------------------------------------------------------------------------------------------ |
+| [droid](./droid)       | Android device automation via ADB                                                                |
+| [pgtool](./pgtool)     | PostgreSQL database exploration and debugging                                                    |
+| [imagegen](./imagegen) | AI image generation via Google Gemini                                                            |
+| [playbook](./playbook) | Create and refine repo-specific `AGENTS.md` files                                                |
+| [richdoc](./richdoc)   | Author polished HTML deliverables (reports, design docs, one-pagers) using `rd-*` web components |
 
 ## Installation
 
-Clone or download this repo, then copy any skill directory into your project's skills location:
+Clone the repo and copy any skill directory into your project's skills location:
 
 ```bash
 git clone https://github.com/ThilinaTLM/agent-skills.git
-cp -r agent-skills/droid /path/to/your/skills/
-```
-
-Or use the skills CLI:
-
-```bash
-npx skills add ThilinaTLM/agent-skills/droid
-npx skills add ThilinaTLM/agent-skills/pgtool
-npx skills add ThilinaTLM/agent-skills/imagegen
-npx skills add ThilinaTLM/agent-skills/playbook
+cp -r agent-skills/<skill> /path/to/your/skills/
 ```
 
 Each skill directory contains a `SKILL.md` with full usage instructions.
