@@ -43,12 +43,22 @@ function decorate(elementName: "rd-pro" | "rd-con") {
 			if ((this as unknown as { _upgraded: boolean })._upgraded) return;
 			(this as unknown as { _upgraded: boolean })._upgraded = true;
 			const isPro = elementName === "rd-pro";
+
+			// Wrap the user-supplied content in a single element so it occupies
+			// exactly one cell of the 2-column grid defined in pros-cons.css.
+			// Without this, loose text nodes and inline children (e.g. <code>,
+			// <strong>) each become their own grid item and get auto-placed
+			// into the narrow icon column, overlapping nearby text.
+			const content = el("div", { class: "_rd-pros-cons-content" });
+			while (this.firstChild) content.appendChild(this.firstChild);
+
 			const icon = document.createElement("rd-icon");
 			icon.setAttribute("name", isPro ? "check" : "x");
 			icon.setAttribute("size", "sm");
 			icon.setAttribute("aria-hidden", "true");
 			icon.className = "_rd-pros-cons-icon";
-			this.prepend(icon);
+
+			this.append(icon, content);
 		}
 	};
 }
