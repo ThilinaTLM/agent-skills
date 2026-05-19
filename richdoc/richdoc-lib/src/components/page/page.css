@@ -66,25 +66,59 @@ rd-page[data-rd-entered] > [data-rd-enter] {
  * inner ._rd-toc-rail can establish a `position: sticky` context.
  *
  * Below 1024px the page is single-column as before; the narrow-mode bar
- * inside rd-toc takes over via `position: fixed`. */
-/* The two-column page+rail layout is suppressed in narrow-width mode
-   — 880px minus a 16rem rail squeezes content too aggressively, so the
-   TOC falls back to its narrow-mode top bar instead. */
+ * inside rd-toc takes over via `position: fixed`.
+ *
+ * Layout dispatches on `data-toc` (the reader pref, written by
+ * <rd-prefs>):
+ *   absent / "auto"  — right rail, but suppressed on data-width="narrow"
+ *                     (880px minus a 16rem rail squeezes content too
+ *                     hard — falls back to the top bar instead).
+ *   "right"          — right rail unconditionally; explicit pref beats
+ *                     the narrow-width heuristic.
+ *   "left"           — left rail (mirrored columns).
+ *   "top"            — no grid override; the rail is hidden and the
+ *                     bar/popover takes over at all widths (see toc.css).
+ */
 @media (min-width: 1024px) {
-	rd-page:not([data-width="narrow"]):has(rd-toc) {
+	/* Right rail — default (auto, non-narrow width) plus explicit "right". */
+	rd-page:not([data-width="narrow"]):not([data-toc]):has(rd-toc),
+	rd-page[data-toc="right"]:has(rd-toc) {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 16rem;
 		column-gap: var(--rd-space-7);
 		align-items: start;
 	}
-	rd-page:not([data-width="narrow"]):has(rd-toc) > rd-toc {
+	rd-page:not([data-width="narrow"]):not([data-toc]):has(rd-toc) > rd-toc,
+	rd-page[data-toc="right"]:has(rd-toc) > rd-toc {
 		display: block;
 		grid-column: 2;
 		grid-row: 1 / 9999;
 		height: 100%;
 	}
-	rd-page:not([data-width="narrow"]):has(rd-toc) > :not(rd-toc) {
+	rd-page:not([data-width="narrow"]):not([data-toc]):has(rd-toc) > :not(rd-toc),
+	rd-page[data-toc="right"]:has(rd-toc) > :not(rd-toc) {
 		grid-column: 1;
 		min-width: 0;
 	}
+
+	/* Left rail — mirrored columns. */
+	rd-page[data-toc="left"]:has(rd-toc) {
+		display: grid;
+		grid-template-columns: 16rem minmax(0, 1fr);
+		column-gap: var(--rd-space-7);
+		align-items: start;
+	}
+	rd-page[data-toc="left"]:has(rd-toc) > rd-toc {
+		display: block;
+		grid-column: 1;
+		grid-row: 1 / 9999;
+		height: 100%;
+	}
+	rd-page[data-toc="left"]:has(rd-toc) > :not(rd-toc) {
+		grid-column: 2;
+		min-width: 0;
+	}
+
+	/* `data-toc="top"` intentionally has no grid override here — the rail
+	   is hidden and the bar/popover is shown by toc.css. */
 }

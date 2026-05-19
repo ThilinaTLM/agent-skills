@@ -56,6 +56,13 @@ class RdPage extends HTMLElement implements Upgradeable {
 		const width = stored.width ?? this.getAttribute("width") ?? "standard";
 		this.setAttribute("data-width", width);
 
+		// TOC position. `auto` clears the attribute so default CSS (right
+		// rail on wide, top bar on narrow) applies — same symmetry as
+		// `mode === "auto"` clearing data-mode.
+		const toc = stored.toc ?? this.getAttribute("toc") ?? "auto";
+		if (toc === "auto") this.removeAttribute("data-toc");
+		else this.setAttribute("data-toc", toc);
+
 		// Auto-inject the floating preview picker unless the author opted
 		// out with `<rd-page prefs="off">`. Append to <body> so it floats
 		// at the document root (independent of the page's grid/flow) and so

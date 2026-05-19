@@ -16,11 +16,13 @@
 export type Theme = "editorial-warm" | "graphite-modern";
 export type Mode = "light" | "dark" | "auto";
 export type Width = "narrow" | "standard" | "wide" | "full";
+export type TocPos = "auto" | "right" | "left" | "top";
 
 export interface Prefs {
 	theme?: Theme;
 	mode?: Mode;
 	width?: Width;
+	toc?: TocPos;
 }
 
 const KEY_PREFIX = "rd-prefs:";
@@ -28,6 +30,7 @@ const KEY_PREFIX = "rd-prefs:";
 const VALID_THEME: ReadonlyArray<Theme> = ["editorial-warm", "graphite-modern"];
 const VALID_MODE: ReadonlyArray<Mode> = ["light", "dark", "auto"];
 const VALID_WIDTH: ReadonlyArray<Width> = ["narrow", "standard", "wide", "full"];
+const VALID_TOC_POS: ReadonlyArray<TocPos> = ["auto", "right", "left", "top"];
 
 function storageKey(): string {
 	// `file://` docs land here with an empty origin (or `null`) plus a
@@ -81,6 +84,9 @@ export function loadPrefs(): Prefs {
 	}
 	if (typeof p.width === "string" && (VALID_WIDTH as readonly string[]).includes(p.width)) {
 		out.width = p.width as Width;
+	}
+	if (typeof p.toc === "string" && (VALID_TOC_POS as readonly string[]).includes(p.toc)) {
+		out.toc = p.toc as TocPos;
 	}
 	return out;
 }

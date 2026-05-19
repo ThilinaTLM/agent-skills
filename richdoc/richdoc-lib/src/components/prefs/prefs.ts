@@ -15,7 +15,13 @@
  */
 
 import { type Upgradeable, define, el } from "../../lib/dom.ts";
-import { type Mode, type Theme, type Width, savePrefs } from "../../lib/prefs-store.ts";
+import {
+	type Mode,
+	type Theme,
+	type TocPos,
+	type Width,
+	savePrefs,
+} from "../../lib/prefs-store.ts";
 import { spec, tagName } from "./prefs.schema.ts";
 
 const THEMES: ReadonlyArray<{ value: Theme; label: string }> = [
@@ -34,6 +40,13 @@ const WIDTHS: ReadonlyArray<{ value: Width; label: string }> = [
 	{ value: "standard", label: "Standard" },
 	{ value: "wide", label: "Wide" },
 	{ value: "full", label: "Full" },
+];
+
+const TOC_POSITIONS: ReadonlyArray<{ value: TocPos; label: string }> = [
+	{ value: "auto", label: "Auto" },
+	{ value: "right", label: "Right" },
+	{ value: "left", label: "Left" },
+	{ value: "top", label: "Top" },
 ];
 
 const COG_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
@@ -83,6 +96,7 @@ class RdPrefs extends HTMLElement implements Upgradeable {
 			this._buildGroup("Theme", "theme", THEMES, () => this._currentTheme()),
 			this._buildGroup("Mode", "mode", MODES, () => this._currentMode()),
 			this._buildGroup("Width", "width", WIDTHS, () => this._currentWidth()),
+			this._buildGroup("Contents", "toc", TOC_POSITIONS, () => this._currentTocPos()),
 		);
 		this._panel = panel;
 		this.appendChild(panel);
@@ -111,10 +125,16 @@ class RdPrefs extends HTMLElement implements Upgradeable {
 		if (w === "narrow" || w === "wide" || w === "full") return w;
 		return "standard";
 	}
+	_currentTocPos(): TocPos {
+		const page = findPage();
+		const t = page?.getAttribute("data-toc");
+		if (t === "right" || t === "left" || t === "top") return t;
+		return "auto";
+	}
 
 	_buildGroup<T extends string>(
 		title: string,
-		kind: "theme" | "mode" | "width",
+		kind: "theme" | "mode" | "width" | "toc",
 		options: ReadonlyArray<{ value: T; label: string }>,
 		getCurrent: () => T,
 	): HTMLElement {
@@ -149,7 +169,7 @@ class RdPrefs extends HTMLElement implements Upgradeable {
 		return group;
 	}
 
-	_select(kind: "theme" | "mode" | "width", value: string): void {
+	_select(kind: "theme" | "mode" | "width" | "toc", value: string): void {
 		if (kind === "theme") {
 			document.documentElement.setAttribute("data-theme", value);
 			savePrefs({ theme: value as Theme });
@@ -166,13 +186,22 @@ class RdPrefs extends HTMLElement implements Upgradeable {
 			const page = findPage();
 			if (page) page.setAttribute("data-width", value);
 			savePrefs({ width: value as Width });
+		} else if (kind === "toc") {
+			// `auto` clears the attribute so default CSS (right rail on
+			// wide, top bar on narrow) applies.
+			const page = findPage();
+			if (page) {
+				if (value === "auto") page.removeAttribute("data-toc");
+				else page.setAttribute("data-toc", value);
+			}
+			savePrefs({ toc: value as TocPos });
 		}
 		this._resyncGroup(kind);
 	}
 
 	/** After a click, refresh the `aria-checked` + active state of the
 	 * just-changed group. Cheap rather than re-rendering the panel. */
-	_resyncGroup(kind: "theme" | "mode" | "width"): void {
+	_resyncGroup(kind: "theme" | "mode" | "width" | "toc"): void {
 		if (!this._panel) return;
 		const group = this._panel.querySelector<HTMLElement>(`._rd-prefs-group[data-kind="${kind}"]`);
 		if (!group) return;
@@ -181,7 +210,9 @@ class RdPrefs extends HTMLElement implements Upgradeable {
 				? this._currentTheme()
 				: kind === "mode"
 					? this._currentMode()
-					: this._currentWidth();
+					: kind === "width"
+						? this._currentWidth()
+						: this._currentTocPos();
 		for (const btn of group.querySelectorAll<HTMLElement>("._rd-prefs-option")) {
 			const v = btn.getAttribute("data-value");
 			const active = v === cur;

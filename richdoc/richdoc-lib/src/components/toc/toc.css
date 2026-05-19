@@ -192,10 +192,10 @@ rd-toc ._rd-toc-rail-list {
 	min-height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
-	/* Hide ugly scrollbars; rely on overlay scrollbars on platforms that
-	   support them. */
-	scrollbar-width: thin;
-	scrollbar-color: var(--rd-border-strong) transparent;
+	/* Scrollable but chromeless — the bottom fade-mask below is the only
+	   affordance for "more below". Cross-engine scrollbar hide. */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* legacy Edge / IE */
 	padding-bottom: var(--rd-space-3);
 	/* Subtle fade-out at the bottom hints there's more to scroll. */
 	mask-image: linear-gradient(
@@ -337,6 +337,9 @@ rd-toc ._rd-toc-pop {
 	z-index: 49;
 	max-height: min(60vh, calc(100vh - var(--_rd-toc-bar-h) - var(--rd-space-5)));
 	overflow-y: auto;
+	/* Scrollable but chromeless — matches the wide-mode rail list. */
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* legacy Edge / IE */
 	background: var(--rd-bg-elev);
 	border-bottom: 1px solid var(--rd-border);
 	box-shadow: var(--rd-shadow-lg);
@@ -363,6 +366,15 @@ rd-toc ._rd-toc-pop a {
 }
 rd-toc ._rd-toc-pop a::before {
 	min-width: 2.5em;
+}
+
+/* WebKit / Chromium / Safari — cannot use scrollbar-width here; the
+   ::-webkit-scrollbar pseudo-element must be zero-sized to hide the
+   chrome while leaving the element scrollable. */
+rd-toc ._rd-toc-rail-list::-webkit-scrollbar,
+rd-toc ._rd-toc-pop::-webkit-scrollbar {
+	width: 0;
+	height: 0;
 }
 
 /* Hide the narrow-mode pieces above the breakpoint. */
@@ -499,12 +511,66 @@ rd-toc ._rd-toc-group::before {
    trying to render but has no column, and the narrow-mode bar stays
    hidden by the wide-viewport `@media (min-width: 1024px)` rule above.
    Force the bar/popover on and the rail off so the narrow-width page
-   always has its narrow-mode TOC, regardless of viewport size. */
-rd-page[data-width="narrow"] rd-toc ._rd-toc-rail {
+   always has its narrow-mode TOC, regardless of viewport size.
+
+   Exemption: if the reader has explicitly picked a side rail
+   (`data-toc="right"` / `"left"`) we honour that even on a narrow-width
+   page — explicit pref beats the heuristic. `data-toc="top"` already
+   wants the bar so it falls through naturally. */
+rd-page[data-width="narrow"]:not([data-toc="right"]):not([data-toc="left"]) rd-toc ._rd-toc-rail {
 	display: none;
 }
 @media (min-width: 1024px) {
-	rd-page[data-width="narrow"] rd-toc ._rd-toc-bar {
+	rd-page[data-width="narrow"]:not([data-toc="right"]):not([data-toc="left"]):not([data-toc="top"]) rd-toc ._rd-toc-bar {
 		display: flex;
+	}
+}
+
+/* ─── Reader pref: TOC position (data-toc on <rd-page>) ─────────────
+
+   Three position variants beyond the default (right rail / narrow bar):
+     • "left" — mirror the rail to the left edge; flip the hairline
+               rule, accent progress strip, and active-entry marker dot
+               so they sit on the inner (right) edge.
+     • "top"  — on wide viewports, hide the rail and show the same
+               bar+popover that narrow viewports already use.
+   The grid columns themselves are dispatched in page.css.
+   ─────────────────────────────────────────────────────────────── */
+
+/* Left rail — swap the padding and the hairline/progress strip edge. */
+rd-page[data-toc="left"] rd-toc ._rd-toc-rail {
+	padding-left: 0;
+	padding-right: var(--rd-space-4);
+}
+rd-page[data-toc="left"] rd-toc ._rd-toc-rail::before,
+rd-page[data-toc="left"] rd-toc ._rd-toc-rail::after {
+	left: auto;
+	right: 0;
+}
+/* The rail-title sits flush against the left edge by default; nudge it
+   in from the inner (right) edge instead so it doesn't kiss the column
+   gap. */
+rd-page[data-toc="left"] rd-toc ._rd-toc-rail-title {
+	margin: 0 var(--rd-space-3) var(--rd-space-3) 0;
+}
+/* Active-entry marker dot — repaint on the right edge for left rail. */
+rd-page[data-toc="left"] rd-toc a[aria-current="true"]::after,
+rd-page[data-toc="left"] rd-toc a[aria-current="page"]::after {
+	left: auto;
+	right: -1px;
+	transform: translate(50%, -50%);
+}
+
+/* Top mode on wide viewports — hide the rail, show the bar+popover that
+   the narrow-viewport breakpoint already provides. */
+@media (min-width: 1024px) {
+	rd-page[data-toc="top"] rd-toc ._rd-toc-rail {
+		display: none;
+	}
+	rd-page[data-toc="top"] rd-toc ._rd-toc-bar {
+		display: flex;
+	}
+	rd-page[data-toc="top"] rd-toc ._rd-toc-pop {
+		display: block;
 	}
 }
