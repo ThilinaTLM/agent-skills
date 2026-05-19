@@ -111,6 +111,12 @@ dialog._rd-diagram-viewer ._rd-diagram-viewer-content {
 	top: 0;
 	left: 0;
 	transform-origin: 0 0;
+	/* The wrapper only ever carries a `translate(...)` (pan); zoom is
+	 * applied by writing pixel width/height onto the inner SVG so the
+	 * browser re-paints vectors at the new size. `will-change: transform`
+	 * is kept as a small perf hint for pan smoothness on large diagrams —
+	 * it no longer affects zoom rasterisation now that scale is off the
+	 * CSS transform. */
 	will-change: transform;
 }
 dialog._rd-diagram-viewer ._rd-diagram-viewer-content > svg,

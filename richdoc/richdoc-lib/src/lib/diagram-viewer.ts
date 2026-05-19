@@ -3,9 +3,21 @@
  *
  * Built on the native `<dialog>` element so the platform handles focus
  * trap, Esc-to-close, and backdrop. The stage holds a clone of the
- * caller's SVG (or `<img>` fallback) and applies a CSS transform driven
- * by pointer / wheel / keyboard / pinch input. Vector content stays
- * crisp at any zoom — the SVG is never rasterised.
+ * caller's SVG (or `<img>` fallback) and routes pointer / wheel /
+ * keyboard / pinch input into a (tx, ty, scale) state.
+ *
+ * Two render channels are used deliberately:
+ *   - Pan is a CSS `translate(...)` on the wrapper — compositor-fast,
+ *     never causes a repaint.
+ *   - Zoom is applied by writing pixel `width`/`height` styles onto
+ *     the inner SVG so the browser re-paints vector paths at the new
+ *     size every frame. The SVG is genuinely never rasterised; glyphs
+ *     and lines stay crisp at any zoom.
+ *
+ * Using CSS `transform: scale()` on a composited wrapper would instead
+ * rasterise the SVG once at its 1× layer size and bitmap-scale the
+ * result — visibly blurry above ~1.5×. That trap is what this two-
+ * channel design avoids.
  *
  * Used by `<rd-mermaid>` and `<rd-plantuml>` via a small corner button
  * each component injects after render. Reused as a singleton: the
@@ -24,6 +36,11 @@ interface State {
 	tx: number;
 	ty: number;
 	scale: number;
+	/** Intrinsic content size in CSS pixels — viewBox-derived for SVGs,
+	 * natural size for <img>. Cached at open time so applyTransform can
+	 * write `width = contentW * scale` without re-measuring. */
+	contentW: number;
+	contentH: number;
 	dragging: boolean;
 	pointers: Map<number, { x: number; y: number }>;
 	lastPinchDist: number;
@@ -43,6 +60,8 @@ const state: State = {
 	tx: 0,
 	ty: 0,
 	scale: 1,
+	contentW: 0,
+	contentH: 0,
 	dragging: false,
 	pointers: new Map(),
 	lastPinchDist: 0,
@@ -62,25 +81,22 @@ export function openDiagramViewer(opts: OpenDiagramViewerOpts): void {
 	state.onClose = opts.onClose ?? null;
 	h.title.textContent = opts.title ?? "Diagram";
 	h.contentSlot.innerHTML = "";
-	// Normalise the content so it lays out predictably inside the stage.
-	// Force the inner node to its intrinsic size so fit() can compute a
-	// correct transform regardless of what the source CSS did to it. An
-	// SVG with viewBox but no width/height in an absolute-positioned
-	// parent collapses to ~300×150 — we sidestep that by pinning
-	// explicit pixel dimensions from the viewBox or bounding rect.
+	// Capture the intrinsic content size once. applyTransform() will
+	// write the actual pixel width/height each frame as contentW * scale
+	// so the browser re-paints vectors at the new size. We strip any
+	// width/height attribute the source carried so the styles we write
+	// win without specificity surprises.
 	const node = opts.content;
 	const size = getContentSize(node);
+	state.contentW = size.w;
+	state.contentH = size.h;
 	if (node instanceof SVGElement) {
 		node.removeAttribute("width");
 		node.removeAttribute("height");
-		node.style.width = `${size.w}px`;
-		node.style.height = `${size.h}px`;
 		node.style.maxWidth = "none";
 		node.style.maxHeight = "none";
 		node.style.display = "block";
 	} else if (node instanceof HTMLImageElement) {
-		node.style.width = `${size.w}px`;
-		node.style.height = `${size.h}px`;
 		node.style.maxWidth = "none";
 		node.style.maxHeight = "none";
 		node.style.display = "block";
@@ -321,8 +337,18 @@ function pinchMidpoint(): { x: number; y: number } {
 
 function applyTransform(): void {
 	if (!handles) return;
-	const c = handles.contentSlot;
-	c.style.transform = `translate(${state.tx}px, ${state.ty}px) scale(${state.scale})`;
+	const slot = handles.contentSlot;
+	// Pan: compositor-only translate on the wrapper. No repaint.
+	slot.style.transform = `translate(${state.tx}px, ${state.ty}px)`;
+	// Zoom: write pixel dimensions onto the inner element so the browser
+	// re-paints the SVG at the new size (vectors stay crisp) or letter-
+	// boxes the <img> (raster still raster, but at least correct shape).
+	const inner = slot.firstElementChild as SVGElement | HTMLImageElement | null;
+	if (!inner) return;
+	const w = state.contentW * state.scale;
+	const h = state.contentH * state.scale;
+	inner.style.width = `${w}px`;
+	inner.style.height = `${h}px`;
 }
 
 function clampScale(s: number): number {
@@ -349,17 +375,9 @@ function zoomAt(factor: number, cx: number, cy: number): void {
 function fit(): void {
 	if (!handles) return;
 	const stage = handles.stage;
-	const inner = handles.contentSlot.firstElementChild as HTMLImageElement | SVGElement | null;
-	if (!inner) return;
-	// Reset transform to measure intrinsic size.
-	state.tx = 0;
-	state.ty = 0;
-	state.scale = 1;
-	applyTransform();
 	const stageRect = stage.getBoundingClientRect();
-	// The inner now has explicit width/height styles set in
-	// openDiagramViewer; use them as the canonical size.
-	const { w, h } = getContentSize(inner as Content);
+	const w = state.contentW;
+	const h = state.contentH;
 	if (w === 0 || h === 0) return;
 	const margin = 32;
 	const fx = (stageRect.width - margin) / w;
@@ -375,14 +393,8 @@ function reset100(): void {
 	if (!handles) return;
 	state.scale = 1;
 	const stage = handles.stage.getBoundingClientRect();
-	const inner = handles.contentSlot.firstElementChild as HTMLImageElement | SVGElement | null;
-	if (!inner) {
-		state.tx = 0;
-		state.ty = 0;
-		applyTransform();
-		return;
-	}
-	const { w, h } = getContentSize(inner as Content);
+	const w = state.contentW;
+	const h = state.contentH;
 	state.tx = (stage.width - w) / 2;
 	state.ty = (stage.height - h) / 2;
 	applyTransform();

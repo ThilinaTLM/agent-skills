@@ -69,6 +69,51 @@ function encode6Bit(bytes: Uint8Array): string {
 }
 
 /**
+ * Normalise the SVG Kroki/PlantUML returns so it sizes responsively
+ * without distorting.
+ *
+ * Kroki's PlantUML SVG ships with three things that fight our CSS:
+ *   1. `preserveAspectRatio="none"` — stretches content to fill the
+ *      viewport box instead of preserving viewBox aspect.
+ *   2. Inline `style="width:Xpx;height:Ypx;..."` matching the viewBox.
+ *      Inline styles beat stylesheet rules, so our
+ *      `rd-plantuml svg { height: auto; }` is ignored.
+ *   3. Implicit reliance on those for sizing.
+ *
+ * On narrow containers, `max-width: 100%` clamps the SVG width while
+ * the inline `height` stays put — the box ends up at the wrong aspect,
+ * and `preserveAspectRatio="none"` then stretches content to fill it.
+ * Visible result: a wide diagram crushed horizontally.
+ *
+ * Fix: drop preserveAspectRatio (default is `xMidYMid meet`, which is
+ * what we want), re-derive intrinsic `width`/`height` attributes from
+ * the viewBox so CSS has dimensions to scale against, and strip the
+ * inline `width`/`height` declarations (keeping other inline styles
+ * like the white `background` Kroki sets for light themes).
+ */
+function normalisePlantumlSvg(root: SVGElement): void {
+	root.removeAttribute("preserveAspectRatio");
+	const vb = (root as SVGSVGElement).viewBox?.baseVal;
+	if (vb && vb.width > 0 && vb.height > 0) {
+		root.setAttribute("width", String(vb.width));
+		root.setAttribute("height", String(vb.height));
+	} else {
+		root.removeAttribute("width");
+		root.removeAttribute("height");
+	}
+	const style = root.getAttribute("style");
+	if (style) {
+		const cleaned = style
+			.split(";")
+			.map((s) => s.trim())
+			.filter((s) => s && !/^(width|height)\s*:/i.test(s))
+			.join("; ");
+		if (cleaned) root.setAttribute("style", cleaned);
+		else root.removeAttribute("style");
+	}
+}
+
+/**
  * Encode a PlantUML source string into the URL-safe token that the
  * PlantUML server (and compatible servers like Kroki) expects.
  *
@@ -119,10 +164,7 @@ class RdPlantuml extends HTMLElement implements Upgradeable {
 				const svg = await res.text();
 				this.innerHTML = svg;
 				const root = this.querySelector("svg");
-				if (root) {
-					root.removeAttribute("width");
-					root.removeAttribute("height");
-				}
+				if (root) normalisePlantumlSvg(root);
 				this._installFullscreenButton();
 			} else {
 				// Server returned a non-SVG (PNG fallback path, or error image).
