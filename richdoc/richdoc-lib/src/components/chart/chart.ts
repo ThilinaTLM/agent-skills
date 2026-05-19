@@ -24,6 +24,8 @@ const CHART_PALETTE = [
 
 class RdChart extends HTMLElement implements Upgradeable {
 	_upgraded = false;
+	_resizeObserver: ResizeObserver | null = null;
+	_lastWidth = 0;
 	async connectedCallback() {
 		if (this._upgraded) return;
 		this._upgraded = true;
@@ -79,23 +81,45 @@ class RdChart extends HTMLElement implements Upgradeable {
 			return;
 		}
 
-		try {
-			const node = renderPlot(plot, kind, rows, {
-				x: xKey,
-				y: yKey,
-				series: seriesAttr || null,
-				height,
-				showLegend,
-			});
-			body.innerHTML = "";
-			body.appendChild(node);
-		} catch (err) {
-			console.warn("[richdoc] chart render failed:", err);
-			body.innerHTML = "";
-			body.appendChild(buildTable(rows));
-		}
+		const paint = (width: number): void => {
+			if (width < 80) return; // skip jitter while invisible
+			if (Math.abs(width - this._lastWidth) < 8) return; // debounce
+			this._lastWidth = width;
+			try {
+				const node = renderPlot(plot, kind, rows, {
+					x: xKey,
+					y: yKey,
+					series: seriesAttr || null,
+					width,
+					height,
+					showLegend,
+				});
+				body.innerHTML = "";
+				body.appendChild(node);
+			} catch (err) {
+				console.warn("[richdoc] chart render failed:", err);
+				body.innerHTML = "";
+				body.appendChild(buildTable(rows));
+			}
+		};
+
+		// Initial paint: use the body's measured width (post-layout). Then
+		// observe for width changes (picker switch, viewport resize, parent
+		// rd-cols collapse) and re-render. Debounced via the diff check in
+		// `paint` so the observer can fire freely.
+		const initial = Math.round(body.getBoundingClientRect().width) || 640;
+		paint(initial);
+		this._resizeObserver = new ResizeObserver((entries) => {
+			const w = Math.round(entries[0]?.contentRect.width ?? 0);
+			paint(w);
+		});
+		this._resizeObserver.observe(body);
 
 		reveal(this);
+	}
+	disconnectedCallback() {
+		this._resizeObserver?.disconnect();
+		this._resizeObserver = null;
 	}
 }
 
@@ -103,6 +127,7 @@ interface RenderOpts {
 	x: string;
 	y: string;
 	series: string | null;
+	width: number;
 	height: number;
 	showLegend: boolean;
 }
@@ -113,9 +138,10 @@ function renderPlot(
 	rows: Row[],
 	opts: RenderOpts,
 ): SVGElement | HTMLElement {
-	const { x, y, series, height, showLegend } = opts;
+	const { x, y, series, width, height, showLegend } = opts;
 
 	const base: Record<string, unknown> = {
+		width,
 		height,
 		marginLeft: 60,
 		marginRight: 24,
@@ -197,7 +223,7 @@ function renderPlot(
 		// Plot doesn't ship a pie/donut primitive. Render an SVG donut by hand
 		// using d3-arc via Plot's d3 dependency. Fall back to a bar chart
 		// representation if anything fails.
-		const w = 320;
+		const w = Math.max(160, Math.min(width, 480));
 		const h = height;
 		const total = rows.reduce(
 			(acc, r) => acc + (typeof r[y] === "number" ? (r[y] as number) : 0),

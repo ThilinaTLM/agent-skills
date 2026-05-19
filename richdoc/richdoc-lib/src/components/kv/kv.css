@@ -83,7 +83,7 @@ rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row:not(:first-of-type) >
 	border-top: 1px solid var(--rd-panel-border);
 }
 
-@media (max-width: 640px) {
+@container rd-page (max-width: 640px) {
 	rd-kv[data-upgraded]:not([data-layout="stacked"]) {
 		grid-template-columns: 1fr;
 		gap: 0;
@@ -131,7 +131,7 @@ rd-kv[data-upgraded][data-layout="stacked"] > rd-row > ._rd-kv-value > :last-chi
 	margin-bottom: 0;
 }
 
-@media (max-width: 640px) {
+@container rd-page (max-width: 640px) {
 	rd-kv[data-upgraded][data-layout="stacked"] > rd-row {
 		grid-template-columns: 1fr;
 		gap: var(--rd-space-1);

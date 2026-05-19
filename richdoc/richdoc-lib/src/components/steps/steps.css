@@ -78,7 +78,7 @@ rd-step > ._rd-step-body > :last-child {
 	margin-bottom: 0;
 }
 
-@media (max-width: 640px) {
+@container rd-page (max-width: 640px) {
 	rd-step {
 		grid-template-columns: 2.5rem 1fr;
 	}

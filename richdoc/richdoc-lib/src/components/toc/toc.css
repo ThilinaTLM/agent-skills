@@ -480,7 +480,7 @@ rd-toc ._rd-toc-group::before {
 	font-weight: var(--rd-weight-semibold);
 	line-height: var(--rd-leading-snug);
 }
-@media (max-width: 640px) {
+@container rd-page (max-width: 640px) {
 	._rd-pagenav {
 		grid-template-columns: 1fr;
 	}
@@ -488,5 +488,23 @@ rd-toc ._rd-toc-group::before {
 		grid-column: 1;
 		text-align: left;
 		align-items: flex-start;
+	}
+}
+
+/* Narrow-width page override.
+
+   When the reader sets the page to narrow (`<rd-page data-width="narrow">`)
+   the page.css `:has(rd-toc)` grid is suppressed (a 16rem rail would
+   squeeze 880px of content too far). Without this block the rail keeps
+   trying to render but has no column, and the narrow-mode bar stays
+   hidden by the wide-viewport `@media (min-width: 1024px)` rule above.
+   Force the bar/popover on and the rail off so the narrow-width page
+   always has its narrow-mode TOC, regardless of viewport size. */
+rd-page[data-width="narrow"] rd-toc ._rd-toc-rail {
+	display: none;
+}
+@media (min-width: 1024px) {
+	rd-page[data-width="narrow"] rd-toc ._rd-toc-bar {
+		display: flex;
 	}
 }

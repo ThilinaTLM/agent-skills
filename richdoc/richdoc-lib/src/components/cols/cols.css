@@ -17,7 +17,10 @@ rd-cols[n="4"] {
 	gap: var(--rd-space-4);
 }
 
-@media (max-width: 720px) {
+/* Container-driven collapse — keyed on the page's inline-size rather
+   than the viewport so cols still flatten when the reader picks a
+   narrower page width inside a wide viewport. */
+@container rd-page (max-width: 720px) {
 	rd-cols {
 		grid-template-columns: 1fr !important;
 		gap: var(--rd-space-4);

@@ -16,7 +16,7 @@ const PARAM_GROUP_LABELS: Record<string, string> = {
 };
 
 const STATUS_TONE: (status: string) => "positive" | "negative" | "neutral" = (status) => {
-	const n = parseInt(status, 10);
+	const n = Number.parseInt(status, 10);
 	if (!Number.isFinite(n)) return "neutral";
 	if (n >= 200 && n < 300) return "positive";
 	if (n >= 400) return "negative";
@@ -61,12 +61,7 @@ class RdApi extends HTMLElement implements Upgradeable {
 		}
 
 		// Group params by their `in` attribute. Order: path, query, header, body.
-		const groupOrder: Array<keyof typeof PARAM_GROUP_LABELS> = [
-			"path",
-			"query",
-			"header",
-			"body",
-		];
+		const groupOrder: Array<keyof typeof PARAM_GROUP_LABELS> = ["path", "query", "header", "body"];
 		const groups = new Map<string, HTMLElement[]>();
 		for (const p of params) {
 			const where = p.getAttribute("in") || "query";
@@ -95,10 +90,14 @@ class RdApi extends HTMLElement implements Upgradeable {
 					el(
 						"div",
 						{ class: "_rd-api-response-head" },
-						el("span", {
-							class: "_rd-api-response-status",
-							"data-tone": STATUS_TONE(status),
-						}, status),
+						el(
+							"span",
+							{
+								class: "_rd-api-response-status",
+								"data-tone": STATUS_TONE(status),
+							},
+							status,
+						),
 						type ? el("code", { class: "_rd-api-response-type" }, type) : null,
 					),
 				);
@@ -158,11 +157,4 @@ export function register(): void {
 	define(responseTagName, RdResponse);
 }
 
-export {
-	spec,
-	tagName,
-	paramSpec,
-	paramTagName,
-	responseSpec,
-	responseTagName,
-};
+export { spec, tagName, paramSpec, paramTagName, responseSpec, responseTagName };

@@ -49,7 +49,7 @@ rd-hero > ._rd-hero-extras > :last-child {
 	margin-bottom: 0;
 }
 
-@media (max-width: 720px) {
+@container rd-page (max-width: 720px) {
 	rd-hero > ._rd-hero-title {
 		font-size: var(--rd-text-4xl);
 	}

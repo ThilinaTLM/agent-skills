@@ -54,7 +54,9 @@
 		border-top: 1px solid #b9b1a0;
 		padding-top: var(--rd-space-3);
 	}
-	rd-toc {
+	rd-toc,
+	rd-prefs,
+	._rd-diagram-fullscreen-btn {
 		display: none;
 	}
 	rd-code ._rd-code-copy,

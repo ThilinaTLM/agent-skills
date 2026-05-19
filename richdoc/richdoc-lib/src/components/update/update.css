@@ -57,7 +57,7 @@ rd-update > ._rd-update-body > :last-child {
 	margin-bottom: 0;
 }
 
-@media (max-width: 640px) {
+@container rd-page (max-width: 640px) {
 	rd-update {
 		grid-template-columns: 1fr;
 		gap: var(--rd-space-2);

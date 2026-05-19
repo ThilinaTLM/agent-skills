@@ -1,4 +1,5 @@
-import { type Upgradeable, define } from "../../lib/dom.ts";
+import { type Upgradeable, define, el } from "../../lib/dom.ts";
+import { loadPrefs } from "../../lib/prefs-store.ts";
 import { spec, tagName } from "./page.schema.ts";
 
 /**
@@ -29,10 +30,42 @@ class RdPage extends HTMLElement implements Upgradeable {
 		if (this._upgraded) return;
 		this._upgraded = true;
 
-		const theme = this.getAttribute("theme");
-		const mode = this.getAttribute("mode");
+		// Resolve initial theme / mode / width with this precedence:
+		//   1. stored reader preference (localStorage via `loadPrefs`)
+		//   2. author attribute on <rd-page>
+		//   3. nothing — fall through to whatever <html> already has
+		//      (author may have set it manually) or to system defaults.
+		const stored = loadPrefs();
+
+		const theme = stored.theme ?? this.getAttribute("theme");
 		if (theme) document.documentElement.setAttribute("data-theme", theme);
-		if (mode) document.documentElement.setAttribute("data-mode", mode);
+
+		const mode = stored.mode ?? this.getAttribute("mode");
+		if (mode === "auto") {
+			// `auto` clears the explicit attribute so the OS @media
+			// fallback applies.
+			document.documentElement.removeAttribute("data-mode");
+		} else if (mode) {
+			document.documentElement.setAttribute("data-mode", mode);
+		}
+
+		// Width is page-local rather than document-root, so it lives as a
+		// data-attribute on the element itself — page.css picks it up. The
+		// `width` author attribute is mirrored to `data-width`; the prefs
+		// picker rewrites `data-width` directly at runtime.
+		const width = stored.width ?? this.getAttribute("width") ?? "standard";
+		this.setAttribute("data-width", width);
+
+		// Auto-inject the floating preview picker unless the author opted
+		// out with `<rd-page prefs="off">`. Append to <body> so it floats
+		// at the document root (independent of the page's grid/flow) and so
+		// it isn't pulled into the rd-page entry cascade below.
+		if (this.getAttribute("prefs") !== "off") {
+			const host = document.body;
+			if (host && !host.querySelector(":scope > rd-prefs")) {
+				host.appendChild(el("rd-prefs"));
+			}
+		}
 
 		// Page-enter cascade. Tag the first N direct element children with
 		// data-rd-enter and an incremental --rd-enter-delay; CSS hides them

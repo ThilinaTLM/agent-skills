@@ -7,6 +7,25 @@ rd-card {
 	margin: 0 0 var(--rd-space-4);
 	position: relative;
 	overflow: hidden;
+	/* Self-queryable so a card inside a narrow rd-cols cell tightens its
+	   chrome without waiting on the rd-page query (which sees the whole
+	   page width, not this cell's width). */
+	container-type: inline-size;
+}
+
+/* Narrow-card self-collapse — below ~360px, trim the gutter padding and
+   shrink the header. */
+@container (max-width: 360px) {
+	rd-card {
+		padding: var(--rd-space-4);
+	}
+	rd-card > ._rd-card-header {
+		margin: calc(-1 * var(--rd-space-4)) calc(-1 * var(--rd-space-4)) var(--rd-space-3);
+		padding: var(--rd-space-2) var(--rd-space-4);
+	}
+	rd-card > ._rd-card-header > ._rd-card-title {
+		font-size: var(--rd-text-lg);
+	}
 }
 rd-cols > rd-card {
 	margin: 0;

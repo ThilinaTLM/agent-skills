@@ -1,6 +1,6 @@
 import { loadCdnStyle } from "../../lib/cdn.ts";
 import { type Upgradeable, define, el } from "../../lib/dom.ts";
-import { spec, shotSpec, shotTagName, tagName } from "./gallery.schema.ts";
+import { shotSpec, shotTagName, spec, tagName } from "./gallery.schema.ts";
 
 const PHOTOSWIPE_CSS_URL = "https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.css";
 const PHOTOSWIPE_LIGHTBOX_URL =
@@ -85,7 +85,9 @@ class RdGallery extends HTMLElement implements Upgradeable {
 				gallery: `#${grid.id}`,
 				children: "a._rd-gallery-item",
 				pswpModule: () =>
-					import(/* @vite-ignore */ "https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.esm.min.js"),
+					import(
+						/* @vite-ignore */ "https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.esm.min.js"
+					),
 			});
 			lb.init();
 		} catch (err) {

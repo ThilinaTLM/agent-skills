@@ -1,0 +1,164 @@
+/* Fullscreen diagram viewer dialog.
+ *
+ * Native <dialog> uses ::backdrop for the dim layer. The dialog itself
+ * is the chrome (header + stage). The stage is a clipped pan/zoom
+ * canvas; the inner content slot is the transform target. */
+
+dialog._rd-diagram-viewer {
+	position: fixed;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	max-width: 100vw;
+	max-height: 100vh;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: var(--rd-bg);
+	color: var(--rd-fg);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+dialog._rd-diagram-viewer::backdrop {
+	background: rgba(0, 0, 0, 0.6);
+}
+
+dialog._rd-diagram-viewer ._rd-diagram-viewer-header {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-3);
+	padding: var(--rd-space-2) var(--rd-space-4);
+	background: var(--rd-bg-elev);
+	border-bottom: 1px solid var(--rd-border);
+	min-height: 3rem;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-title {
+	flex: 1 1 auto;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-sm);
+	font-weight: var(--rd-weight-semibold);
+	color: var(--rd-fg-muted);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-toolbar {
+	display: inline-flex;
+	gap: var(--rd-space-1);
+	align-items: center;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-btn {
+	width: 2rem;
+	height: 2rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--rd-fg-muted);
+	border-radius: var(--rd-radius-sm);
+	cursor: pointer;
+	transition:
+		background-color var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out),
+		color var(--rd-motion-fast) var(--rd-ease-out);
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-btn svg {
+	width: 1rem;
+	height: 1rem;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-btn:hover,
+dialog._rd-diagram-viewer ._rd-diagram-viewer-btn:focus-visible {
+	background: var(--rd-bg-sunken);
+	border-color: var(--rd-border);
+	color: var(--rd-fg);
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-btn:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 1px;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-btn-close {
+	margin-left: var(--rd-space-2);
+}
+
+dialog._rd-diagram-viewer ._rd-diagram-viewer-stage {
+	flex: 1 1 auto;
+	position: relative;
+	overflow: hidden;
+	background: var(--rd-bg);
+	touch-action: none; /* let pointer handlers manage pan/zoom */
+	cursor: grab;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-stage:active {
+	cursor: grabbing;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-stage:focus {
+	outline: none;
+}
+
+dialog._rd-diagram-viewer ._rd-diagram-viewer-content {
+	position: absolute;
+	top: 0;
+	left: 0;
+	transform-origin: 0 0;
+	will-change: transform;
+}
+dialog._rd-diagram-viewer ._rd-diagram-viewer-content > svg,
+dialog._rd-diagram-viewer ._rd-diagram-viewer-content > img {
+	display: block;
+	max-width: none;
+	max-height: none;
+	user-select: none;
+}
+
+/* Corner trigger button used by rd-mermaid + rd-plantuml. Lives at the
+   top-right of the diagram panel, low-opacity by default so it doesn't
+   dominate, full opacity on hover/focus or when the host is hovered. */
+._rd-diagram-fullscreen-btn {
+	position: absolute;
+	top: var(--rd-space-3);
+	right: var(--rd-space-3);
+	width: 2rem;
+	height: 2rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--rd-radius-sm);
+	border: 1px solid var(--rd-border);
+	background: var(--rd-panel-header-bg);
+	color: var(--rd-fg-muted);
+	opacity: 0.55;
+	cursor: pointer;
+	transition:
+		opacity var(--rd-motion-fast) var(--rd-ease-out),
+		color var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out);
+	z-index: 1;
+}
+._rd-diagram-fullscreen-btn svg {
+	width: 1rem;
+	height: 1rem;
+}
+._rd-diagram-fullscreen-btn:hover,
+._rd-diagram-fullscreen-btn:focus-visible,
+rd-mermaid:hover ._rd-diagram-fullscreen-btn,
+rd-plantuml:hover ._rd-diagram-fullscreen-btn {
+	opacity: 1;
+	color: var(--rd-fg);
+	border-color: var(--rd-border-strong);
+}
+._rd-diagram-fullscreen-btn:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 1px;
+}
+
+@media print {
+	dialog._rd-diagram-viewer,
+	._rd-diagram-fullscreen-btn {
+		display: none !important;
+	}
+}

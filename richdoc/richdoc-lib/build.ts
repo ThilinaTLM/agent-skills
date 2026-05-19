@@ -122,12 +122,8 @@ async function generateIconsMarkdown(names: string[]): Promise<void> {
 	const lines: string[] = [];
 	lines.push(`# Lucide icons available to \`<rd-icon name="…">\``);
 	lines.push("");
-	lines.push(
-		`Auto-generated from \`lucide-static@${LUCIDE_VERSION}\` — do not edit. Re-run`,
-	);
-	lines.push(
-		"`pnpm build` from `richdoc/richdoc-lib/` after bumping the version pin in",
-	);
+	lines.push(`Auto-generated from \`lucide-static@${LUCIDE_VERSION}\` — do not edit. Re-run`);
+	lines.push("`pnpm build` from `richdoc/richdoc-lib/` after bumping the version pin in");
 	lines.push("`src/components/icon/lucide-version.ts`.");
 	lines.push("");
 	lines.push("Inline a glyph anywhere in a richdoc with:");
@@ -136,23 +132,13 @@ async function generateIconsMarkdown(names: string[]): Promise<void> {
 	lines.push('<rd-icon name="alert-triangle"></rd-icon>');
 	lines.push("```");
 	lines.push("");
-	lines.push(
-		"Optional attributes: `size` (`sm` / `md` / `lg`, default `md`), `label`",
-	);
+	lines.push("Optional attributes: `size` (`sm` / `md` / `lg`, default `md`), `label`");
 	lines.push("(sets `aria-label` + `<title>` for meaningful icons).");
 	lines.push("");
-	lines.push(
-		"All names below are loaded lazily from the Lucide CDN on first reference",
-	);
-	lines.push(
-		"and cached. Framework chrome (callouts, checklists, banners, …) prewarms",
-	);
-	lines.push(
-		"its own glyphs at script boot so first paint has no flash. Offline or on",
-	);
-	lines.push(
-		"a failed fetch, the element renders an empty slot of the right size and",
-	);
+	lines.push("All names below are loaded lazily from the Lucide CDN on first reference");
+	lines.push("and cached. Framework chrome (callouts, checklists, banners, …) prewarms");
+	lines.push("its own glyphs at script boot so first paint has no flash. Offline or on");
+	lines.push("a failed fetch, the element renders an empty slot of the right size and");
 	lines.push("is marked `data-rd-icon-missing`.");
 	lines.push("");
 	lines.push(`## Names (${names.length})`);

@@ -5,6 +5,11 @@ rd-stat {
 	border-radius: var(--rd-panel-radius);
 	padding: var(--rd-space-4) var(--rd-space-5) var(--rd-space-5);
 	margin: 0 0 var(--rd-space-4);
+	/* Self-queryable: when a stat is squeezed by a parent rd-cols n=4,
+	   the rd-page container query is too coarse to know this individual
+	   tile is now narrow. Establish an unnamed inline-size container so
+	   we can scale the display numeral against the tile's own width. */
+	container-type: inline-size;
 }
 rd-cols > rd-stat {
 	margin: 0;
@@ -75,6 +80,26 @@ rd-stat[data-tone="negative"] > ._rd-stat-meta > ._rd-stat-trend {
 }
 rd-stat[data-tone="neutral"] > ._rd-stat-meta {
 	color: var(--rd-fg-muted);
+}
+
+/* Narrow-tile self-collapse — keyed on the stat's own width so a 4-col
+   layout (~190px per tile at narrow page width) shrinks the numeral and
+   tightens padding without losing the display character. */
+@container (max-width: 240px) {
+	rd-stat {
+		padding: var(--rd-space-3) var(--rd-space-4) var(--rd-space-4);
+	}
+	rd-stat > ._rd-stat-value {
+		font-size: var(--rd-text-4xl);
+	}
+}
+@container (max-width: 180px) {
+	rd-stat > ._rd-stat-value {
+		font-size: var(--rd-text-3xl);
+	}
+	rd-stat > ._rd-stat-meta {
+		flex-wrap: wrap;
+	}
 }
 
 /* Optional trailing slot for children authored inside <rd-stat> (typically

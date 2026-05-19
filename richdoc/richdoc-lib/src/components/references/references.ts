@@ -1,13 +1,6 @@
 import { type Upgradeable, define, el } from "../../lib/dom.ts";
 import { attachTooltip } from "../tooltip/tooltip-service.ts";
-import {
-	citeSpec,
-	citeTagName,
-	refSpec,
-	refTagName,
-	spec,
-	tagName,
-} from "./references.schema.ts";
+import { citeSpec, citeTagName, refSpec, refTagName, spec, tagName } from "./references.schema.ts";
 
 /**
  * Bibliography + citation primitives.
@@ -116,11 +109,7 @@ function resolvePage(page: PageWithRefState): void {
 		if (num === undefined) continue;
 		const fnId = `ref-${num}`;
 		const refId = `refmark-${num}-${Math.random().toString(36).slice(2, 6)}`;
-		const marker = el(
-			"a",
-			{ class: "_rd-cite-marker", href: `#${fnId}`, id: refId },
-			`[${num}]`,
-		);
+		const marker = el("a", { class: "_rd-cite-marker", href: `#${fnId}`, id: refId }, `[${num}]`);
 		c.innerHTML = "";
 		c.appendChild(marker);
 

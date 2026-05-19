@@ -30,6 +30,11 @@
 		<p><em>Richdoc</em> is a small framework for documents written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should — read top-to-bottom, with occasional asides dropping down to a Notes section at the foot of the page.</p>
 	</rd-callout>
 
+	<rd-callout type="info" title="Reader controls (bottom-right cog)">
+		<p>Every richdoc ships with a floating <strong>preview picker</strong> in the bottom-right corner. Open it to switch between the two themes (<em>Editorial</em> / <em>Graphite</em>), three modes (<em>Light</em> / <em>Dark</em> / <em>Auto</em>), and four page widths (<em>Narrow</em> / <em>Standard</em> / <em>Wide</em> / <em>Full</em>). Your choices persist per file. Suppress the picker with <code>&lt;rd-page prefs="off"&gt;</code>.</p>
+		<p>Squeeze the page to <strong>Narrow</strong> in a wide browser to see the multi-column layouts, stat tiles, and TOC adapt to the chosen content width — responsiveness is driven by container queries on <code>rd-page</code>, not the viewport.</p>
+	</rd-callout>
+
 	<p>The look is intentionally editorial<rd-footnote>Markers stay inline as small superscript numerals; the body of each note is collected at the bottom of the enclosing <code>rd-page</code> with auto-numbering and a back-link.</rd-footnote>: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
 
 	<rd-toc levels="2,3" title="Contents"></rd-toc>
@@ -301,7 +306,7 @@
 	</rd-section>
 
 	<rd-section title="Diagrams">
-		<p>Lazy-loaded from CDN on first encounter. If offline, the source falls back to a code block.</p>
+		<p>Lazy-loaded from CDN on first encounter. If offline, the source falls back to a code block. Hover any diagram and click the corner <strong>maximize</strong> button to open the fullscreen viewer — the SVG stays vector at any zoom level. Inside the viewer: scroll wheel or pinch to zoom, drag to pan, double-click to toggle fit / 1:1, <kbd>0</kbd> to fit, <kbd>1</kbd> to reset, arrow keys to pan, <kbd>Esc</kbd> to close.</p>
 		<rd-mermaid>
 			flowchart LR
 				A[Agent writes .html] --> B{richdoc lint}

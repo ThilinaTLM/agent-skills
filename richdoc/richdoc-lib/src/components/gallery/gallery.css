@@ -51,12 +51,12 @@ rd-shot {
 	display: none;
 }
 
-@media (max-width: 720px) {
+@container rd-page (max-width: 720px) {
 	rd-gallery > ._rd-gallery-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 	}
 }
-@media (max-width: 480px) {
+@container rd-page (max-width: 480px) {
 	rd-gallery > ._rd-gallery-grid {
 		grid-template-columns: 1fr !important;
 	}

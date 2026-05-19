@@ -55,7 +55,7 @@ rd-con > ._rd-pros-cons-icon {
 	padding-top: 0.15em;
 }
 
-@media (max-width: 720px) {
+@container rd-page (max-width: 720px) {
 	rd-pros-cons {
 		grid-template-columns: 1fr;
 	}

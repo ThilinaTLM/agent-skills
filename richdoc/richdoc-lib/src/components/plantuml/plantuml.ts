@@ -1,6 +1,9 @@
+import { openDiagramViewer } from "../../lib/diagram-viewer.ts";
 import { type Upgradeable, define, el } from "../../lib/dom.ts";
 import { stripCommonIndent } from "../../lib/text.ts";
 import { spec, tagName } from "./plantuml.schema.ts";
+
+const MAXIMIZE_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
 
 // Default to Kroki rather than the official PlantUML server: it speaks the
 // same encoded-URL protocol, returns SVG + permissive CORS, and is the same
@@ -120,15 +123,36 @@ class RdPlantuml extends HTMLElement implements Upgradeable {
 					root.removeAttribute("width");
 					root.removeAttribute("height");
 				}
+				this._installFullscreenButton();
 			} else {
 				// Server returned a non-SVG (PNG fallback path, or error image).
 				// Fall through to an <img> so the user at least sees output.
 				this.appendChild(el("img", { src: url, alt: "PlantUML diagram" }));
+				this._installFullscreenButton();
 			}
 		} catch (err) {
 			console.warn("[richdoc] plantuml render failed:", err);
 			this.appendChild(el("pre", { class: "_rd-plantuml-fallback" }, rawSource));
 		}
+	}
+
+	/** Add a top-right corner button that opens the shared fullscreen
+	 * viewer with a clone of the rendered SVG (or img). */
+	_installFullscreenButton(): void {
+		const target = this.querySelector("svg, img") as SVGElement | HTMLImageElement | null;
+		if (!target) return;
+		const btn = el("button", {
+			type: "button",
+			class: "_rd-diagram-fullscreen-btn",
+			"aria-label": "View diagram fullscreen",
+			html: MAXIMIZE_SVG,
+			onClick: (e: Event) => {
+				e.preventDefault();
+				const clone = target.cloneNode(true) as SVGElement | HTMLImageElement;
+				openDiagramViewer({ content: clone, title: "PlantUML diagram" });
+			},
+		});
+		this.appendChild(btn);
 	}
 }
 

@@ -65,11 +65,4 @@ export function register(): void {
 	define(outputTagName, RdOutput);
 }
 
-export {
-	spec,
-	tagName,
-	promptSpec,
-	promptTagName,
-	outputSpec,
-	outputTagName,
-};
+export { spec, tagName, promptSpec, promptTagName, outputSpec, outputTagName };

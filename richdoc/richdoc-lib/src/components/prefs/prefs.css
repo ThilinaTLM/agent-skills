@@ -1,0 +1,160 @@
+/* <rd-prefs> — floating preview-picker.
+ *
+ * Lives at the document root (appended to <body> by <rd-page>); position:
+ * fixed in the bottom-right. The cog button is always visible; clicking
+ * it toggles the popover panel above. Hidden in print so PDFs / DOCX
+ * exports don't show the chrome.
+ */
+
+rd-prefs {
+	display: contents;
+}
+
+rd-prefs ._rd-prefs-toggle {
+	position: fixed;
+	right: var(--rd-space-4);
+	bottom: var(--rd-space-4);
+	z-index: 60;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 999px;
+	border: 1px solid var(--rd-panel-border);
+	background: var(--rd-panel-bg);
+	color: var(--rd-fg-muted);
+	box-shadow: var(--rd-shadow-md);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition:
+		color var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out),
+		transform var(--rd-motion-fast) var(--rd-ease-out),
+		box-shadow var(--rd-motion-base) var(--rd-ease-out);
+}
+rd-prefs ._rd-prefs-toggle svg {
+	width: 1.125rem;
+	height: 1.125rem;
+}
+rd-prefs ._rd-prefs-toggle:hover,
+rd-prefs ._rd-prefs-toggle:focus-visible {
+	color: var(--rd-fg);
+	border-color: var(--rd-border-strong);
+	transform: translateY(-1px);
+}
+rd-prefs ._rd-prefs-toggle:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 2px;
+}
+rd-prefs[data-open] ._rd-prefs-toggle {
+	color: var(--rd-accent);
+	border-color: var(--rd-accent);
+}
+
+rd-prefs ._rd-prefs-panel {
+	position: fixed;
+	right: var(--rd-space-4);
+	/* Sits above the toggle with a hairline gap. 2.5rem toggle +
+	   spacing. */
+	bottom: calc(var(--rd-space-4) + 2.5rem + var(--rd-space-2));
+	z-index: 60;
+	width: min(18rem, calc(100vw - var(--rd-space-5) * 2));
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	box-shadow: var(--rd-shadow-lg);
+	padding: var(--rd-space-3) var(--rd-space-4) var(--rd-space-4);
+	display: flex;
+	flex-direction: column;
+	gap: var(--rd-space-3);
+}
+rd-prefs ._rd-prefs-panel[hidden] {
+	display: none;
+}
+
+rd-prefs ._rd-prefs-group {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rd-space-2);
+}
+rd-prefs ._rd-prefs-group-title {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-prefs ._rd-prefs-options {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--rd-space-1) var(--rd-space-2);
+}
+rd-prefs ._rd-prefs-group[data-kind="mode"] ._rd-prefs-options {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+rd-prefs ._rd-prefs-group[data-kind="width"] ._rd-prefs-options {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+rd-prefs ._rd-prefs-option {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--rd-space-2);
+	padding: var(--rd-space-2) var(--rd-space-3);
+	border: 1px solid var(--rd-border);
+	background: transparent;
+	color: var(--rd-fg);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-sm);
+	border-radius: var(--rd-radius-sm);
+	cursor: pointer;
+	text-align: left;
+	transition:
+		background-color var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out),
+		color var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-prefs ._rd-prefs-option:hover {
+	border-color: var(--rd-border-strong);
+	background: var(--rd-bg-elev);
+}
+rd-prefs ._rd-prefs-option:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 1px;
+}
+rd-prefs ._rd-prefs-option[data-active] {
+	border-color: var(--rd-accent);
+	background: var(--rd-accent-soft);
+	color: var(--rd-fg);
+}
+rd-prefs ._rd-prefs-option-check {
+	display: inline-flex;
+	width: 0.875rem;
+	height: 0.875rem;
+	flex: 0 0 auto;
+	color: var(--rd-accent);
+	opacity: 0;
+	transition: opacity var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-prefs ._rd-prefs-option-check svg {
+	width: 100%;
+	height: 100%;
+}
+rd-prefs ._rd-prefs-option[data-active] ._rd-prefs-option-check {
+	opacity: 1;
+}
+rd-prefs ._rd-prefs-option-label {
+	flex: 1 1 auto;
+}
+
+/* Print and small-viewport touches.
+   Hidden entirely in print so PDFs / DOCX export are clean. The cog +
+   panel can stay full-size on phones; the width clamp on the panel
+   prevents overflow. */
+@media print {
+	rd-prefs ._rd-prefs-toggle,
+	rd-prefs ._rd-prefs-panel {
+		display: none !important;
+	}
+}

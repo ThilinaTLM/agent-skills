@@ -66,18 +66,16 @@ class RdEmbed extends HTMLElement implements Upgradeable {
 		try {
 			if (parsed.kind === "youtube" && parsed.id) {
 				loadCdnStyle(LITE_YOUTUBE_CSS_URL);
-				await loadCdnScript<unknown>(
-					LITE_YOUTUBE_JS_URL,
-					() => (window.customElements?.get("lite-youtube") ? true : undefined),
+				await loadCdnScript<unknown>(LITE_YOUTUBE_JS_URL, () =>
+					window.customElements?.get("lite-youtube") ? true : undefined,
 				);
 				const lyt = document.createElement("lite-youtube");
 				lyt.setAttribute("videoid", parsed.id);
 				lyt.setAttribute("playlabel", title);
 				frame.appendChild(lyt);
 			} else if (parsed.kind === "vimeo" && parsed.id) {
-				await loadCdnScript<unknown>(
-					LITE_VIMEO_JS_URL,
-					() => (window.customElements?.get("lite-vimeo") ? true : undefined),
+				await loadCdnScript<unknown>(LITE_VIMEO_JS_URL, () =>
+					window.customElements?.get("lite-vimeo") ? true : undefined,
 				);
 				const lv = document.createElement("lite-vimeo");
 				lv.setAttribute("videoid", parsed.id);
@@ -89,10 +87,7 @@ class RdEmbed extends HTMLElement implements Upgradeable {
 				iframe.loading = "lazy";
 				iframe.referrerPolicy = "no-referrer-when-downgrade";
 				iframe.setAttribute("allowfullscreen", "");
-				iframe.setAttribute(
-					"sandbox",
-					"allow-scripts allow-same-origin allow-popups allow-forms",
-				);
+				iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-popups allow-forms");
 				frame.appendChild(iframe);
 			}
 		} catch (err) {

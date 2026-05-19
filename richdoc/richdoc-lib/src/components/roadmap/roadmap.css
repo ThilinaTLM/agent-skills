@@ -13,6 +13,15 @@ rd-roadmap {
 	background: var(--rd-panel-bg);
 	border: var(--rd-rule) solid var(--rd-panel-border);
 	border-radius: var(--rd-panel-radius);
+	/* Self-queryable so a roadmap nested in a narrow column collapses
+	   its gutter even when the page-level container query doesn't fire. */
+	container-type: inline-size;
+}
+@container (max-width: 560px) {
+	rd-roadmap {
+		--_rd-roadmap-gutter: 8ch;
+		padding: var(--rd-space-3) var(--rd-space-4);
+	}
 }
 rd-roadmap > ._rd-roadmap-title {
 	font-family: var(--rd-font-body);
@@ -218,7 +227,7 @@ rd-roadmap ._rd-roadmap-fallback {
 	padding: var(--rd-space-3);
 }
 
-@media (max-width: 640px) {
+@container rd-page (max-width: 640px) {
 	rd-roadmap {
 		--_rd-roadmap-gutter: 8ch;
 	}

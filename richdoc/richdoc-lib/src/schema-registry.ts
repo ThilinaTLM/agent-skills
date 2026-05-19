@@ -33,6 +33,7 @@ import * as math from "./components/math/math.schema.ts";
 import * as mermaid from "./components/mermaid/mermaid.schema.ts";
 import * as page from "./components/page/page.schema.ts";
 import * as plantuml from "./components/plantuml/plantuml.schema.ts";
+import * as prefs from "./components/prefs/prefs.schema.ts";
 import * as progress from "./components/progress/progress.schema.ts";
 import * as prosCons from "./components/pros-cons/pros-cons.schema.ts";
 import * as quote from "./components/quote/quote.schema.ts";
@@ -138,4 +139,8 @@ export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
 	{ tagName: toc.chapterTagName, spec: toc.chapterSpec },
 	{ tagName: icon.tagName, spec: icon.spec },
 	{ tagName: tooltip.tagName, spec: tooltip.spec },
+
+	// Preview chrome (JS-injected, schema entry only so lint accepts it
+	// if someone copies it into source).
+	{ tagName: prefs.tagName, spec: prefs.spec },
 ];

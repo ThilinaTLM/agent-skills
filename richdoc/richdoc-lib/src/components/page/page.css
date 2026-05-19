@@ -7,7 +7,7 @@
 
 rd-page {
 	display: block;
-	max-width: var(--rd-max-width);
+	max-width: var(--rd-page-max, 1280px);
 	margin: 0 auto;
 	padding: var(--rd-space-8) var(--rd-space-5);
 	position: relative;
@@ -15,7 +15,23 @@ rd-page {
 	   future per-page counters reset here. Footnote numbering is handled
 	   by JS, not CSS counters. */
 	counter-reset: rd-section;
+	/* Establish a named inline-size container so descendants can collapse
+	   based on the *page* width (which is reader-configurable via the
+	   preview picker), not the viewport. Every component breakpoint that
+	   used to be `@media (max-width: …)` is now `@container rd-page
+	   (max-width: …)`. `inline-size` does not establish a scroll
+	   container, so the `position: sticky` rd-toc rail still sticks to
+	   the viewport. */
+	container-type: inline-size;
+	container-name: rd-page;
 }
+
+/* Reader-selectable page width. Defaults to `standard` (1280px); the
+   `<rd-prefs>` picker swaps the attribute at runtime and persists. */
+rd-page[data-width="narrow"]   { --rd-page-max: 880px; }
+rd-page[data-width="standard"] { --rd-page-max: 1280px; }
+rd-page[data-width="wide"]     { --rd-page-max: 1600px; }
+rd-page[data-width="full"]     { --rd-page-max: none; max-width: none; }
 
 @media (max-width: 640px) {
 	rd-page {
@@ -51,20 +67,23 @@ rd-page[data-rd-entered] > [data-rd-enter] {
  *
  * Below 1024px the page is single-column as before; the narrow-mode bar
  * inside rd-toc takes over via `position: fixed`. */
+/* The two-column page+rail layout is suppressed in narrow-width mode
+   — 880px minus a 16rem rail squeezes content too aggressively, so the
+   TOC falls back to its narrow-mode top bar instead. */
 @media (min-width: 1024px) {
-	rd-page:has(rd-toc) {
+	rd-page:not([data-width="narrow"]):has(rd-toc) {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 16rem;
 		column-gap: var(--rd-space-7);
 		align-items: start;
 	}
-	rd-page:has(rd-toc) > rd-toc {
+	rd-page:not([data-width="narrow"]):has(rd-toc) > rd-toc {
 		display: block;
 		grid-column: 2;
 		grid-row: 1 / 9999;
 		height: 100%;
 	}
-	rd-page:has(rd-toc) > :not(rd-toc) {
+	rd-page:not([data-width="narrow"]):has(rd-toc) > :not(rd-toc) {
 		grid-column: 1;
 		min-width: 0;
 	}

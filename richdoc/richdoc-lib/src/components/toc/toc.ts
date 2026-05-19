@@ -264,7 +264,8 @@ class RdToc extends HTMLElement implements Upgradeable {
 	// ─── Rendering ───────────────────────────────────────────────────────
 
 	private _mount(): void {
-		const title = this.getAttribute("title") || (this._mode === "book" ? "Contents" : "On this page");
+		const title =
+			this.getAttribute("title") || (this._mode === "book" ? "Contents" : "On this page");
 
 		this.innerHTML = "";
 		this.dataset.rdTocOpen = "false";

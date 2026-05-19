@@ -1,5 +1,6 @@
 rd-plantuml {
 	display: block;
+	position: relative;
 	background: var(--rd-panel-bg);
 	border: 1px solid var(--rd-panel-border);
 	border-radius: var(--rd-panel-radius);

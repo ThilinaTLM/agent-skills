@@ -31,6 +31,7 @@ import * as math from "./components/math/math.ts";
 import * as mermaid from "./components/mermaid/mermaid.ts";
 import * as page from "./components/page/page.ts";
 import * as plantuml from "./components/plantuml/plantuml.ts";
+import * as prefs from "./components/prefs/prefs.ts";
 import * as progress from "./components/progress/progress.ts";
 import * as prosCons from "./components/pros-cons/pros-cons.ts";
 import * as quote from "./components/quote/quote.ts";
@@ -50,6 +51,11 @@ import * as tree from "./components/tree/tree.ts";
 import * as update from "./components/update/update.ts";
 
 export const REGISTRATIONS: ReadonlyArray<() => void> = [
+	// `prefs` must register before `page` because page.ts injects a
+	// <rd-prefs> element at upgrade time and we want it to upgrade
+	// immediately rather than wait for the registry walk to come back
+	// round.
+	prefs.register,
 	page.register,
 	section.register,
 	cols.register,

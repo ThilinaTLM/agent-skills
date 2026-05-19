@@ -1,12 +1,5 @@
 import { type Upgradeable, define, el } from "../../lib/dom.ts";
-import {
-	conSpec,
-	conTagName,
-	proSpec,
-	proTagName,
-	spec,
-	tagName,
-} from "./pros-cons.schema.ts";
+import { conSpec, conTagName, proSpec, proTagName, spec, tagName } from "./pros-cons.schema.ts";
 
 /**
  * <rd-pros-cons> renders two adjacent columns of points with check / x

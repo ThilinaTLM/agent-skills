@@ -112,7 +112,7 @@ rd-callout[type="tldr"] > ._rd-callout-body {
 rd-callout[type="tldr"] > ._rd-callout-body > p {
 	margin-bottom: var(--rd-space-3);
 }
-@media (max-width: 640px) {
+@container rd-page (max-width: 640px) {
 	rd-callout[type="tldr"] {
 		grid-template-columns: 1fr;
 		gap: var(--rd-space-2);

@@ -44,9 +44,20 @@ rd-prompt > ._rd-shell-command {
 	flex: 1 1 100%;
 	min-width: 0;
 }
-@media (min-width: 540px) {
+@container rd-page (min-width: 540px) {
 	rd-prompt > ._rd-shell-command {
 		flex: 1 1 auto;
+	}
+}
+/* Element-level fallback — a shell nested inside a narrow rd-cols cell
+   can be narrower than the page itself; stack the command below the
+   prompt when the shell's own width is small. */
+rd-shell {
+	container-type: inline-size;
+}
+@container (max-width: 440px) {
+	rd-prompt > ._rd-shell-command {
+		flex: 1 1 100%;
 	}
 }
 rd-output {

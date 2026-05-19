@@ -70,4 +70,10 @@
 @import "../components/embed/embed.css";
 @import "../components/toc/toc.css";
 
+/* Preview chrome and shared diagram viewer. Both are floating overlays
+   that paint above the page; their styles must resolve before print.css
+   so the print rules can override them. */
+@import "../components/prefs/prefs.css";
+@import "../lib/diagram-viewer.css";
+
 @import "./print.css";

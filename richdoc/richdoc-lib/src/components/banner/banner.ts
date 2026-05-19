@@ -33,7 +33,8 @@ class RdBanner extends HTMLElement implements Upgradeable {
 		// Author-provided content wins; fall back to the per-type default.
 		const hasOwnContent = this.textContent && this.textContent.trim().length > 0;
 		const messageOverride = this.getAttribute("message");
-		const text = messageOverride || (hasOwnContent ? null : BANNER_LABELS[type] || BANNER_LABELS.info);
+		const text =
+			messageOverride || (hasOwnContent ? null : BANNER_LABELS[type] || BANNER_LABELS.info);
 
 		const iconName = BANNER_ICONS[type] || BANNER_ICONS.info;
 		const icon = document.createElement("rd-icon");

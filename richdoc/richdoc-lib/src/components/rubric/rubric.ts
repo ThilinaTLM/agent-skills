@@ -58,11 +58,7 @@ class RdRubric extends HTMLElement implements Upgradeable {
 					{ class: "_rd-rubric-criterion" },
 					el("div", { class: "_rd-rubric-criterion-label" }, label),
 					weight !== 1
-						? el(
-								"div",
-								{ class: "_rd-rubric-criterion-weight" },
-								`weight × ${formatNum(weight)}`,
-							)
+						? el("div", { class: "_rd-rubric-criterion-weight" }, `weight × ${formatNum(weight)}`)
 						: null,
 				),
 			);
@@ -146,11 +142,4 @@ export function register(): void {
 	define(scoreTagName, RdScore);
 }
 
-export {
-	spec,
-	tagName,
-	criterionSpec,
-	criterionTagName,
-	scoreSpec,
-	scoreTagName,
-};
+export { spec, tagName, criterionSpec, criterionTagName, scoreSpec, scoreTagName };
