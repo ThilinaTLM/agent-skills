@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
@@ -15,6 +16,13 @@ from ..schema import SchemaLoadError, is_rd_tag, load_schema
 
 # Attributes always allowed on any element — never reported as unknown.
 ALWAYS_ALLOWED_ATTRS = frozenset({"id", "class", "style"})
+
+# Matches `<rd-foo ... />` patterns that look self-closing. HTML5 ignores
+# the `/` on non-void custom elements, so the tag stays open and silently
+# absorbs following siblings as children — the bug that made my paper
+# prototype render badly. Detect via source-text scan because by the time
+# lxml has parsed the doc the damage is invisible.
+SELF_CLOSE_RE = re.compile(r"<(rd-[a-z][a-z0-9-]*)\b[^>]*?/\s*>")
 
 
 def _chapter_title(node: ET._Element) -> str:  # noqa: SLF001
@@ -94,6 +102,26 @@ def cmd(file: Path) -> None:
         json_error(f"Could not read file: {exc}", code="INPUT_ERROR")
 
     issues: list[dict[str, Any]] = []
+
+    # Source-level scan for self-closing custom elements. Must happen on
+    # the raw text — lxml silently discards the `/` and reparents the
+    # following siblings into the would-be-void element, so the bug is
+    # invisible once the doc has been parsed.
+    for match in SELF_CLOSE_RE.finditer(source):
+        tag = match.group(1).lower()
+        line = source[: match.start()].count("\n") + 1
+        _add(
+            issues,
+            severity="error",
+            rule="self-closing-custom-element",
+            tag=tag,
+            line=line,
+            message=(
+                f"<{tag} .../> is parsed as an opening tag with no close — "
+                f"following siblings become children. Write "
+                f"<{tag} ...></{tag}> instead."
+            ),
+        )
 
     parser = LH.HTMLParser(recover=True)
     try:

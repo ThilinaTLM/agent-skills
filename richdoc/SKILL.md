@@ -21,7 +21,8 @@ When writing a richdoc, the agent **must**:
 4. Prefer `<rd-callout>` over bold-italic emphasis for asides longer than a few words.
 5. Use `<rd-cols>` for genuinely parallel content (cards, stats, comparisons). Do not use it to force a two-column paragraph layout — text becomes unreadable.
 6. Put code in `<rd-code lang="…">`, diffs in `<rd-diff lang="…">`, math in `<rd-math>`. Don't fall back to `<pre>`.
-7. Run `richdoc lint <file>` before declaring the doc done. The lint passing is part of "done".
+7. **Never self-close custom elements.** Write `<rd-foo ...></rd-foo>`, not `<rd-foo ... />`. HTML5 ignores the closing slash on non-void custom elements — the tag stays open and silently absorbs every following sibling as a child. `richdoc lint` catches this as `self-closing-custom-element`.
+8. Run `richdoc lint <file>` before declaring the doc done. The lint passing is part of "done".
 
 ## CLI
 
