@@ -1,0 +1,139 @@
+/* rd-kv — two layouts share the same author shape (rd-kv > rd-row).
+   Default is inline (two-column grid). layout="stacked" renders as a
+   definition list: Fraunces italic term over the body, hairline
+   separators. Optional title eyebrow above either layout. */
+
+rd-kv {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Pre-upgrade fallback: until richdoc.js runs `_upgradeRows()` and sets
+   `data-upgraded`, leave rd-kv as plain block flow. The CSS grid only
+   activates against the upgraded DOM (where every rd-row has a
+   _rd-kv-key div). This avoids a first-paint FOUC where the grid sees
+   raw author content and lays it out shifted by one cell. If JS never
+   loads, the block remains readable as a vertical list of values —
+   degraded but never broken. */
+rd-kv:not([data-upgraded]) {
+	display: block;
+}
+
+rd-kv > ._rd-kv-title {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	margin: 0 0 var(--rd-space-3);
+}
+
+/* ── Layout: inline (default) ─────────────────────────────────────── */
+/* Every grid-bearing rule below is gated on [data-upgraded] so the
+   layout only activates after richdoc.js has rebuilt each rd-row with
+   its key/value divs. See the `rd-kv:not([data-upgraded])` block above
+   for the pre-upgrade fallback. */
+rd-kv[data-upgraded]:not([data-layout="stacked"]) {
+	display: grid;
+	grid-template-columns: minmax(8rem, max-content) 1fr;
+	gap: 0;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
+}
+/* Title spans both columns of the inline grid. */
+rd-kv[data-upgraded]:not([data-layout="stacked"]) > ._rd-kv-title {
+	grid-column: 1 / -1;
+	padding: var(--rd-space-3) var(--rd-space-4) 0;
+	margin: 0 0 var(--rd-space-2);
+	background: var(--rd-panel-header-bg);
+}
+rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row[data-upgraded] {
+	display: contents;
+}
+rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row > ._rd-kv-key {
+	color: var(--rd-fg-muted);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+	font-weight: var(--rd-weight-semibold);
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	align-self: stretch;
+}
+rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row > ._rd-kv-value {
+	color: var(--rd-fg);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-base);
+	line-height: var(--rd-leading-snug);
+	padding: var(--rd-space-3) var(--rd-space-4);
+}
+rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row > ._rd-kv-value > :last-child {
+	margin-bottom: 0;
+}
+/* Hairline between rows (skip the first row in the body — first-of-type
+   correctly identifies the first rd-row even when an _rd-kv-title sits
+   in the grid). */
+rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row:not(:first-of-type) > ._rd-kv-key,
+rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row:not(:first-of-type) > ._rd-kv-value {
+	border-top: 1px solid var(--rd-panel-border);
+}
+
+@media (max-width: 640px) {
+	rd-kv[data-upgraded]:not([data-layout="stacked"]) {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+	rd-kv[data-upgraded]:not([data-layout="stacked"]) > rd-row:not(:first-of-type) > ._rd-kv-value {
+		border-top: 0;
+	}
+}
+
+/* ── Layout: stacked (definition list) ────────────────────────────── */
+rd-kv[data-upgraded][data-layout="stacked"] {
+	padding: var(--rd-space-4) var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+}
+rd-kv[data-upgraded][data-layout="stacked"] > rd-row[data-upgraded] {
+	display: grid;
+	grid-template-columns: minmax(8rem, 14rem) 1fr;
+	gap: var(--rd-space-3) var(--rd-space-5);
+	padding: var(--rd-space-3) 0;
+	border-top: 1px solid var(--rd-panel-border);
+	align-items: baseline;
+}
+rd-kv[data-upgraded][data-layout="stacked"] > rd-row:first-of-type {
+	border-top: 0;
+	padding-top: 0;
+}
+rd-kv[data-upgraded][data-layout="stacked"] > rd-row > ._rd-kv-key {
+	font-family: var(--rd-font-display);
+	font-style: italic;
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-lg);
+	color: var(--rd-fg);
+	margin: 0;
+	font-variation-settings: "opsz" 32;
+	line-height: var(--rd-leading-snug);
+}
+rd-kv[data-upgraded][data-layout="stacked"] > rd-row > ._rd-kv-value {
+	margin: 0;
+	color: var(--rd-fg);
+	line-height: var(--rd-leading-normal);
+}
+rd-kv[data-upgraded][data-layout="stacked"] > rd-row > ._rd-kv-value > :last-child {
+	margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+	rd-kv[data-upgraded][data-layout="stacked"] > rd-row {
+		grid-template-columns: 1fr;
+		gap: var(--rd-space-1);
+	}
+}

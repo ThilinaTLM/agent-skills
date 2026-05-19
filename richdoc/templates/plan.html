@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Plan — TODO title</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<rd-hero
+		eyebrow="Plan"
+		title="TODO: plan title"
+		lede="TODO: one-line description of what this plan changes and why."
+		meta="TODO YYYY-MM-DD · Owner TODO">
+		<rd-kv>
+			<rd-row key="Status"><rd-badge variant="info">draft</rd-badge></rd-row>
+			<rd-row key="Reviewers">TODO</rd-row>
+		</rd-kv>
+	</rd-hero>
+
+	<rd-callout type="tldr">
+		<p>TODO: two-sentence executive summary. State the problem and the proposed solution.</p>
+	</rd-callout>
+
+	<rd-callout type="info" title="Problem">
+		TODO: one or two sentences on the problem this plan addresses.
+	</rd-callout>
+
+	<rd-toc></rd-toc>
+
+	<rd-section title="Goals">
+		<ul>
+			<li>TODO primary outcome.</li>
+			<li>TODO secondary outcome.</li>
+		</ul>
+	</rd-section>
+
+	<rd-section title="Approach">
+		<p>TODO: short description of the chosen approach and why.</p>
+		<rd-pros-cons>
+			<rd-pro>TODO upside.</rd-pro>
+			<rd-pro>TODO upside.</rd-pro>
+			<rd-con>TODO trade-off.</rd-con>
+			<rd-con>TODO trade-off.</rd-con>
+		</rd-pros-cons>
+	</rd-section>
+
+	<rd-section title="Implementation">
+		<rd-steps>
+			<rd-step title="TODO step 1">
+				<p>TODO: what gets done, in which files, by which function.</p>
+			</rd-step>
+			<rd-step title="TODO step 2">
+				<p>TODO.</p>
+			</rd-step>
+			<rd-step title="TODO step 3">
+				<p>TODO.</p>
+			</rd-step>
+		</rd-steps>
+	</rd-section>
+
+	<rd-section title="Risks">
+		<rd-cols n="2">
+			<rd-card title="TODO risk 1" accent="warn">
+				<p><strong>Mitigation:</strong> TODO.</p>
+			</rd-card>
+			<rd-card title="TODO risk 2" accent="warn">
+				<p><strong>Mitigation:</strong> TODO.</p>
+			</rd-card>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Open questions">
+		<rd-detail summary="TODO question" variant="question" open>
+			<p>TODO: owner, leaning, what would resolve it.</p>
+		</rd-detail>
+	</rd-section>
+
+	<rd-section title="Acceptance criteria">
+		<ul>
+			<li>TODO observable success condition.</li>
+		</ul>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

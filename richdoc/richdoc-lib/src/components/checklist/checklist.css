@@ -1,0 +1,89 @@
+rd-checklist {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	padding: 0 var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+}
+rd-task {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--rd-space-3);
+	padding: var(--rd-space-3) 0;
+	border-bottom: 1px solid var(--rd-panel-border);
+}
+rd-task:last-child {
+	border-bottom: 0;
+}
+rd-task > ._rd-task-box {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.1em;
+	height: 1.1em;
+	border: 1px solid var(--rd-border-strong);
+	border-radius: var(--rd-radius-sm);
+	color: var(--rd-bg);
+	background: transparent;
+	margin-top: 0.3em;
+	transition:
+		background var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-task > ._rd-task-box > rd-icon {
+	width: 0.85em;
+	height: 0.85em;
+	opacity: 0;
+	transform: scale(0.5);
+	transition:
+		opacity var(--rd-motion-fast) var(--rd-ease-out),
+		transform var(--rd-motion-base) var(--rd-ease-out);
+}
+rd-task[data-done] > ._rd-task-box {
+	background: var(--rd-fg);
+	border-color: var(--rd-fg);
+}
+rd-task[data-done] > ._rd-task-box > rd-icon {
+	opacity: 1;
+	transform: scale(1);
+}
+rd-task > ._rd-task-body {
+	flex: 1 1 auto;
+	color: var(--rd-fg);
+	line-height: var(--rd-leading-snug);
+	padding-top: 0.05em;
+}
+rd-task[data-done] > ._rd-task-body {
+	color: var(--rd-fg-muted);
+	text-decoration: line-through;
+	text-decoration-color: var(--rd-fg-subtle);
+	text-decoration-thickness: 1px;
+}
+rd-task ._rd-task-meta {
+	display: inline-flex;
+	gap: var(--rd-space-3);
+	margin-left: var(--rd-space-3);
+	font-family: var(--rd-font-display);
+	font-style: italic;
+	font-size: var(--rd-text-sm);
+	color: var(--rd-fg-muted);
+	font-variation-settings: "opsz" 32;
+}
+rd-task[data-done] ._rd-task-meta {
+	text-decoration: none;
+}
+rd-task ._rd-task-meta-item {
+	display: inline-block;
+}
+rd-task ._rd-task-meta-item[data-kind="assignee"]::before {
+	content: "by ";
+	color: var(--rd-fg-subtle);
+	font-style: normal;
+}
+rd-task ._rd-task-meta-item[data-kind="due"]::before {
+	content: "due ";
+	color: var(--rd-fg-subtle);
+	font-style: normal;
+}

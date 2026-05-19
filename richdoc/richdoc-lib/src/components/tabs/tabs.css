@@ -1,0 +1,67 @@
+rd-tabs {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	background: transparent;
+	border: 0;
+}
+rd-tabs > ._rd-tab-strip {
+	display: flex;
+	gap: var(--rd-space-2);
+	background: transparent;
+	border-bottom: 1px solid var(--rd-border-strong);
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-bottom: 0;
+	position: relative;
+}
+rd-tabs > ._rd-tab-strip > button {
+	appearance: none;
+	background: transparent;
+	border: 0;
+	padding: var(--rd-space-3) var(--rd-space-3);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	cursor: pointer;
+	white-space: nowrap;
+	position: relative;
+	transition: color var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-tabs > ._rd-tab-strip > button:hover {
+	color: var(--rd-fg);
+}
+rd-tabs > ._rd-tab-strip > button[aria-selected="true"] {
+	color: var(--rd-fg);
+}
+
+/* Sliding underline indicator. Position + width are driven by inline
+   custom properties set in tabs.ts on each select() call; the
+   transition handles the slide animation. The indicator sits flush
+   with the strip's bottom border so it visually replaces it. */
+rd-tabs > ._rd-tab-strip > ._rd-tab-indicator {
+	position: absolute;
+	left: 0;
+	bottom: -1px;
+	height: var(--rd-rule-strong);
+	width: var(--rd-tab-indicator-w, 0);
+	transform: translateX(var(--rd-tab-indicator-x, 0));
+	background: var(--rd-accent);
+	pointer-events: none;
+	border-radius: 1px;
+	transition:
+		transform var(--rd-motion-base) var(--rd-ease-in-out),
+		width var(--rd-motion-base) var(--rd-ease-in-out);
+}
+rd-tab {
+	display: block;
+	padding: var(--rd-space-5) 0 0;
+}
+rd-tab[hidden] {
+	display: none;
+}
+rd-tab > :last-child {
+	margin-bottom: 0;
+}

@@ -1,0 +1,270 @@
+/* Typography for plain prose inside an <rd-page>.
+ *
+ * Headings use --rd-font-display (Fraunces). Body, lists, tables pick up
+ * --rd-font-body (Geist) via inheritance from <body>. Code uses Fira Code.
+ *
+ * Every size, weight, leading and tracking flows from a token. Component
+ * CSS may reference the same tokens but must not introduce new literals.
+ */
+
+rd-page h1,
+rd-page h2,
+rd-page h3,
+rd-page h4,
+rd-page h5,
+rd-page h6 {
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	line-height: var(--rd-leading-tight);
+	letter-spacing: var(--rd-tracking-snug);
+	margin: var(--rd-space-7) 0 var(--rd-space-3);
+	color: var(--rd-fg);
+	text-wrap: balance;
+}
+rd-page h1 {
+	font-size: var(--rd-text-4xl);
+	letter-spacing: var(--rd-tracking-tight);
+	margin-top: 0;
+	margin-bottom: var(--rd-space-5);
+	font-variation-settings: "opsz" 144;
+	line-height: 1.05;
+}
+rd-page h2 {
+	font-size: var(--rd-text-2xl);
+	line-height: var(--rd-leading-snug);
+	font-variation-settings: "opsz" 72;
+	margin-top: var(--rd-space-7);
+}
+rd-page h3 {
+	font-size: var(--rd-text-xl);
+	line-height: var(--rd-leading-snug);
+	font-variation-settings: "opsz" 32;
+	font-style: italic;
+}
+rd-page h4 {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	line-height: var(--rd-leading-snug);
+	color: var(--rd-fg-muted);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+}
+rd-page h5,
+rd-page h6 {
+	font-size: var(--rd-text-base);
+	font-weight: var(--rd-weight-semibold);
+}
+
+rd-page p {
+	margin: 0 0 var(--rd-space-4);
+	hyphens: auto;
+}
+
+/* Drop cap on the opening paragraph. Editorial signal: three-line cap
+   in display face. We cover the most common opener structures; if the
+   agent puts something exotic between <h1> and the first <p>, the cap
+   gracefully doesn't apply. */
+rd-page > h1 + p::first-letter,
+rd-page > h1 + rd-kv + p::first-letter,
+rd-page > h1 + rd-callout + p::first-letter,
+rd-page > h1 + rd-toc + p::first-letter,
+rd-page > h1 + rd-quote + p::first-letter {
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	font-size: 3.6em;
+	line-height: 0.75;
+	float: left;
+	padding: 0.06em 0.08em 0 0;
+	margin: 0.02em 0.08em 0 0;
+	color: var(--rd-accent);
+	font-variation-settings: "opsz" 144;
+	font-style: normal;
+}
+
+rd-page a {
+	color: var(--rd-accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	text-decoration-color: color-mix(in oklab, var(--rd-accent) 50%, transparent);
+	transition: text-decoration-color var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-page a:hover {
+	text-decoration-color: var(--rd-accent);
+	text-decoration-thickness: 2px;
+}
+
+rd-page ul,
+rd-page ol {
+	margin: 0 0 var(--rd-space-4);
+	padding-left: var(--rd-space-5);
+}
+rd-page li {
+	margin-bottom: var(--rd-space-1);
+}
+rd-page li > ul,
+rd-page li > ol {
+	margin: var(--rd-space-1) 0 var(--rd-space-2);
+}
+rd-page ol {
+	list-style: none;
+	counter-reset: rd-ol;
+	padding-left: var(--rd-space-6);
+}
+rd-page ol > li {
+	counter-increment: rd-ol;
+	position: relative;
+}
+rd-page ol > li::before {
+	content: counter(rd-ol, decimal-leading-zero);
+	position: absolute;
+	left: calc(-1 * var(--rd-space-6));
+	width: var(--rd-space-6);
+	padding-right: var(--rd-space-2);
+	text-align: right;
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-xs);
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+	font-variant-numeric: tabular-nums;
+	top: 0.35em;
+}
+rd-page ul {
+	list-style: none;
+	padding-left: var(--rd-space-5);
+}
+rd-page ul > li {
+	position: relative;
+}
+rd-page ul > li::before {
+	content: "";
+	position: absolute;
+	left: calc(-1 * var(--rd-space-4));
+	top: 0.65em;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: var(--rd-fg-muted);
+}
+/* Nested levels: open circle to differentiate from the parent. */
+rd-page ul ul > li::before {
+	width: 5px;
+	height: 5px;
+	background: transparent;
+	border: 1px solid var(--rd-fg-subtle);
+}
+/* Third+ level: smaller filled square for further differentiation. */
+rd-page ul ul ul > li::before {
+	width: 4px;
+	height: 4px;
+	border-radius: 0;
+	background: var(--rd-fg-subtle);
+	border: 0;
+	top: 0.7em;
+}
+
+rd-page code {
+	font-family: var(--rd-font-mono);
+	font-size: 0.9em;
+	background: color-mix(in oklab, var(--rd-fg) 4%, transparent);
+	border: 1px solid var(--rd-border);
+	border-radius: var(--rd-radius-sm);
+	padding: 0.08em 0.4em;
+	font-feature-settings: "calt";
+}
+
+rd-page pre {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	line-height: var(--rd-leading-normal);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	padding: var(--rd-space-4);
+	overflow-x: auto;
+	margin: 0 0 var(--rd-space-5);
+	font-feature-settings: "calt";
+}
+rd-page pre code {
+	background: transparent;
+	border: 0;
+	padding: 0;
+	font-size: inherit;
+}
+
+rd-page blockquote {
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-lg);
+	line-height: var(--rd-leading-relaxed);
+	margin: 0 0 var(--rd-space-5);
+	padding: 0 0 0 var(--rd-space-5);
+	color: var(--rd-fg-muted);
+	font-style: italic;
+	font-variation-settings: "opsz" 72;
+}
+
+/* Editorial divider — centred ornament. */
+rd-page hr {
+	border: 0;
+	height: var(--rd-space-6);
+	margin: var(--rd-space-6) 0;
+	text-align: center;
+	position: relative;
+}
+rd-page hr::after {
+	content: "✦   ✦   ✦";
+	display: inline-block;
+	color: var(--rd-fg-subtle);
+	letter-spacing: 0.6em;
+	font-size: var(--rd-text-xs);
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	white-space: nowrap;
+}
+
+rd-page table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin: 0 0 var(--rd-space-5);
+	font-size: var(--rd-text-sm);
+	font-variant-numeric: tabular-nums lining-nums;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
+}
+rd-page th,
+rd-page td {
+	text-align: left;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	border-bottom: 1px solid var(--rd-border);
+	vertical-align: top;
+}
+rd-page tr:last-child td {
+	border-bottom: 0;
+}
+rd-page th {
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
+}
+
+rd-page img {
+	max-width: 100%;
+	height: auto;
+}
+
+rd-page strong {
+	font-weight: var(--rd-weight-semibold);
+}
+rd-page em {
+	font-style: italic;
+}

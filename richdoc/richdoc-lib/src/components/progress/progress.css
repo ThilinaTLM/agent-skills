@@ -1,0 +1,55 @@
+rd-progress {
+	display: block;
+	margin: 0 0 var(--rd-space-4);
+}
+rd-progress > ._rd-progress-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	margin-bottom: var(--rd-space-2);
+	gap: var(--rd-space-3);
+}
+rd-progress > ._rd-progress-meta > ._rd-progress-label {
+	font-weight: var(--rd-weight-semibold);
+	color: var(--rd-fg);
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+rd-progress > ._rd-progress-meta > ._rd-progress-value {
+	font-family: var(--rd-font-mono);
+	font-variant-numeric: tabular-nums;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--rd-fg);
+	flex: 0 0 auto;
+}
+rd-progress > ._rd-progress-track {
+	height: 6px;
+	background: var(--rd-bg-sunken);
+	border-radius: 999px;
+	overflow: hidden;
+	position: relative;
+}
+rd-progress > ._rd-progress-track > ._rd-progress-fill {
+	height: 100%;
+	width: 0%;
+	background: var(--rd-accent);
+	border-radius: 999px;
+	transition: width var(--rd-motion-slow) var(--rd-ease-out);
+}
+rd-progress[data-tone="positive"] > ._rd-progress-track > ._rd-progress-fill {
+	background: var(--rd-success);
+}
+rd-progress[data-tone="negative"] > ._rd-progress-track > ._rd-progress-fill {
+	background: var(--rd-danger);
+}
+rd-progress[data-tone="neutral"] > ._rd-progress-track > ._rd-progress-fill {
+	background: var(--rd-fg-muted);
+}

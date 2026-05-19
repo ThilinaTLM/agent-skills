@@ -1,0 +1,71 @@
+/* Page — outer editorial frame.
+ *
+ * One centred column at --rd-max-width. No reserved gutter, no grid
+ * acrobatics. Paper grain is painted on <body> (see reset.css) so the
+ * background is continuous across the viewport.
+ */
+
+rd-page {
+	display: block;
+	max-width: var(--rd-max-width);
+	margin: 0 auto;
+	padding: var(--rd-space-8) var(--rd-space-5);
+	position: relative;
+	/* Counter context for editorial numbering. Section numerals and any
+	   future per-page counters reset here. Footnote numbering is handled
+	   by JS, not CSS counters. */
+	counter-reset: rd-section;
+}
+
+@media (max-width: 640px) {
+	rd-page {
+		padding: var(--rd-space-6) var(--rd-space-4) var(--rd-space-7);
+	}
+}
+
+/* Page-enter cascade. The first N direct children fade + lift in on
+   initial upgrade. Each child carries an inline --rd-enter-delay so the
+   stagger is computed in JS (see components/page/page.ts) and the CSS
+   stays declarative. The transition target flips when <rd-page> gains
+   data-rd-entered. */
+rd-page > [data-rd-enter] {
+	opacity: 0;
+	transform: translateY(6px);
+	transition:
+		opacity 180ms var(--rd-ease-out) var(--rd-enter-delay, 0ms),
+		transform 180ms var(--rd-ease-out) var(--rd-enter-delay, 0ms);
+	will-change: opacity, transform;
+}
+rd-page[data-rd-entered] > [data-rd-enter] {
+	opacity: 1;
+	transform: none;
+}
+
+/* TOC rail reservation.
+ *
+ * When the page contains an <rd-toc>, switch to a two-column grid on
+ * wide viewports so the sticky rail has a column to live in. The host
+ * <rd-toc> is `display: contents` by default (so it paints nothing);
+ * here we flip it back to a block so it can be a grid child and its
+ * inner ._rd-toc-rail can establish a `position: sticky` context.
+ *
+ * Below 1024px the page is single-column as before; the narrow-mode bar
+ * inside rd-toc takes over via `position: fixed`. */
+@media (min-width: 1024px) {
+	rd-page:has(rd-toc) {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 16rem;
+		column-gap: var(--rd-space-7);
+		align-items: start;
+	}
+	rd-page:has(rd-toc) > rd-toc {
+		display: block;
+		grid-column: 2;
+		grid-row: 1 / 9999;
+		height: 100%;
+	}
+	rd-page:has(rd-toc) > :not(rd-toc) {
+		grid-column: 1;
+		min-width: 0;
+	}
+}

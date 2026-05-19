@@ -1,0 +1,67 @@
+rd-quote {
+	display: block;
+	margin: var(--rd-space-7) 0 var(--rd-space-6);
+	padding: var(--rd-space-2) 0 var(--rd-space-2) var(--rd-space-5);
+	background: transparent;
+	border: 0;
+	border-left: 0;
+	color: var(--rd-fg);
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-2xl);
+	line-height: var(--rd-leading-snug);
+	font-style: italic;
+	font-weight: var(--rd-weight-normal);
+	font-variation-settings: "opsz" 96;
+	letter-spacing: var(--rd-tracking-snug);
+	text-wrap: balance;
+	position: relative;
+}
+rd-quote::before {
+	content: "\201C";
+	position: absolute;
+	/* Anchor to rd-quote's outer-left edge so the glyph sits flush with the
+	   page's content max-width boundary instead of bleeding into the
+	   surrounding rd-page padding gutter. */
+	left: 0;
+	top: -0.35em;
+	font-size: 4em;
+	font-style: normal;
+	line-height: 1;
+	color: var(--rd-accent);
+	font-variation-settings: "opsz" 144;
+	font-weight: var(--rd-weight-bold);
+	pointer-events: none;
+	opacity: 0.85;
+}
+rd-quote > *:not(footer):not(._rd-quote-attrib) {
+	margin: 0 0 var(--rd-space-3);
+}
+rd-quote > :last-child {
+	margin-bottom: 0;
+}
+rd-quote > ._rd-quote-attrib {
+	display: block;
+	margin-top: var(--rd-space-4);
+	font-family: var(--rd-font-body);
+	font-style: normal;
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-quote ._rd-quote-author {
+	color: var(--rd-fg);
+}
+rd-quote ._rd-quote-cite {
+	font-style: italic;
+	text-transform: none;
+	letter-spacing: var(--rd-tracking-normal);
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-sm);
+	color: var(--rd-fg-muted);
+}
+rd-quote ._rd-quote-cite a {
+	color: inherit;
+	text-decoration: underline;
+}

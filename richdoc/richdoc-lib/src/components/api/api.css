@@ -1,0 +1,184 @@
+rd-api {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: var(--rd-rule) solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
+}
+rd-api > ._rd-api-header {
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-3);
+	padding: var(--rd-space-3) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	border-bottom: var(--rd-rule) solid var(--rd-panel-border);
+}
+rd-api ._rd-api-method {
+	font-family: var(--rd-font-body);
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-xs);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	padding: 0.25em 0.6em;
+	border-radius: var(--rd-radius-sm);
+	color: var(--rd-accent-fg);
+	background: var(--rd-fg-muted);
+}
+rd-api[data-method="GET"] ._rd-api-method {
+	background: var(--rd-info);
+}
+rd-api[data-method="POST"] ._rd-api-method {
+	background: var(--rd-success);
+}
+rd-api[data-method="PUT"] ._rd-api-method,
+rd-api[data-method="PATCH"] ._rd-api-method {
+	background: var(--rd-warn);
+}
+rd-api[data-method="DELETE"] ._rd-api-method {
+	background: var(--rd-danger);
+}
+rd-api ._rd-api-path {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	color: var(--rd-fg);
+	background: transparent;
+	border: 0;
+	padding: 0;
+	word-break: break-all;
+}
+rd-api > ._rd-api-title {
+	padding: var(--rd-space-3) var(--rd-space-4) 0;
+	font-family: var(--rd-font-display);
+	font-style: italic;
+	font-size: var(--rd-text-lg);
+	color: var(--rd-fg);
+	font-variation-settings: "opsz" 32;
+}
+rd-api > ._rd-api-auth {
+	padding: var(--rd-space-2) var(--rd-space-4);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	color: var(--rd-fg-muted);
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-2);
+}
+rd-api > ._rd-api-auth > code {
+	font-family: var(--rd-font-mono);
+	background: transparent;
+	border: 0;
+	padding: 0;
+	color: var(--rd-fg);
+}
+rd-api ._rd-api-auth-label {
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	font-weight: var(--rd-weight-semibold);
+}
+rd-api > ._rd-api-section {
+	padding: var(--rd-space-3) var(--rd-space-4);
+	border-top: var(--rd-rule) solid var(--rd-panel-border);
+}
+rd-api ._rd-api-section-title {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+	margin-bottom: var(--rd-space-2);
+}
+rd-api ._rd-api-params,
+rd-api ._rd-api-responses {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rd-space-3);
+}
+rd-api ._rd-api-param,
+rd-api ._rd-api-response {
+	border-top: var(--rd-rule) dotted var(--rd-border);
+	padding-top: var(--rd-space-2);
+}
+rd-api ._rd-api-param:first-of-type,
+rd-api ._rd-api-response:first-of-type {
+	border-top: 0;
+	padding-top: 0;
+}
+rd-api ._rd-api-param-head,
+rd-api ._rd-api-response-head {
+	display: flex;
+	align-items: baseline;
+	gap: var(--rd-space-2);
+	flex-wrap: wrap;
+	margin-bottom: var(--rd-space-1);
+}
+rd-api ._rd-api-param-name {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	background: transparent;
+	border: 0;
+	padding: 0;
+	color: var(--rd-fg);
+	font-weight: var(--rd-weight-semibold);
+}
+rd-api ._rd-api-param-type {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-xs);
+	color: var(--rd-info);
+}
+rd-api ._rd-api-param-required {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-danger);
+	font-weight: var(--rd-weight-semibold);
+}
+rd-api ._rd-api-param-default {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	color: var(--rd-fg-muted);
+}
+rd-api ._rd-api-param-default > code {
+	font-family: var(--rd-font-mono);
+	background: transparent;
+	border: 0;
+	padding: 0;
+	color: var(--rd-fg);
+}
+rd-api ._rd-api-param-body,
+rd-api ._rd-api-response-body {
+	color: var(--rd-fg);
+	line-height: var(--rd-leading-snug);
+	font-size: var(--rd-text-sm);
+}
+rd-api ._rd-api-param-body > :last-child,
+rd-api ._rd-api-response-body > :last-child {
+	margin-bottom: 0;
+}
+rd-api ._rd-api-response-status {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	font-weight: var(--rd-weight-semibold);
+	padding: 0.1em 0.5em;
+	border-radius: var(--rd-radius-sm);
+	color: var(--rd-fg);
+	background: color-mix(in oklab, var(--rd-fg) 6%, transparent);
+}
+rd-api ._rd-api-response-status[data-tone="positive"] {
+	color: var(--rd-success);
+	background: var(--rd-success-soft);
+}
+rd-api ._rd-api-response-status[data-tone="negative"] {
+	color: var(--rd-danger);
+	background: var(--rd-danger-soft);
+}
+rd-api ._rd-api-response-type {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-xs);
+	color: var(--rd-fg-muted);
+	background: transparent;
+	border: 0;
+	padding: 0;
+}

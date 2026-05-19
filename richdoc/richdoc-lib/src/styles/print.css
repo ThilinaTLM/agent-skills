@@ -1,0 +1,68 @@
+/* Print: flatten interactive components, hide chrome, strip grain.
+ * Always render against the light palette — printing a dark-mode doc
+ * burns ink and the contrast inverts wrong on paper. */
+
+@media print {
+	:root {
+		--rd-bg: #ffffff;
+		--rd-bg-elev: #ffffff;
+		--rd-bg-sunken: #f3f1ec;
+		--rd-fg: #14110d;
+		--rd-fg-muted: #5a554c;
+		--rd-fg-subtle: #8a8478;
+		--rd-border: #d7d0bf;
+		--rd-border-strong: #a39b89;
+		--rd-accent: #6e2e15;
+		--rd-accent-fg: #ffffff;
+		--rd-accent-soft: #ecd9c2;
+		--rd-paper-grain: none;
+	}
+	body {
+		background: #ffffff;
+		color: #14110d;
+	}
+	rd-page {
+		max-width: none;
+		padding: 0;
+		background: #ffffff;
+	}
+	rd-card,
+	rd-callout,
+	rd-kv,
+	rd-compare,
+	rd-code,
+	rd-diff,
+	rd-mermaid,
+	rd-plantuml,
+	rd-math,
+	rd-toc,
+	rd-tabs,
+	rd-stat,
+	rd-figure,
+	rd-quote,
+	rd-detail {
+		box-shadow: none;
+		break-inside: avoid;
+	}
+	rd-tabs > ._rd-tab-strip {
+		display: none;
+	}
+	rd-tab[hidden] {
+		display: block;
+	}
+	rd-tab + rd-tab {
+		border-top: 1px solid #b9b1a0;
+		padding-top: var(--rd-space-3);
+	}
+	rd-toc {
+		display: none;
+	}
+	rd-code ._rd-code-copy,
+	rd-diff ._rd-code-copy {
+		display: none;
+	}
+	a {
+		color: #14110d;
+		text-decoration: underline;
+	}
+}

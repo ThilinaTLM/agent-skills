@@ -1,0 +1,48 @@
+/* Tiny reset — box-sizing, base body, typographic defaults. */
+
+html {
+	box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+	box-sizing: inherit;
+}
+
+body {
+	margin: 0;
+	/* Paper grain lives on <body> so the texture is continuous across the
+	   viewport. rd-page intentionally has no background of its own — see
+	   page.css for the rationale. */
+	background-color: var(--rd-bg);
+	background-image: var(--rd-paper-grain);
+	background-repeat: repeat;
+	color: var(--rd-fg);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-base);
+	line-height: var(--rd-leading-normal);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	/* Editorial defaults: kerning, ligatures, contextual alternates,
+	   oldstyle proportional figures. Components that need tabular or
+	   lining figures override locally. */
+	font-feature-settings: "kern", "liga", "calt";
+	font-variant-numeric: oldstyle-nums proportional-nums;
+}
+
+:focus-visible {
+	outline: 2px solid var(--rd-ring);
+	outline-offset: 2px;
+	border-radius: var(--rd-radius-sm);
+}
+
+/* Smooth-scroll for in-page TOC anchors. */
+html {
+	scroll-behavior: smooth;
+}
+
+/* Selection — warm accent at low alpha. */
+::selection {
+	background: color-mix(in oklab, var(--rd-accent) 28%, transparent);
+	color: var(--rd-fg);
+}

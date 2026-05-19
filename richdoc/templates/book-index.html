@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>TODO book title — Overview</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<!--
+		Shared chapter list. Copy this exact <rd-toc>…</rd-toc> block into
+		every chapter page in the book. <rd-toc> auto-detects book mode
+		because it contains <rd-chapter> children. The active chapter and
+		prev/next bands are derived from this list + the current URL — no
+		other markup is required on chapter pages.
+
+		Group headers are <rd-chapter> elements with no href (e.g. "Operations"
+		below); they render as section labels in the sidebar and are skipped
+		when computing prev/next.
+	-->
+	<rd-toc title="TODO book title">
+		<rd-chapter href="./index.html">Overview</rd-chapter>
+		<rd-chapter href="./01-getting-started.html">Getting started</rd-chapter>
+		<rd-chapter href="./02-reference.html">Reference</rd-chapter>
+		<rd-chapter>Operations
+			<rd-chapter href="./ops/runbook.html">Runbook</rd-chapter>
+			<rd-chapter href="./ops/escalation.html">Escalation</rd-chapter>
+		</rd-chapter>
+	</rd-toc>
+
+	<rd-hero
+		eyebrow="TODO book name"
+		title="TODO book title"
+		lede="TODO: one-sentence description of what this book covers."
+		meta="TODO version · TODO YYYY-MM-DD">
+	</rd-hero>
+
+	<rd-callout type="tldr">
+		<p>TODO: 2–3 sentence orientation — who this book is for, what they
+		will learn, and where to start.</p>
+	</rd-callout>
+
+	<rd-section title="Contents">
+		<p>TODO: short prose tour of the chapters. The sidebar already lists
+		them; use this section to explain why each chapter exists and the
+		recommended reading order.</p>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

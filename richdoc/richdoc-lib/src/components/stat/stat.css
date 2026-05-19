@@ -1,0 +1,100 @@
+rd-stat {
+	display: block;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	padding: var(--rd-space-4) var(--rd-space-5) var(--rd-space-5);
+	margin: 0 0 var(--rd-space-4);
+}
+rd-cols > rd-stat {
+	margin: 0;
+	height: 100%;
+}
+rd-stat > ._rd-stat-label {
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rd-tracking-caps);
+	color: var(--rd-fg-muted);
+	font-weight: var(--rd-weight-semibold);
+	margin-bottom: var(--rd-space-2);
+}
+rd-stat > ._rd-stat-value {
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-display-xl);
+	font-weight: var(--rd-weight-semibold);
+	line-height: 0.95;
+	letter-spacing: var(--rd-tracking-tight);
+	color: var(--rd-fg);
+	font-variant-numeric: lining-nums tabular-nums;
+	font-variation-settings: "opsz" 144;
+	display: block;
+}
+rd-stat > ._rd-stat-meta {
+	display: flex;
+	align-items: baseline;
+	gap: var(--rd-space-2);
+	margin-top: var(--rd-space-3);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-stat > ._rd-stat-meta > ._rd-stat-trend {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.25em;
+	height: 1.25em;
+	border-radius: 50%;
+	background: color-mix(in oklab, var(--rd-fg) 8%, transparent);
+	font-size: 0.85em;
+	font-weight: var(--rd-weight-bold);
+	color: var(--rd-fg-muted);
+	letter-spacing: 0;
+	flex: 0 0 auto;
+}
+rd-stat > ._rd-stat-meta > ._rd-stat-delta {
+	font-variant-numeric: lining-nums tabular-nums;
+}
+rd-stat[data-tone="positive"] > ._rd-stat-meta {
+	color: var(--rd-success);
+}
+rd-stat[data-tone="positive"] > ._rd-stat-meta > ._rd-stat-trend {
+	background: color-mix(in oklab, var(--rd-success) 15%, transparent);
+	color: var(--rd-success);
+}
+rd-stat[data-tone="negative"] > ._rd-stat-meta {
+	color: var(--rd-danger);
+}
+rd-stat[data-tone="negative"] > ._rd-stat-meta > ._rd-stat-trend {
+	background: color-mix(in oklab, var(--rd-danger) 15%, transparent);
+	color: var(--rd-danger);
+}
+rd-stat[data-tone="neutral"] > ._rd-stat-meta {
+	color: var(--rd-fg-muted);
+}
+
+/* Optional trailing slot for children authored inside <rd-stat> (typically
+   a <rd-chart variant="sparkline"> trend strip). The slot sits below the
+   meta row and stretches to the card's content box so embedded sparklines
+   feel like part of the card rather than a postage stamp. */
+rd-stat > ._rd-stat-extras {
+	display: block;
+	margin-top: var(--rd-space-3);
+	color: var(--rd-fg-muted);
+}
+rd-stat > ._rd-stat-extras > rd-chart[data-variant="sparkline"],
+rd-stat > ._rd-stat-extras > rd-chart[data-variant="sparkline"] > svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+rd-stat[data-tone="positive"] > ._rd-stat-extras {
+	color: var(--rd-success);
+}
+rd-stat[data-tone="negative"] > ._rd-stat-extras {
+	color: var(--rd-danger);
+}

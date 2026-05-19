@@ -1,0 +1,83 @@
+rd-shell {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: var(--rd-rule) solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	line-height: var(--rd-leading-snug);
+}
+rd-shell > ._rd-shell-title {
+	padding: var(--rd-space-2) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	border-bottom: var(--rd-rule) solid var(--rd-panel-border);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-prompt {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.5ch;
+	padding: var(--rd-space-2) var(--rd-space-4);
+	color: var(--rd-fg);
+}
+rd-prompt + rd-prompt {
+	padding-top: 0;
+}
+rd-prompt > ._rd-shell-cwd {
+	color: var(--rd-fg-muted);
+	font-style: italic;
+}
+rd-prompt > ._rd-shell-glyph {
+	color: var(--rd-accent);
+	font-weight: var(--rd-weight-semibold);
+	user-select: none;
+}
+rd-prompt > ._rd-shell-command {
+	flex: 1 1 100%;
+	min-width: 0;
+}
+@media (min-width: 540px) {
+	rd-prompt > ._rd-shell-command {
+		flex: 1 1 auto;
+	}
+}
+rd-output {
+	display: block;
+	padding: 0 var(--rd-space-4) var(--rd-space-3);
+	color: var(--rd-fg-muted);
+}
+rd-output > ._rd-shell-output-body {
+	margin: 0;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	font: inherit;
+	color: inherit;
+	white-space: pre;
+	overflow-x: auto;
+}
+rd-output[data-tone="positive"] {
+	color: var(--rd-success);
+}
+rd-output[data-tone="negative"] {
+	color: var(--rd-danger);
+}
+rd-output[data-tone="neutral"] {
+	color: var(--rd-fg-subtle);
+}
+rd-shell > rd-prompt:first-of-type,
+rd-shell > ._rd-shell-title + rd-prompt {
+	padding-top: var(--rd-space-3);
+}
+rd-shell > rd-output:last-child,
+rd-shell > rd-prompt:last-child {
+	padding-bottom: var(--rd-space-3);
+}

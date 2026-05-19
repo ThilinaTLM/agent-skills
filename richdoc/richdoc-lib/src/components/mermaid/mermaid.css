@@ -1,0 +1,21 @@
+rd-mermaid {
+	display: block;
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	padding: var(--rd-space-5) var(--rd-space-4);
+	margin: 0 0 var(--rd-space-5);
+	overflow-x: auto;
+	text-align: center;
+}
+rd-mermaid svg {
+	max-width: 100%;
+	height: auto;
+}
+rd-mermaid > ._rd-mermaid-fallback {
+	text-align: left;
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	color: var(--rd-fg-muted);
+	white-space: pre-wrap;
+}

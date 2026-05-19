@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Runbook — TODO scenario</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<rd-hero
+		eyebrow="Runbook"
+		title="TODO: scenario name"
+		lede="TODO: when to use this runbook, in one sentence."
+		meta="TODO YYYY-MM-DD · Owner TODO · On-call TODO">
+	</rd-hero>
+
+	<rd-callout type="tldr">
+		<p>TODO: 2–3 sentence summary. What's the symptom, what's the likely root cause, what's the fix?</p>
+	</rd-callout>
+
+	<rd-callout type="warn" title="Before you start">
+		Run through the prerequisites. If any are missing, do not continue.
+	</rd-callout>
+
+	<rd-section title="Prerequisites">
+		<rd-checklist>
+			<rd-task>You have on-call access to TODO.</rd-task>
+			<rd-task>The TODO CLI is installed and authenticated.</rd-task>
+			<rd-task>You can SSH to TODO host.</rd-task>
+		</rd-checklist>
+	</rd-section>
+
+	<rd-section title="Procedure">
+		<rd-steps>
+			<rd-step title="TODO step 1 title">
+				<p>TODO: describe what to do.</p>
+				<rd-shell title="~/">
+					<rd-prompt cwd="~">TODO command 1</rd-prompt>
+					<rd-output tone="positive">TODO expected output</rd-output>
+				</rd-shell>
+			</rd-step>
+			<rd-step title="TODO step 2 title">
+				<p>TODO.</p>
+				<rd-shell>
+					<rd-prompt>TODO command 2</rd-prompt>
+					<rd-output>TODO output</rd-output>
+				</rd-shell>
+			</rd-step>
+			<rd-step title="TODO step 3 — verify">
+				<p>TODO: how to know the fix worked.</p>
+				<rd-detail summary="Expected verification output" variant="reveal">
+					<rd-shell>
+						<rd-prompt>TODO verify</rd-prompt>
+						<rd-output tone="positive">TODO expected</rd-output>
+					</rd-shell>
+				</rd-detail>
+			</rd-step>
+		</rd-steps>
+	</rd-section>
+
+	<rd-section title="If it doesn't work">
+		<rd-detail summary="TODO failure mode 1" variant="question" open>
+			<p>TODO: what to try next.</p>
+		</rd-detail>
+		<rd-detail summary="TODO failure mode 2" variant="question">
+			<p>TODO.</p>
+		</rd-detail>
+	</rd-section>
+
+	<rd-section title="Escalation">
+		<p>If the procedure above does not resolve the issue, page <code>TODO</code> with a link to this runbook and the output of the verify step.</p>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

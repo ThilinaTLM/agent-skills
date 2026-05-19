@@ -1,0 +1,137 @@
+rd-diff {
+	display: block;
+	margin: 0 0 var(--rd-space-5);
+	background: var(--rd-panel-bg);
+	border: 1px solid var(--rd-panel-border);
+	border-radius: var(--rd-panel-radius);
+	overflow: hidden;
+	font-family: var(--rd-font-mono);
+}
+rd-diff > ._rd-code-header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: var(--rd-space-3);
+	padding: var(--rd-space-2) var(--rd-space-4);
+	background: var(--rd-panel-header-bg);
+	border-bottom: 1px solid var(--rd-panel-border);
+}
+rd-diff > ._rd-code-header > ._rd-code-label {
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
+}
+rd-diff > ._rd-code-header > ._rd-code-copy {
+	appearance: none;
+	border: 1px solid var(--rd-border-strong);
+	background: transparent;
+	color: var(--rd-fg-muted);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-medium);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	padding: 0.3em 0.9em;
+	border-radius: var(--rd-radius-sm);
+	cursor: pointer;
+	transition:
+		color var(--rd-motion-fast) var(--rd-ease-out),
+		border-color var(--rd-motion-fast) var(--rd-ease-out),
+		background var(--rd-motion-fast) var(--rd-ease-out);
+}
+rd-diff > ._rd-code-header > ._rd-code-copy:hover {
+	color: var(--rd-fg);
+	border-color: var(--rd-fg);
+}
+rd-diff > ._rd-code-header > ._rd-code-copy[data-copied] {
+	color: var(--rd-success);
+	border-color: var(--rd-success);
+}
+
+rd-diff > ._rd-diff-body {
+	margin: 0;
+	padding: var(--rd-space-3) var(--rd-space-4);
+	border: 0;
+	font-family: var(--rd-font-mono);
+	font-size: var(--rd-text-sm);
+	line-height: 1.5;
+	background: transparent;
+	overflow-x: auto;
+	font-feature-settings: "calt";
+	font-variant-numeric: tabular-nums;
+	color: var(--rd-fg);
+}
+/* Drop the body's left padding when line numbers are present so the gutter
+   sits flush against the panel edge — the colored +/- backgrounds run to
+   the very left of the panel, like GitHub's diff view. */
+rd-diff > ._rd-diff-body[data-line-numbers] {
+	padding-left: 0;
+}
+rd-diff ._rd-diff-line {
+	display: block;
+	padding: 0 var(--rd-space-4) 0 0;
+	border-left: 3px solid transparent;
+	white-space: pre;
+}
+rd-diff ._rd-diff-marker {
+	display: inline-block;
+	width: 1.5em;
+	margin-right: 0.25em;
+	color: var(--rd-fg-subtle);
+	text-align: right;
+	padding-right: 0.5em;
+	user-select: none;
+}
+/* Dual-column line numbers (old / new) — only rendered by the JS when the
+   parent gets [data-line-numbers]. Both columns are tabular so figures line
+   up; a hairline divider separates the gutter from the marker + content. */
+rd-diff ._rd-diff-nums {
+	display: inline-flex;
+	flex: 0 0 auto;
+	user-select: none;
+	margin-right: var(--rd-space-3);
+	padding-right: var(--rd-space-3);
+	border-right: 1px solid var(--rd-border);
+	color: var(--rd-fg-subtle);
+	font-size: 0.9em;
+	font-variant-numeric: tabular-nums;
+}
+rd-diff ._rd-diff-num {
+	display: inline-block;
+	width: 2.4em;
+	padding-left: var(--rd-space-2);
+	text-align: right;
+}
+rd-diff ._rd-diff-line[data-kind="add"] {
+	background: color-mix(in oklab, var(--rd-success) 11%, transparent);
+	border-left-color: var(--rd-success);
+}
+rd-diff ._rd-diff-line[data-kind="add"] ._rd-diff-marker {
+	color: var(--rd-success);
+	font-weight: var(--rd-weight-bold);
+}
+rd-diff ._rd-diff-line[data-kind="del"] {
+	background: color-mix(in oklab, var(--rd-danger) 11%, transparent);
+	border-left-color: var(--rd-danger);
+}
+rd-diff ._rd-diff-line[data-kind="del"] ._rd-diff-marker {
+	color: var(--rd-danger);
+	font-weight: var(--rd-weight-bold);
+}
+rd-diff ._rd-diff-line[data-kind="hunk"] {
+	color: var(--rd-fg-muted);
+	font-style: italic;
+	padding-bottom: var(--rd-space-1);
+}
+/* Extra top padding only when separating hunks within the diff body — the
+   first line already gets the body's padding-top, so a leading hunk header
+   shouldn't double up. */
+rd-diff ._rd-diff-line[data-kind="hunk"]:not(:first-child) {
+	padding-top: var(--rd-space-2);
+}
+rd-diff ._rd-diff-line[data-kind="hunk"] ._rd-diff-marker {
+	display: none;
+}

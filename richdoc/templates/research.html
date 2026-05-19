@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Research — TODO topic</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<rd-hero
+		eyebrow="Research"
+		title="TODO: research topic"
+		lede="TODO: one-sentence framing of the question this report answers."
+		meta="TODO YYYY-MM-DD · Author TODO">
+		<rd-kv>
+			<rd-row key="Sources">TODO N sources reviewed</rd-row>
+		</rd-kv>
+	</rd-hero>
+
+	<rd-callout type="tldr">
+		<p>TODO: 2–3 sentence executive summary. What was the question? What did you find? What's the recommended next step?</p>
+	</rd-callout>
+
+	<rd-toc></rd-toc>
+
+	<rd-section title="Background">
+		<p>TODO: why this question matters, what was already known going in.</p>
+	</rd-section>
+
+	<rd-section title="Findings">
+		<h3>Finding 1 — TODO</h3>
+		<p>TODO: evidence with citation<rd-cite key="todo-source-1"></rd-cite>, caveats.</p>
+
+		<h3>Finding 2 — TODO</h3>
+		<p>TODO<rd-cite key="todo-source-2"></rd-cite>.</p>
+
+		<h3>Finding 3 — TODO</h3>
+		<p>TODO.</p>
+	</rd-section>
+
+	<rd-section title="Options considered">
+		<rd-rubric options="Option A,Option B,Option C" scale="5" title="Scored evaluation">
+			<rd-criterion label="TODO criterion 1" weight="2">
+				<rd-score value="4" note="TODO"></rd-score>
+				<rd-score value="3" note="TODO"></rd-score>
+				<rd-score value="2" note="TODO"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="TODO criterion 2">
+				<rd-score value="3"></rd-score>
+				<rd-score value="4"></rd-score>
+				<rd-score value="5"></rd-score>
+			</rd-criterion>
+		</rd-rubric>
+	</rd-section>
+
+	<rd-section title="Recommendation">
+		<rd-decision status="proposed" id="REC-1" date="TODO YYYY-MM-DD" title="Recommended: TODO">
+			<p>TODO: one paragraph rationale tied to the findings above.</p>
+		</rd-decision>
+	</rd-section>
+
+	<rd-section title="Open questions">
+		<ul>
+			<li>TODO follow-up needed before commitment.</li>
+		</ul>
+	</rd-section>
+
+	<rd-references title="References"></rd-references>
+	<rd-ref key="todo-source-1" author="TODO" title="TODO title" url="https://TODO" date="TODO"></rd-ref>
+	<rd-ref key="todo-source-2" author="TODO" title="TODO title" url="https://TODO" date="TODO"></rd-ref>
+
+</rd-page>
+</body>
+</html>

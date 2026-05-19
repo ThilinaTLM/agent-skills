@@ -1,0 +1,88 @@
+rd-steps {
+	display: block;
+	counter-reset: rd-step;
+	margin: 0 0 var(--rd-space-5);
+}
+rd-step {
+	display: grid;
+	grid-template-columns: 3.5rem 1fr;
+	gap: var(--rd-space-3) var(--rd-space-5);
+	counter-increment: rd-step;
+	padding: var(--rd-space-4) 0;
+	border-top: var(--rd-rule) solid var(--rd-border);
+	position: relative;
+}
+rd-steps > rd-step:first-of-type {
+	border-top: 0;
+	padding-top: 0;
+}
+rd-step::before {
+	content: counter(rd-step, decimal-leading-zero);
+	grid-row: 1 / span 2;
+	font-family: var(--rd-font-display);
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-4xl);
+	line-height: 1;
+	color: var(--rd-accent);
+	font-variation-settings: "opsz" 144;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: var(--rd-tracking-tight);
+	align-self: start;
+	padding-top: 0.05em;
+}
+rd-step[data-done]::before {
+	color: var(--rd-fg-subtle);
+	text-decoration: line-through;
+	text-decoration-thickness: 0.06em;
+}
+rd-step > ._rd-step-header {
+	display: flex;
+	align-items: baseline;
+	gap: var(--rd-space-2);
+	margin-bottom: var(--rd-space-2);
+}
+rd-step > ._rd-step-header > ._rd-step-title {
+	font-family: var(--rd-font-display);
+	font-style: italic;
+	font-weight: var(--rd-weight-semibold);
+	font-size: var(--rd-text-xl);
+	line-height: var(--rd-leading-snug);
+	color: var(--rd-fg);
+	font-variation-settings: "opsz" 32;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+rd-step[data-done] > ._rd-step-header > ._rd-step-title {
+	color: var(--rd-fg-muted);
+}
+rd-step > ._rd-step-header > ._rd-step-check {
+	flex: 0 0 auto;
+	color: var(--rd-success);
+	animation: _rd-step-check-pop var(--rd-motion-base) var(--rd-ease-out) both;
+}
+@keyframes _rd-step-check-pop {
+	from {
+		transform: scale(0.6);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+rd-step > ._rd-step-body {
+	color: var(--rd-fg);
+	line-height: var(--rd-leading-normal);
+}
+rd-step > ._rd-step-body > :last-child {
+	margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+	rd-step {
+		grid-template-columns: 2.5rem 1fr;
+	}
+	rd-step::before {
+		font-size: var(--rd-text-3xl);
+	}
+}

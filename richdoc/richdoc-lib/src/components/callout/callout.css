@@ -1,0 +1,137 @@
+rd-callout {
+	display: block;
+	border-left: var(--rd-rule-strong) solid var(--rd-info);
+	background: color-mix(in oklab, var(--rd-info) 6%, transparent);
+	padding: var(--rd-space-3) var(--rd-space-5);
+	margin: 0 0 var(--rd-space-5);
+	position: relative;
+}
+rd-callout > ._rd-callout-title {
+	display: flex;
+	align-items: center;
+	gap: var(--rd-space-2);
+	font-family: var(--rd-font-body);
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-info);
+	margin-bottom: var(--rd-space-2);
+}
+rd-callout > ._rd-callout-title > ._rd-callout-icon {
+	display: inline-flex;
+	flex: 0 0 auto;
+	color: var(--rd-info);
+}
+rd-callout > ._rd-callout-title > ._rd-callout-text {
+	color: var(--rd-fg);
+	letter-spacing: var(--rd-tracking-caps);
+}
+rd-callout > ._rd-callout-body > :last-child {
+	margin-bottom: 0;
+}
+
+rd-callout[type="info"] {
+	border-left-color: var(--rd-info);
+	background: color-mix(in oklab, var(--rd-info) 6%, transparent);
+}
+rd-callout[type="info"] > ._rd-callout-title,
+rd-callout[type="info"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-info);
+}
+
+rd-callout[type="success"] {
+	border-left-color: var(--rd-success);
+	background: color-mix(in oklab, var(--rd-success) 6%, transparent);
+}
+rd-callout[type="success"] > ._rd-callout-title,
+rd-callout[type="success"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-success);
+}
+
+rd-callout[type="warn"] {
+	border-left-color: var(--rd-warn);
+	background: color-mix(in oklab, var(--rd-warn) 7%, transparent);
+}
+rd-callout[type="warn"] > ._rd-callout-title,
+rd-callout[type="warn"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-warn);
+}
+
+rd-callout[type="danger"] {
+	border-left-color: var(--rd-danger);
+	background: color-mix(in oklab, var(--rd-danger) 7%, transparent);
+}
+rd-callout[type="danger"] > ._rd-callout-title,
+rd-callout[type="danger"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-danger);
+}
+
+rd-callout[type="note"] {
+	border-left-color: var(--rd-note);
+	background: color-mix(in oklab, var(--rd-note) 6%, transparent);
+}
+rd-callout[type="note"] > ._rd-callout-title,
+rd-callout[type="note"] > ._rd-callout-title > ._rd-callout-icon {
+	color: var(--rd-note);
+}
+
+/* TL;DR — focal summary band. Full-width, oversized eyebrow on the
+   left, Fraunces body on the right. No coloured rule, no tinted
+   background. Drops to one column under 640 px. */
+rd-callout[type="tldr"] {
+	display: grid;
+	grid-template-columns: minmax(3.5rem, max-content) 1fr;
+	gap: var(--rd-space-4);
+	margin: 0 0 var(--rd-space-6);
+	padding: var(--rd-space-4) 0;
+	border-left: 0;
+	background: transparent;
+	border-top: var(--rd-rule-strong) solid var(--rd-fg);
+	border-bottom: var(--rd-rule) solid var(--rd-border-strong);
+}
+rd-callout[type="tldr"] > ._rd-callout-title {
+	display: block;
+	margin-bottom: 0;
+	padding-top: 0.3em;
+	color: var(--rd-accent);
+}
+rd-callout[type="tldr"] > ._rd-callout-title > ._rd-callout-text {
+	color: var(--rd-accent);
+}
+/* Body styling: the body wrapper reads as the TL;DR body — Fraunces,
+   larger, generous leading. Inner paragraphs inherit and get their own
+   bottom margin. */
+rd-callout[type="tldr"] > ._rd-callout-body {
+	font-family: var(--rd-font-display);
+	font-size: var(--rd-text-lg);
+	line-height: var(--rd-leading-relaxed);
+	color: var(--rd-fg);
+	font-variation-settings: "opsz" 72;
+}
+rd-callout[type="tldr"] > ._rd-callout-body > p {
+	margin-bottom: var(--rd-space-3);
+}
+@media (max-width: 640px) {
+	rd-callout[type="tldr"] {
+		grid-template-columns: 1fr;
+		gap: var(--rd-space-2);
+	}
+}
+
+/* One-shot attention pulse for warn / danger callouts. The icon
+   container ripples once on first reveal, then returns to rest. Looping
+   is intentionally avoided — a doc full of pulsing chrome reads as a
+   dashboard, not a piece of writing. */
+@keyframes _rd-callout-pulse {
+	0% {
+		box-shadow: 0 0 0 0 color-mix(in oklab, currentColor 45%, transparent);
+	}
+	100% {
+		box-shadow: 0 0 0 10px color-mix(in oklab, currentColor 0%, transparent);
+	}
+}
+rd-callout._rd-pulse > ._rd-callout-title > ._rd-callout-icon {
+	border-radius: 50%;
+	animation: _rd-callout-pulse var(--rd-motion-slow) var(--rd-ease-out) 1;
+}

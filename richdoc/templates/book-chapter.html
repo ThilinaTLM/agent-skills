@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>TODO chapter title — TODO book title</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<!--
+		Keep this <rd-toc> block in sync with book-index.html (and every
+		other chapter in the book). The active chapter is detected by URL
+		match; prev/next bands at the top and bottom of <rd-page> are
+		auto-injected by rd-toc — do not write them by hand.
+	-->
+	<rd-toc title="TODO book title">
+		<rd-chapter href="./index.html">Overview</rd-chapter>
+		<rd-chapter href="./01-getting-started.html">Getting started</rd-chapter>
+		<rd-chapter href="./02-reference.html">Reference</rd-chapter>
+		<rd-chapter>Operations
+			<rd-chapter href="./ops/runbook.html">Runbook</rd-chapter>
+			<rd-chapter href="./ops/escalation.html">Escalation</rd-chapter>
+		</rd-chapter>
+	</rd-toc>
+
+	<rd-hero
+		eyebrow="Chapter TODO"
+		title="TODO chapter title"
+		lede="TODO: one-sentence description of what this chapter covers.">
+	</rd-hero>
+
+	<rd-callout type="tldr">
+		<p>TODO: 2–3 sentence summary so readers can decide whether to read
+		this chapter in full.</p>
+	</rd-callout>
+
+	<rd-section title="TODO section">
+		<p>TODO: chapter body.</p>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

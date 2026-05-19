@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Comparison — TODO decision</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="./richdoc.css">
+	<script src="./richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<rd-hero
+		eyebrow="Comparison"
+		title="TODO: decision title"
+		lede="TODO: one-sentence framing of the decision being made."
+		meta="Decision by TODO YYYY-MM-DD · Owner TODO">
+		<rd-kv>
+			<rd-row key="Stakeholders">TODO</rd-row>
+		</rd-kv>
+	</rd-hero>
+
+	<rd-callout type="tldr">
+		<p>TODO: one-paragraph framing. State the decision, the options, and the leaning if any.</p>
+	</rd-callout>
+
+	<rd-callout type="info" title="Context">
+		TODO: what triggered this comparison and what's at stake.
+	</rd-callout>
+
+	<rd-section title="Criteria">
+		<p>TODO: what we care about, in priority order.</p>
+		<ol>
+			<li>TODO most important criterion.</li>
+			<li>TODO next.</li>
+			<li>TODO next.</li>
+		</ol>
+	</rd-section>
+
+	<rd-section title="Comparison">
+		<rd-rubric options="Option A,Option B,Option C" scale="5" title="Weighted evaluation">
+			<rd-criterion label="TODO criterion 1" weight="2">
+				<rd-score value="4" note="TODO"></rd-score>
+				<rd-score value="3" note="TODO"></rd-score>
+				<rd-score value="2" note="TODO"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="TODO criterion 2">
+				<rd-score value="3"></rd-score>
+				<rd-score value="4"></rd-score>
+				<rd-score value="5"></rd-score>
+			</rd-criterion>
+			<rd-criterion label="TODO criterion 3">
+				<rd-score value="3"></rd-score>
+				<rd-score value="3"></rd-score>
+				<rd-score value="4"></rd-score>
+			</rd-criterion>
+		</rd-rubric>
+	</rd-section>
+
+	<rd-section title="Trade-offs at a glance">
+		<rd-cols n="3">
+			<rd-card title="Option A" accent="info">
+				<rd-pros-cons>
+					<rd-pro>TODO.</rd-pro>
+					<rd-con>TODO.</rd-con>
+				</rd-pros-cons>
+			</rd-card>
+			<rd-card title="Option B" accent="info">
+				<rd-pros-cons>
+					<rd-pro>TODO.</rd-pro>
+					<rd-con>TODO.</rd-con>
+				</rd-pros-cons>
+			</rd-card>
+			<rd-card title="Option C" accent="info">
+				<rd-pros-cons>
+					<rd-pro>TODO.</rd-pro>
+					<rd-con>TODO.</rd-con>
+				</rd-pros-cons>
+			</rd-card>
+		</rd-cols>
+	</rd-section>
+
+	<rd-section title="Recommendation">
+		<rd-decision status="proposed" id="DEC-1" date="TODO YYYY-MM-DD" title="Recommended: TODO">
+			<p>TODO: rationale that ties back to the criteria.</p>
+		</rd-decision>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>
