@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Item Conversion — Data Design</title>
+	<link rel="stylesheet" href="../richdoc-lib/assets/richdoc.css">
+	<script src="../richdoc-lib/assets/richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<rd-banner type="draft"></rd-banner>
+
+	<rd-toc title="Item Conversion">
+		<rd-chapter href="./index.html">Overview</rd-chapter>
+		<rd-chapter href="./01-functional-design.html">Functional design</rd-chapter>
+		<rd-chapter>Technical design
+			<rd-chapter href="./02-data-design.html">Data design</rd-chapter>
+			<rd-chapter href="./03-projection-engine.html">Projection engine</rd-chapter>
+			<rd-chapter href="./04-system-design.html">System design</rd-chapter>
+		</rd-chapter>
+		<rd-chapter href="./05-open-questions.html">Open questions</rd-chapter>
+	</rd-toc>
+
+	<rd-hero
+		eyebrow="02 · Data design"
+		title="Schemas, tables, and migrations"
+		lede="The persistence shape of conversions: two new tables in app_data for user state, one new table in item_relationships for projection inputs, one new column on an existing IRP table. master_data is never modified — effective case counts are derived in the service layer."
+		meta="Draft · 2026-05-19">
+	</rd-hero>
+
+	<rd-callout type="tldr">
+		<p>A conversion is persisted as <strong>two rows</strong> (FROM side + TO side) that share a <code>conversion_id</code> UUID. Both rows carry signed integer <code>delta_cases</code> equal in absolute value. New enum <code>item_conversion_role</code>. New tables <code>app_data.unsaved_item_conversions</code> (per-user, versioned) and <code>app_data.saved_item_conversions</code> (per-timeframe), plus a <code>latest_unsaved_item_conversions</code> view mirroring the existing pattern. New table <code>item_relationships.supc_projected_opco_metrics</code> holds per-opco projected metrics for TO items missing from master. New nullable column <code>cross_purchase_ratio</code> on <code>item_relationships.item_pair_relationships</code>. All in one Liquibase changelog: <code>020-item-conversion-tables.xml</code>.</p>
+	</rd-callout>
+
+	<rd-section title="Existing schema we touch">
+		<p>The conversion design slots between three existing schemas without modifying any of them. This section quotes just enough of the live schema (verified on <code>main</code>) to make the new design self-contained.</p>
+
+		<rd-cols n="2">
+			<rd-card title="master_data.items" accent="muted">
+				<p><strong>PK</strong>: <code>(timeframe_id, itm_nbr)</code></p>
+				<p>Per-timeframe item registry. Items reference four choice-group types via UUID FKs (strict, relaxed, strict_presentation, relaxed_presentation). Conversion never writes here.</p>
+				<p><em>From <code>001-master-schema.xml</code> + <code>015-choice-groups-restructuring.xml</code>.</em></p>
+			</rd-card>
+			<rd-card title="master_data.opco_items" accent="muted">
+				<p><strong>PK</strong>: <code>(timeframe_id, opco_itm_id)</code> · FK <code>itm_nbr → items</code></p>
+				<p>Per-opco realisation of an item with metrics: <code>cases, net_sales, gross_prft, gross_prft_vlcty</code> (all <code>DOUBLE PRECISION</code>). The FROM side of every conversion must exist here for the user's opco; <strong>per-case metrics derived from this row are the primary projection input</strong>.</p>
+			</rd-card>
+			<rd-card title="app_data.unsaved_changes" accent="muted">
+				<p><strong>PK</strong>: <code>(timeframe_id, opco_itm_id, username, version)</code></p>
+				<p>Per-user, versioned record of <code>ADDED</code> / <code>DELETED</code> / <code>NONE</code> against an opco_itm_id. References to <code>master_data.opco_items</code> are <strong>logical only — no DB FK</strong>. We follow that convention in the new tables.</p>
+			</rd-card>
+			<rd-card title="app_data.saved_changes" accent="muted">
+				<p><strong>PK</strong>: <code>(timeframe_id, opco_itm_id)</code></p>
+				<p>Per-timeframe "current saved state" — no user dimension. Save flow promotes the latest unsaved row into here.</p>
+			</rd-card>
+		</rd-cols>
+
+		<rd-detail summary="Show the existing latest_unsaved_changes view definition" variant="hairline">
+			<p>Mirror-pattern source for the new <code>latest_unsaved_item_conversions</code> view. From <code>007-new-tables.xml</code>:</p>
+			<rd-code lang="sql" title="app_data.latest_unsaved_changes">
+WITH latest_unsaved_changes AS (
+    SELECT DISTINCT ON (unsaved_changes.timeframe_id,
+                        unsaved_changes.opco_itm_id,
+                        unsaved_changes.username)
+        unsaved_changes.timeframe_id,
+        unsaved_changes.opco_itm_id,
+        unsaved_changes.username,
+        unsaved_changes.user_action,
+        unsaved_changes.action_id,
+        unsaved_changes.created_at,
+        unsaved_changes.updated_at
+    FROM app_data.unsaved_changes
+    ORDER BY unsaved_changes.timeframe_id,
+             unsaved_changes.opco_itm_id,
+             unsaved_changes.username,
+             unsaved_changes.version DESC
+)
+SELECT uc.*
+  FROM latest_unsaved_changes uc
+  LEFT JOIN app_data.saved_changes sc
+    ON sc.timeframe_id = uc.timeframe_id
+   AND sc.opco_itm_id = uc.opco_itm_id
+ WHERE COALESCE(sc.user_action, 'NONE'::opco_item_action) IS DISTINCT FROM uc.user_action;
+			</rd-code>
+			<p>Two tricks worth absorbing: <code>DISTINCT ON … ORDER BY version DESC</code> for "latest per key", and <code>IS DISTINCT FROM</code> in the WHERE clause to drop rows whose unsaved value already matches the saved state (i.e. the user has effectively reverted their change). The new view reuses both.</p>
+		</rd-detail>
+
+		<rd-callout type="info" title="Naming conventions (verified on main)">
+			<ul>
+				<li>Primary keys: <code>pk_&lt;table&gt;</code></li>
+				<li>Foreign keys: <code>fk_&lt;base_table&gt;_&lt;referenced_table&gt;</code></li>
+				<li>Indexes: <code>idx_&lt;table&gt;_&lt;columns&gt;</code></li>
+				<li>Unique constraints: <code>uq_&lt;table&gt;_&lt;columns&gt;</code></li>
+				<li>Check constraints: <code>ck_&lt;table&gt;_&lt;short_predicate&gt;</code></li>
+				<li>Liquibase changelogs: <code>NNN-feature-name.xml</code>, three-digit zero-padded sequence. Next slot: <code>020-item-conversion-tables.xml</code>.</li>
+				<li>Enum types live in their owning schema (per the convention established by <code>016-relocate-enum-types-to-owning-schemas.xml</code>).</li>
+			</ul>
+		</rd-callout>
+	</rd-section>
+
+	<rd-section title="Mental model">
+
+		<p>Every conversion is conceptually <em>one action</em> performed by <em>one user</em> on <em>one opco</em> within <em>one timeframe</em>. It involves <em>exactly two items</em>: a FROM whose effective case count goes down and a TO whose effective case count goes up, in matching absolute magnitudes.</p>
+
+		<p>Two reasonable ways to persist that:</p>
+
+		<rd-pros-cons pros-title="Two-row model (chosen)" cons-title="One-row model (rejected)">
+			<rd-pro>Effective-cases computation is a clean <code>SUM(delta_cases) GROUP BY opco_itm_id</code> — no UNION over from/to columns.</rd-pro>
+			<rd-pro>Mirrors the existing <code>unsaved_changes</code> shape (one row per <code>opco_itm_id</code>), so the rest of the codebase (queries, materialised views, agent SQL) extends naturally.</rd-pro>
+			<rd-pro>The TO-side row tolerates a NULL <code>opco_itm_id</code> cleanly when the TO item isn't in master_data — only the TO row has the nullable column, the FROM row keeps its NOT NULL.</rd-pro>
+			<rd-pro>Indexes on <code>opco_itm_id</code> support "what conversions affect this opco-item" queries directly.</rd-pro>
+			<rd-con>A single conversion is two physical rows — need to remember to fetch both sides via <code>conversion_id</code> when displaying or editing.</rd-con>
+			<rd-con>Constraint to keep both sides in sync (matching <code>|delta_cases|</code>, opposite signs) lives at the application layer, not the DB.</rd-con>
+		</rd-pros-cons>
+
+		<p>Decision: <strong>two-row</strong>. The two cons are real but cheap to manage in the API layer (single transaction inserts both rows); the pros compound across every consumer of the data.</p>
+
+		<p>Each row carries:</p>
+		<ul>
+			<li>A <strong><code>conversion_id</code></strong> (UUID) shared by the FROM and TO rows. This is the single identifier the UI and API use to refer to "this conversion".</li>
+			<li>A <strong><code>role</code></strong> enum (<code>FROM</code> or <code>TO</code>) for which side of the pair the row represents.</li>
+			<li>The <strong><code>supc</code></strong> (always populated — canonical identifier even when <code>opco_itm_id</code> is NULL).</li>
+			<li>The <strong><code>opco_itm_id</code></strong> (NOT NULL on the FROM side; nullable on the TO side for items not in master_data).</li>
+			<li>The <strong><code>delta_cases</code></strong> — signed integer; negative on FROM, positive on TO; equal absolute magnitude across the two rows.</li>
+			<li>Audit snapshots — <strong><code>sa_type</code></strong> (IRP relationship type used at conversion time) and <strong><code>cross_purchase_ratio</code></strong> (the advisory value shown to the user at conversion time, NULL if not populated by the Redshift job yet).</li>
+		</ul>
+
+		<rd-callout type="note" title="What 'cross_purchase_ratio on the conversion record' is for">
+			<p>The conversion record carries a <em>snapshot</em> of the ratio at the moment the conversion was made. The live ratio lives on <code>item_relationships.item_pair_relationships</code> and is refreshed by the (future) Redshift job. Snapshotting on the conversion lets us answer questions like "how often do users override the system's suggestion?" and "what did the data say at the time the merchandiser decided?" — purely audit / analytics, not for math.</p>
+		</rd-callout>
+
+	</rd-section>
+
+	<rd-section title="Schema overview — entity-relationship diagram">
+
+		<p>The full picture, including the existing tables we read from but never write to. New tables and columns are highlighted with the <code>&lt;&lt;new&gt;&gt;</code> stereotype.</p>
+
+		<rd-plantuml>
+@startuml
+!theme plain
+hide circle
+skinparam linetype ortho
+skinparam roundCorner 8
+
+' ========== existing: master_data ==========
+package "master_data" as md {
+  entity "items" as items {
+    * timeframe_id : INT &lt;&lt;PK&gt;&gt;
+    * itm_nbr : VARCHAR(50) &lt;&lt;PK&gt;&gt;
+    --
+    hierarchy_id : INT
+    relaxed_choice_group_id : UUID
+    relaxed_presentation_choice_group_id : UUID
+    itm_desc : TEXT
+    sysco_brnd_ind : VARCHAR(1)
+  }
+
+  entity "opco_items" as opco_items {
+    * timeframe_id : INT &lt;&lt;PK,FK&gt;&gt;
+    * opco_itm_id : BIGINT &lt;&lt;PK&gt;&gt;
+    --
+    itm_nbr : VARCHAR(50) &lt;&lt;FK&gt;&gt;
+    opco_id : VARCHAR(50)
+    cases : DOUBLE PRECISION
+    net_sales : DOUBLE PRECISION
+    gross_prft : DOUBLE PRECISION
+    gross_prft_vlcty : DOUBLE PRECISION
+    rec_type : rec_type
+  }
+}
+
+' ========== existing: app_data ==========
+package "app_data" as ad {
+  entity "unsaved_changes" as uc {
+    * timeframe_id : INT &lt;&lt;PK,FK&gt;&gt;
+    * opco_itm_id : BIGINT &lt;&lt;PK&gt;&gt;
+    * username : VARCHAR(50) &lt;&lt;PK,FK&gt;&gt;
+    * version : INT &lt;&lt;PK&gt;&gt;
+    --
+    user_action : opco_item_action
+    action_id : VARCHAR(36)
+    created_at / updated_at
+  }
+
+  entity "saved_changes" as sc {
+    * timeframe_id : INT &lt;&lt;PK,FK&gt;&gt;
+    * opco_itm_id : BIGINT &lt;&lt;PK&gt;&gt;
+    --
+    user_action : opco_item_action
+  }
+
+  entity "timeframes" as tf {
+    * id : INT &lt;&lt;PK&gt;&gt;
+  }
+
+  entity "users" as users {
+    * username : VARCHAR(50) &lt;&lt;PK&gt;&gt;
+  }
+
+  ' ========== NEW ==========
+  entity "unsaved_item_conversions" as uic &lt;&lt;new&gt;&gt; #LightYellow {
+    * conversion_id : UUID &lt;&lt;PK&gt;&gt;
+    * role : item_conversion_role &lt;&lt;PK&gt;&gt;
+    * version : INT &lt;&lt;PK&gt;&gt;
+    --
+    * timeframe_id : INT &lt;&lt;FK&gt;&gt;
+    * username : VARCHAR(50) &lt;&lt;FK&gt;&gt;
+    * opco_id : VARCHAR(50)
+    * supc : VARCHAR(50)
+    opco_itm_id : BIGINT  /' nullable for TO '/
+    * delta_cases : INT  /' signed '/
+    sa_type : VARCHAR(10)
+    cross_purchase_ratio : NUMERIC(5,4)
+    created_at / updated_at
+  }
+
+  entity "saved_item_conversions" as sic &lt;&lt;new&gt;&gt; #LightYellow {
+    * conversion_id : UUID &lt;&lt;PK&gt;&gt;
+    * role : item_conversion_role &lt;&lt;PK&gt;&gt;
+    --
+    * timeframe_id : INT &lt;&lt;FK&gt;&gt;
+    * opco_id : VARCHAR(50)
+    * supc : VARCHAR(50)
+    opco_itm_id : BIGINT
+    * delta_cases : INT
+    sa_type : VARCHAR(10)
+    cross_purchase_ratio : NUMERIC(5,4)
+  }
+}
+
+' ========== existing+new: item_relationships ==========
+package "item_relationships" as ir {
+  entity "supc_store" as ss {
+    * supc : VARCHAR(20) &lt;&lt;PK&gt;&gt;
+    --
+    bc_name / ig_name / ag_name
+    item_description
+    sysco_brand_indicator
+    prioritized_nb_indicator
+    avg_gpv
+  }
+
+  entity "item_pair_relationships" as ipr {
+    * id : BIGSERIAL &lt;&lt;PK&gt;&gt;
+    --
+    * from_supc : VARCHAR(20)
+    * to_supc : VARCHAR(20)
+    sa_type : VARCHAR(10)
+    cross_purchase_ratio : NUMERIC(5,4) &lt;&lt;new&gt;&gt;
+  }
+
+  entity "supc_projected_opco_metrics" as spm &lt;&lt;new&gt;&gt; #LightYellow {
+    * supc : VARCHAR(20) &lt;&lt;PK&gt;&gt;
+    * opco_id : VARCHAR(50) &lt;&lt;PK,NULL-distinct&gt;&gt;
+    --
+    projected_per_case_gp : NUMERIC
+    projected_per_case_net_sales : NUMERIC
+    projected_gross_prft_vlcty : NUMERIC
+    projection_source : projection_source
+    last_refreshed_at : TIMESTAMP
+  }
+}
+
+' relationships
+items ||--o{ opco_items
+tf ||--o{ uc
+tf ||--o{ sc
+users ||--o{ uc
+tf ||--o{ uic
+users ||--o{ uic
+tf ||--o{ sic
+
+' logical (no DB FK)
+opco_items }o..o{ uc : "opco_itm_id (logical)"
+opco_items }o..o{ sc : "opco_itm_id (logical)"
+opco_items }o..o{ uic : "opco_itm_id (logical, nullable on TO)"
+opco_items }o..o{ sic : "opco_itm_id (logical, nullable on TO)"
+
+uic ||--o| sic : "promoted on save\n(conversion_id)"
+
+ss }o..o{ uic : "supc (logical)"
+ss }o..o{ sic : "supc (logical)"
+ss ||--o{ ipr : "supc"
+ss ||--o{ spm : "supc"
+
+@enduml
+		</rd-plantuml>
+
+		<p>Two important shapes to read off the diagram:</p>
+		<ul>
+			<li><strong>Logical-only references from <code>app_data</code> to <code>master_data</code> / <code>item_relationships</code></strong> (dotted lines). No DB-level FKs cross schema; this matches the existing <code>unsaved_changes</code> / <code>saved_changes</code> convention and keeps app_data decoupled from master ETL reloads.</li>
+			<li><strong>The promotion line</strong> from <code>unsaved_item_conversions</code> to <code>saved_item_conversions</code> via <code>conversion_id</code> — same shape as <code>unsaved_changes → saved_changes</code>, but keyed by conversion instead of opco_itm_id (since conversions are additive, not last-write-wins).</li>
+		</ul>
+
+	</rd-section>
+
+	<rd-section title="New enum types">
+
+		<rd-code lang="sql" title="app_data — item_conversion_role">
+CREATE TYPE app_data.item_conversion_role AS ENUM (
+    'FROM',
+    'TO'
+);
+		</rd-code>
+
+		<rd-code lang="sql" title="item_relationships — projection_source">
+CREATE TYPE item_relationships.projection_source AS ENUM (
+    'opco_observed',           -- T1, this opco's actual opco_items row
+    'cross_opco_harmonic_mean',-- T1, other opcos' rows, harmonic mean
+    'hierarchy_average',       -- T2, BC/IG/AG average across opco_items
+    'network_average',         -- T3, hierarchy average computed once globally
+    'none'                     -- no projection possible (no hierarchy data)
+);
+		</rd-code>
+
+		<p>Both follow the convention established by <code>016-relocate-enum-types-to-owning-schemas.xml</code> — enums live in the schema that owns them. Each <code>CREATE TYPE</code> is wrapped in a Liquibase <code>preConditions</code> block that checks <code>pg_type</code>, matching the pattern used for <code>opco_item_action</code>.</p>
+	</rd-section>
+
+	<rd-section title="app_data.unsaved_item_conversions">
+
+		<rd-code lang="sql" title="DDL — unsaved_item_conversions">
+CREATE TABLE app_data.unsaved_item_conversions (
+    conversion_id          UUID         NOT NULL,
+    role                   app_data.item_conversion_role NOT NULL,
+    version                INTEGER      NOT NULL DEFAULT 1,
+    timeframe_id           INTEGER      NOT NULL,
+    username               VARCHAR(50)  NOT NULL,
+    opco_id                VARCHAR(50)  NOT NULL,
+    supc                   VARCHAR(50)  NOT NULL,
+    opco_itm_id            BIGINT,
+    delta_cases            INTEGER      NOT NULL,
+    sa_type                VARCHAR(10),
+    cross_purchase_ratio   NUMERIC(5,4),
+    created_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_unsaved_item_conversions
+        PRIMARY KEY (conversion_id, role, version),
+
+    CONSTRAINT fk_unsaved_item_conversions_timeframe
+        FOREIGN KEY (timeframe_id)
+        REFERENCES app_data.timeframes(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_unsaved_item_conversions_user
+        FOREIGN KEY (username)
+        REFERENCES app_data.users(username)
+        ON DELETE CASCADE,
+
+    CONSTRAINT ck_unsaved_item_conversions_sign
+        CHECK (
+            (role = 'FROM' AND delta_cases &lt; 0) OR
+            (role = 'TO'   AND delta_cases &gt; 0)
+        ),
+
+    CONSTRAINT ck_unsaved_item_conversions_from_has_id
+        CHECK (role = 'TO' OR opco_itm_id IS NOT NULL),
+
+    CONSTRAINT ck_unsaved_item_conversions_ratio
+        CHECK (cross_purchase_ratio IS NULL OR
+               (cross_purchase_ratio &gt;= 0 AND cross_purchase_ratio &lt;= 1))
+);
+
+CREATE INDEX idx_unsaved_item_conversions_user_timeframe
+    ON app_data.unsaved_item_conversions (username, timeframe_id);
+
+CREATE INDEX idx_unsaved_item_conversions_opco_itm
+    ON app_data.unsaved_item_conversions (opco_itm_id)
+    WHERE opco_itm_id IS NOT NULL;
+
+CREATE INDEX idx_unsaved_item_conversions_supc_opco
+    ON app_data.unsaved_item_conversions (supc, opco_id);
+		</rd-code>
+
+		<rd-kv title="Column notes">
+			<rd-row key="conversion_id"><strong>UUID generated by the API on conversion create.</strong> Identical on both FROM and TO rows of the same conversion. Survives the unsaved → saved promotion.</rd-row>
+			<rd-row key="role">Enum <code>FROM</code> or <code>TO</code>. Each conversion has exactly one row of each role per (conversion_id, version).</rd-row>
+			<rd-row key="version">Starts at 1. The user editing a conversion appends a new pair of rows with <code>version + 1</code>; old versions are retained for audit. The <code>latest_unsaved_item_conversions</code> view exposes only the highest version.</rd-row>
+			<rd-row key="timeframe_id">FK to <code>app_data.timeframes</code>. The conversion is tied to a timeframe because per-case metrics, choice groups, and the user's simulation context are all timeframe-scoped.</rd-row>
+			<rd-row key="username">FK to <code>app_data.users</code>. Unsaved state is per-user.</rd-row>
+			<rd-row key="opco_id">No FK to <code>master_data.opcos</code> — consistent with how the existing schema handles opco references in app_data (string keys, logical reference).</rd-row>
+			<rd-row key="supc">Canonical SUPC string. <strong>Always populated</strong>, even when <code>opco_itm_id</code> is NULL (TO items missing from master_data). The supc value identifies the item universally; the opco_itm_id is just a master_data-side resolution.</rd-row>
+			<rd-row key="opco_itm_id">Nullable. <strong>Must be NOT NULL on FROM rows</strong> (you can only move volume that exists in <code>opco_items</code>), enforced by <code>ck_..._from_has_id</code>. NULL on TO rows when the TO item isn't stocked by the opco — projections come from <code>supc_projected_opco_metrics</code> instead.</rd-row>
+			<rd-row key="delta_cases">Signed integer. <code>ck_..._sign</code> enforces FROM&nbsp;&lt;&nbsp;0 and TO&nbsp;&gt;&nbsp;0. Equal absolute magnitude across the two rows of a single conversion is application-enforced (single INSERT statement / transaction).</rd-row>
+			<rd-row key="sa_type">Audit snapshot of which IRP relationship type the user picked (<code>C</code>, <code>I</code>, <code>SA1</code>). Nullable for cases where the conversion was free-text-entered without an IRP candidate (open question — see <a href="./05-open-questions.html">open questions</a>).</rd-row>
+			<rd-row key="cross_purchase_ratio">Audit snapshot of what the live ratio said at conversion time. <code>NUMERIC(5,4)</code> for [0.0000, 1.0000] with bps precision. NULL when no ratio exists yet (v1 default, until Redshift job is wired up).</rd-row>
+		</rd-kv>
+
+		<rd-callout type="info" title="Why composite PK and no surrogate id">
+			<p>The natural identity of a row is <code>(conversion_id, role, version)</code>. Both <code>unsaved_changes</code> (composite PK) and <code>unsaved_simulations</code> (surrogate id) patterns exist in app_data; composite suits conversions better because the components have meaning and queries frequently filter by <code>(conversion_id, version)</code>.</p>
+		</rd-callout>
+
+		<rd-detail summary="Worked-example rows for the canonical 950 × 10% case" variant="hairline" open>
+			<p>Alice converts 95 cases of SUPC <code>0010165</code> (FROM) to SUPC <code>0013060</code> (TO) in opco <code>042</code>, timeframe <code>12</code>. Initial creation produces one INSERT of two rows:</p>
+			<rd-code lang="sql" title="Initial conversion (version 1)">
+INSERT INTO app_data.unsaved_item_conversions (
+    conversion_id, role, version,
+    timeframe_id, username, opco_id,
+    supc,      opco_itm_id, delta_cases,
+    sa_type, cross_purchase_ratio
+) VALUES
+('c1a-...', 'FROM', 1,
+ 12, 'alice', '042',
+ '0010165',  554321,      -95,
+ 'C', 0.3500),
+('c1a-...', 'TO',   1,
+ 12, 'alice', '042',
+ '0013060',  554322,       95,
+ 'C', 0.3500);
+			</rd-code>
+			<p>Alice then changes her mind and bumps it to 120 cases. A second INSERT writes <code>version = 2</code>:</p>
+			<rd-code lang="sql" title="Edit (version 2)">
+INSERT INTO app_data.unsaved_item_conversions (...)
+VALUES
+('c1a-...', 'FROM', 2, ..., -120, 'C', 0.3500),
+('c1a-...', 'TO',   2, ..., +120, 'C', 0.3500);
+			</rd-code>
+			<p>Version 1 is retained for audit. The <code>latest_unsaved_item_conversions</code> view returns only version 2.</p>
+			<p>If Alice removes the conversion before saving, both versions are hard-deleted (no tombstone needed — saved state is empty, so the absence of the rows is the absence of the conversion). If Alice has already saved and wants to undo, she creates a <em>new</em> conversion in the opposite direction (different <code>conversion_id</code>) — see <a href="./05-open-questions.html">Q2 in open questions</a>.</p>
+		</rd-detail>
+
+	</rd-section>
+
+	<rd-section title="app_data.saved_item_conversions">
+
+		<rd-code lang="sql" title="DDL — saved_item_conversions">
+CREATE TABLE app_data.saved_item_conversions (
+    conversion_id          UUID         NOT NULL,
+    role                   app_data.item_conversion_role NOT NULL,
+    timeframe_id           INTEGER      NOT NULL,
+    opco_id                VARCHAR(50)  NOT NULL,
+    supc                   VARCHAR(50)  NOT NULL,
+    opco_itm_id            BIGINT,
+    delta_cases            INTEGER      NOT NULL,
+    sa_type                VARCHAR(10),
+    cross_purchase_ratio   NUMERIC(5,4),
+    created_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_saved_item_conversions
+        PRIMARY KEY (conversion_id, role),
+
+    CONSTRAINT fk_saved_item_conversions_timeframe
+        FOREIGN KEY (timeframe_id)
+        REFERENCES app_data.timeframes(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT ck_saved_item_conversions_sign
+        CHECK (
+            (role = 'FROM' AND delta_cases &lt; 0) OR
+            (role = 'TO'   AND delta_cases &gt; 0)
+        ),
+
+    CONSTRAINT ck_saved_item_conversions_from_has_id
+        CHECK (role = 'TO' OR opco_itm_id IS NOT NULL),
+
+    CONSTRAINT ck_saved_item_conversions_ratio
+        CHECK (cross_purchase_ratio IS NULL OR
+               (cross_purchase_ratio &gt;= 0 AND cross_purchase_ratio &lt;= 1))
+);
+
+CREATE INDEX idx_saved_item_conversions_timeframe
+    ON app_data.saved_item_conversions (timeframe_id);
+
+CREATE INDEX idx_saved_item_conversions_opco_itm
+    ON app_data.saved_item_conversions (opco_itm_id)
+    WHERE opco_itm_id IS NOT NULL;
+
+CREATE INDEX idx_saved_item_conversions_supc_opco
+    ON app_data.saved_item_conversions (supc, opco_id);
+		</rd-code>
+
+		<p>Differences from the unsaved table:</p>
+		<ul>
+			<li><strong>No <code>username</code> column.</strong> Saved state is per-timeframe, not per-user — the same convention as <code>saved_changes</code>.</li>
+			<li><strong>No <code>version</code> column.</strong> Saved conversions are immutable; editing a saved conversion isn't a thing in v1 (see Q2 in <a href="./05-open-questions.html">open questions</a>). Audit history of how the conversion was edited <em>before</em> saving stays in the unsaved table — though we do not currently retain that history past the save (it's deleted along with the unsaved rows).</li>
+			<li><strong>No FK to <code>users</code>.</strong> Removing a user does not roll back their saved conversions; they're part of the timeframe's collective state.</li>
+		</ul>
+
+		<rd-callout type="note" title="Should saved unsaved-history survive the save?">
+			<p>Reasonable case for adding a <code>saved_item_conversions_history</code> table mirroring the existing <code>saved_changes_history</code> pattern (from <code>004-history-table-additions.xml</code>). Deferred to <a href="./05-open-questions.html">open questions</a> — depends on whether anyone actually needs "show me every edit Alice made to this conversion before she saved it".</p>
+		</rd-callout>
+
+	</rd-section>
+
+	<rd-section title="app_data.latest_unsaved_item_conversions (view)">
+
+		<p>Mirrors the existing <code>latest_unsaved_changes</code> pattern: latest version per (conversion_id, role, username) plus a filter that drops rows whose contents already match the saved state.</p>
+
+		<rd-code lang="sql" title="View — latest_unsaved_item_conversions">
+CREATE OR REPLACE VIEW app_data.latest_unsaved_item_conversions AS
+WITH latest AS (
+    SELECT DISTINCT ON (uic.conversion_id, uic.role, uic.username)
+        uic.conversion_id,
+        uic.role,
+        uic.username,
+        uic.version,
+        uic.timeframe_id,
+        uic.opco_id,
+        uic.supc,
+        uic.opco_itm_id,
+        uic.delta_cases,
+        uic.sa_type,
+        uic.cross_purchase_ratio,
+        uic.created_at,
+        uic.updated_at
+      FROM app_data.unsaved_item_conversions uic
+     ORDER BY uic.conversion_id,
+              uic.role,
+              uic.username,
+              uic.version DESC
+)
+SELECT l.*
+  FROM latest l
+  LEFT JOIN app_data.saved_item_conversions sic
+    ON sic.conversion_id = l.conversion_id
+   AND sic.role          = l.role
+ WHERE COALESCE(sic.delta_cases, 0)        IS DISTINCT FROM l.delta_cases
+    OR COALESCE(sic.supc, '')              IS DISTINCT FROM l.supc
+    OR COALESCE(sic.opco_itm_id, -1)       IS DISTINCT FROM COALESCE(l.opco_itm_id, -1);
+		</rd-code>
+
+		<p>The filter logic differs in spirit from <code>latest_unsaved_changes</code> (which compares enum values) — here we drop rows when the unsaved record's "shape" (delta, target SUPC, target opco_itm_id) already matches what's saved. In practice the saved-conversion pattern is "new conversions are always new <code>conversion_id</code>s", so the view's filter is mainly a guard against re-saving an already-saved conversion that has had no further unsaved edits.</p>
+
+		<rd-callout type="info">
+			<p>The Java side maps this view to an immutable read-only entity (mirroring <code>LatestUnsavedChange.java</code>). Repositories use it for "what does Alice's pending state look like" reads, and the save flow uses it to discover which rows to promote.</p>
+		</rd-callout>
+
+	</rd-section>
+
+	<rd-section title="item_relationships.supc_projected_opco_metrics (new)">
+
+		<p>Holds per-opco projected per-case metrics for SUPCs that appear in IRP pairs but are missing from <code>master_data.opco_items</code> for the user's opco. Populated by the daily item-rel ETL (algorithm details in <a href="./03-projection-engine.html">projection engine</a>). The conversion projection layer reads this when computing impact for a TO row whose <code>opco_itm_id</code> is NULL.</p>
+
+		<rd-code lang="sql" title="DDL — supc_projected_opco_metrics">
+CREATE TABLE item_relationships.supc_projected_opco_metrics (
+    supc                          VARCHAR(20) NOT NULL,
+    opco_id                       VARCHAR(50),
+    projected_per_case_gp         NUMERIC(12,4),
+    projected_per_case_net_sales  NUMERIC(12,4),
+    projected_gross_prft_vlcty    NUMERIC(12,4),
+    projection_source             item_relationships.projection_source NOT NULL,
+    last_refreshed_at             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT pk_supc_projected_opco_metrics
+        PRIMARY KEY (supc, COALESCE(opco_id, '')),
+);
+
+CREATE INDEX idx_supc_projected_opco_metrics_supc
+    ON item_relationships.supc_projected_opco_metrics (supc);
+		</rd-code>
+
+		<rd-callout type="warn" title="A note on the COALESCE'd primary key">
+			<p>Standard SQL doesn't allow expressions in <code>PRIMARY KEY</code>; PostgreSQL does support <code>UNIQUE INDEX</code> on expressions but not PK. Practical alternatives:</p>
+			<ul>
+				<li><strong>(a)</strong> Use a non-NULL sentinel like <code>opco_id = ''</code> for network-level rows; PK is <code>(supc, opco_id)</code>.</li>
+				<li><strong>(b)</strong> Use the PG-15+ <code>NULLS NOT DISTINCT</code> clause: <code>UNIQUE NULLS NOT DISTINCT (supc, opco_id)</code> as a unique constraint (not PK).</li>
+			</ul>
+			<p>v1 chooses <strong>(a)</strong> — empty string for network-level rows. It's portable and reads cleanly. The doc'd PK above is illustrative; the real migration uses <code>opco_id VARCHAR(50) NOT NULL DEFAULT ''</code> with a normal composite PK.</p>
+		</rd-callout>
+
+		<rd-kv title="Column notes">
+			<rd-row key="supc">SUPC string. Always populated. Soft reference to <code>supc_store.supc</code>.</rd-row>
+			<rd-row key="opco_id">Empty string for network-level (T3) rows, otherwise the opco identifier. The application layer maps <code>''</code> ↔ <code>NULL</code> at read time so the rest of the codebase sees a clean nullable.</rd-row>
+			<rd-row key="projected_per_case_gp / projected_per_case_net_sales">Projected per-case GP and net sales. Same unit as <code>opco_items.gross_prft / cases</code> etc.</rd-row>
+			<rd-row key="projected_gross_prft_vlcty">Projected weekly GPV — used for parity with the existing <code>opco_items.gross_prft_vlcty</code> field (and downstream consumers that may need it).</rd-row>
+			<rd-row key="projection_source">Enum identifying which tier produced the projection. Drives the UI's confidence badge.</rd-row>
+			<rd-row key="last_refreshed_at">When the daily ETL last computed this row. Helps surface stale projections after a master-data refresh (see Q4 in open questions).</rd-row>
+		</rd-kv>
+
+	</rd-section>
+
+	<rd-section title="item_relationships.item_pair_relationships — modified">
+
+		<p>The PoC already created this table (per <code>chandimas-work/</code> notes) with columns <code>id, from_supc, to_supc, sa_type, sa_lot_number, sa_lot_string</code>. v1 adds one nullable column:</p>
+
+		<rd-code lang="sql" title="ALTER — add cross_purchase_ratio">
+ALTER TABLE item_relationships.item_pair_relationships
+    ADD COLUMN cross_purchase_ratio NUMERIC(5,4),
+    ADD CONSTRAINT ck_item_pair_relationships_ratio
+        CHECK (cross_purchase_ratio IS NULL OR
+               (cross_purchase_ratio &gt;= 0 AND cross_purchase_ratio &lt;= 1));
+		</rd-code>
+
+		<p>Populated by a future Redshift job (out of v1 scope — see Q5 in <a href="./05-open-questions.html">open questions</a>). v1 ships with the column present and NULL; the UI falls back to "—" everywhere it would show the ratio.</p>
+
+	</rd-section>
+
+	<rd-section title="Effective cases — derived in the service layer">
+
+		<p>The UI needs "what's the effective case count of this opco_itm_id in this opco for this user right now?" — a number that respects both the master_data baseline and the pending deltas from unsaved/saved conversions and unsaved/saved adds/deletes.</p>
+
+		<rd-callout type="info" title="Decision: compute in the service layer, not as a SQL view">
+			<p>A natural design instinct is a SQL view <code>effective_opco_items</code>. We rejected it for v1 because:</p>
+			<ul>
+				<li>PostgreSQL views can't take parameters; "for this user" would force a parameterised function instead, complicating querying.</li>
+				<li>The math is trivial — <code>opco_items.cases + Σ(deltas)</code> — and the inputs are already fetched for other reasons (the UI loads pending changes for the panel anyway).</li>
+				<li>Keeping it in the service layer lets us add policy (e.g. "what if user X is reviewing user Y's saved state?") without DDL changes.</li>
+			</ul>
+		</rd-callout>
+
+		<p>The formula, for opco_itm_id <code>X</code> in opco <code>O</code> for user <code>U</code> in timeframe <code>T</code>:</p>
+
+		<rd-math display="block">
+\text{effective\_cases}(X, O, U, T) = \underbrace{C_\text{master}}_{\text{opco\_items.cases}} + \underbrace{\Delta_\text{saved}^{X}}_{\text{Σ saved conversions for X}} + \underbrace{\Delta_\text{unsaved}^{X,U}}_{\text{Σ latest-unsaved conversions for X, user U}}
+		</rd-math>
+
+		<p>Where each Σ is over <code>delta_cases</code> from <code>saved_item_conversions</code> and <code>latest_unsaved_item_conversions</code> respectively, joined on <code>opco_itm_id = X</code>. ADDED/DELETED contributions from <code>unsaved_changes</code>/<code>saved_changes</code> only affect whether the item is "in the assortment" (count-based), not its case figure, so they don't enter this formula.</p>
+
+		<rd-detail summary="SQL snippet — fetching pending deltas for a user's simulation window" variant="hairline">
+			<rd-code lang="sql" title="Per-(opco_itm_id) net delta for one (user, timeframe)">
+SELECT oi.opco_itm_id,
+       oi.cases::INT                                              AS master_cases,
+       COALESCE(SUM(sic.delta_cases), 0)                          AS saved_delta,
+       COALESCE(SUM(luic.delta_cases), 0)                         AS unsaved_delta,
+       oi.cases::INT
+         + COALESCE(SUM(sic.delta_cases), 0)
+         + COALESCE(SUM(luic.delta_cases), 0)                     AS effective_cases
+  FROM master_data.opco_items oi
+  LEFT JOIN app_data.saved_item_conversions sic
+    ON sic.opco_itm_id = oi.opco_itm_id
+   AND sic.timeframe_id = oi.timeframe_id
+  LEFT JOIN app_data.latest_unsaved_item_conversions luic
+    ON luic.opco_itm_id = oi.opco_itm_id
+   AND luic.timeframe_id = oi.timeframe_id
+   AND luic.username = :username
+ WHERE oi.timeframe_id = :timeframe_id
+   AND oi.opco_itm_id  = ANY(:opco_itm_ids)
+ GROUP BY oi.opco_itm_id, oi.cases;
+			</rd-code>
+		</rd-detail>
+
+	</rd-section>
+
+	<rd-section title="Conversion lifecycle (state diagram)">
+
+		<rd-plantuml>
+@startuml
+!theme plain
+skinparam state {
+  BackgroundColor #FAFAFA
+  BorderColor #888
+  FontName Helvetica
+}
+
+[*] --> Drafting : user opens Convert,\npicks FROM + TO + slider
+
+state "Unsaved · v1" as v1 #PaleTurquoise {
+  Drafting : delta_cases stored\n(both FROM and TO rows)
+}
+
+state "Unsaved · v2..vN" as vN #PaleTurquoise {
+}
+
+v1 --> vN : user edits\n(new version row pair)
+vN --> vN : further edits
+
+v1 --> Removed : user removes\n(hard-delete rows)
+vN --> Removed : user removes
+Removed --> [*]
+
+state "Saved" as saved #LightGreen {
+  saved : single row pair\nin saved_item_conversions\n(no version, no username)
+}
+
+v1   --> saved : save flow:\ninsert into saved,\ndelete from unsaved
+vN   --> saved : save flow uses latest version
+
+saved --> Reversed : user wants undo\nafter save
+Reversed : NEW conversion_id\nin opposite direction\n(FROM/TO swapped,\ndelta_cases sign flipped)
+Reversed --> [*]
+
+note right of saved
+  Saved conversions are immutable.
+  Multiple users' saved conversions
+  coexist in the timeframe — deltas
+  accumulate additively.
+end note
+
+note right of vN
+  Old versions retained in
+  unsaved_item_conversions
+  until save or remove.
+  latest_unsaved view returns
+  only the highest version.
+end note
+
+@enduml
+		</rd-plantuml>
+
+		<p>Notes on each transition:</p>
+		<ul>
+			<li><strong>v1 creation</strong> is two INSERTs in one transaction — one FROM row, one TO row, same <code>conversion_id</code>.</li>
+			<li><strong>Edit (vN)</strong> is two more INSERTs with <code>version = MAX(version) + 1</code>. Old version rows stay put.</li>
+			<li><strong>Remove (pre-save)</strong> hard-deletes every row matching <code>(conversion_id)</code> across all versions. No tombstone needed because there's nothing in saved to revert against.</li>
+			<li><strong>Save</strong> inserts the latest-version pair into <code>saved_item_conversions</code> (in one transaction) and deletes every row matching <code>(conversion_id, username)</code> from <code>unsaved_item_conversions</code>.</li>
+			<li><strong>Reverse (post-save)</strong> creates a brand new conversion with a fresh <code>conversion_id</code>, opposite role assignments and signs. The original saved conversion remains; reversal is additive, fully reflected in the running sum used by the effective-cases calculation. This is the v1 stance for undo per Q2 in open questions; a future "voided" flag would change this.</li>
+		</ul>
+
+	</rd-section>
+
+	<rd-section title="Liquibase migration plan">
+
+		<p>All schema changes ship as one new changelog file, slotted at the next sequential number per the naming convention.</p>
+
+		<rd-code lang="xml" title="src/main/resources/db/migrations/020-item-conversion-tables.xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd"&gt;
+
+  &lt;!-- 1. enum types --&gt;
+  &lt;changeSet id="020-create-type-item-conversion-role" author="aot"&gt;
+    &lt;preConditions onFail="MARK_RAN"&gt;
+      &lt;sqlCheck expectedResult="0"&gt;
+        SELECT COUNT(*) FROM pg_type WHERE typname = 'item_conversion_role'
+      &lt;/sqlCheck&gt;
+    &lt;/preConditions&gt;
+    &lt;sql&gt;
+      CREATE TYPE app_data.item_conversion_role AS ENUM ('FROM', 'TO');
+    &lt;/sql&gt;
+  &lt;/changeSet&gt;
+
+  &lt;changeSet id="020-create-type-projection-source" author="aot"&gt;
+    &lt;preConditions onFail="MARK_RAN"&gt;
+      &lt;sqlCheck expectedResult="0"&gt;
+        SELECT COUNT(*) FROM pg_type WHERE typname = 'projection_source'
+      &lt;/sqlCheck&gt;
+    &lt;/preConditions&gt;
+    &lt;sql&gt;
+      CREATE TYPE item_relationships.projection_source AS ENUM (
+        'opco_observed', 'cross_opco_harmonic_mean',
+        'hierarchy_average', 'network_average', 'none'
+      );
+    &lt;/sql&gt;
+  &lt;/changeSet&gt;
+
+  &lt;!-- 2. unsaved_item_conversions (table + constraints + indexes) --&gt;
+  &lt;changeSet id="020-create-table-unsaved-item-conversions" author="aot"&gt; … &lt;/changeSet&gt;
+
+  &lt;!-- 3. saved_item_conversions --&gt;
+  &lt;changeSet id="020-create-table-saved-item-conversions" author="aot"&gt; … &lt;/changeSet&gt;
+
+  &lt;!-- 4. latest_unsaved_item_conversions view --&gt;
+  &lt;changeSet id="020-create-view-latest-unsaved-item-conversions" author="aot"&gt; … &lt;/changeSet&gt;
+
+  &lt;!-- 5. supc_projected_opco_metrics --&gt;
+  &lt;changeSet id="020-create-table-supc-projected-opco-metrics" author="aot"&gt; … &lt;/changeSet&gt;
+
+  &lt;!-- 6. cross_purchase_ratio on item_pair_relationships --&gt;
+  &lt;changeSet id="020-add-cross-purchase-ratio-to-item-pair-relationships" author="aot"&gt; … &lt;/changeSet&gt;
+
+&lt;/databaseChangeLog&gt;
+		</rd-code>
+
+		<rd-callout type="info" title="Why one changelog file">
+			<p>The six changes form one logical migration ("introduce item conversion persistence"). Rolling out partial state (e.g. tables without the view) would leave the API in a broken intermediate. Liquibase still permits per-changeSet rollback within the file.</p>
+		</rd-callout>
+
+		<rd-checklist>
+			<rd-task>Each <code>createTable</code> changeSet writes the table, primary key, foreign keys, check constraints, and indexes in the order they appear in the DDL above.</rd-task>
+			<rd-task>Add <code>rollback</code> blocks to every changeSet (Liquibase requirement for non-auto-rollbackable changes like <code>CREATE TYPE</code> and views).</rd-task>
+			<rd-task>The view changeSet uses <code>&lt;createView&gt;</code> with <code>replaceIfExists="true"</code> so re-applies are safe.</rd-task>
+			<rd-task>Run Spotless after authoring (per <code>aot-api/AGENTS.md</code>): <code>./gradlew.bat spotlessApply</code>.</rd-task>
+		</rd-checklist>
+
+	</rd-section>
+
+	<rd-section title="Index strategy">
+
+		<rd-compare headers="Query pattern, Index used">
+			<rd-row-cells label="Load Alice's pending conversions for timeframe 12">
+				<rd-cell><code>idx_unsaved_item_conversions_user_timeframe(username, timeframe_id)</code></rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="What conversions touch opco_itm_id 554321 (any user, any state)?">
+				<rd-cell><code>idx_unsaved_item_conversions_opco_itm</code> + <code>idx_saved_item_conversions_opco_itm</code> (partial WHERE NOT NULL)</rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="Show all conversions affecting SUPC 0013060 in opco 042">
+				<rd-cell><code>idx_unsaved_item_conversions_supc_opco</code> + <code>idx_saved_item_conversions_supc_opco</code></rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="Saved conversions for timeframe 12 (e.g. simulation aggregate roll-up)">
+				<rd-cell><code>idx_saved_item_conversions_timeframe</code></rd-cell>
+			</rd-row-cells>
+			<rd-row-cells label="Latest version per conversion_id (used by view)">
+				<rd-cell>Composite PK <code>(conversion_id, role, version)</code> serves as the index — DISTINCT ON walks it in reverse</rd-cell>
+			</rd-row-cells>
+		</rd-compare>
+
+	</rd-section>
+
+	<rd-section title="Java / JPA mapping notes">
+
+		<p>One entity per table. Style mirrors <code>UnsavedChange.java</code> / <code>SavedChange.java</code>. Sketches:</p>
+
+		<rd-code lang="java" title="ItemConversionRole.java">
+package com.sysco.eat.api.data.embeddable;
+
+public enum ItemConversionRole {
+    FROM,
+    TO
+}
+		</rd-code>
+
+		<rd-code lang="java" title="UnsavedItemConversion.java (skeleton)">
+@Entity
+@Table(name = "unsaved_item_conversions", schema = "app_data")
+@IdClass(UnsavedItemConversion.UnsavedItemConversionId.class)
+@Builder @AllArgsConstructor @NoArgsConstructor @Data
+public class UnsavedItemConversion {
+
+    @Id @Column(name = "conversion_id", columnDefinition = "uuid")
+    private UUID conversionId;
+
+    @Id
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", columnDefinition = "app_data.item_conversion_role")
+    private ItemConversionRole role;
+
+    @Id
+    @Column(name = "version")
+    private Integer version;
+
+    @Column(name = "timeframe_id") private Integer timeframeId;
+    @Column(name = "username")     private String  username;
+    @Column(name = "opco_id")      private String  opcoId;
+    @Column(name = "supc")         private String  supc;
+    @Column(name = "opco_itm_id")  private Long    opcoItmId;     // nullable
+    @Column(name = "delta_cases")  private Integer deltaCases;
+    @Column(name = "sa_type")      private String  saType;
+    @Column(name = "cross_purchase_ratio")
+    private BigDecimal crossPurchaseRatio;
+
+    @Column(name = "created_at", updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
+
+    @Data @NoArgsConstructor @AllArgsConstructor
+    public static class UnsavedItemConversionId implements Serializable {
+        private UUID conversionId;
+        private ItemConversionRole role;
+        private Integer version;
+    }
+}
+		</rd-code>
+
+		<rd-code lang="java" title="SavedItemConversion.java (skeleton)">
+@Entity
+@Table(name = "saved_item_conversions", schema = "app_data")
+@IdClass(SavedItemConversion.SavedItemConversionId.class)
+public class SavedItemConversion {
+    @Id private UUID conversionId;
+    @Id @Enumerated(EnumType.STRING) private ItemConversionRole role;
+    // … same columns minus username + version …
+}
+		</rd-code>
+
+		<rd-code lang="java" title="LatestUnsavedItemConversion.java (view-backed, immutable)">
+@Entity
+@Immutable
+@Table(name = "latest_unsaved_item_conversions", schema = "app_data")
+@IdClass(LatestUnsavedItemConversion.LatestUnsavedItemConversionId.class)
+public class LatestUnsavedItemConversion {
+    @Id private UUID conversionId;
+    @Id @Enumerated(EnumType.STRING) private ItemConversionRole role;
+    @Id private String username;
+    // … rest of columns …
+}
+		</rd-code>
+
+	</rd-section>
+
+	<rd-section title="Open questions tracked here">
+		<ul>
+			<li>Should we keep a <code>saved_item_conversions_history</code> table, mirroring <code>saved_changes_history</code>? Useful for audit; out of v1 unless we hear a concrete ask.</li>
+			<li>Conversions without an IRP candidate (user free-types a TO SUPC) — does the FROM row carry <code>sa_type = NULL</code>, or do we reject the conversion at the API? Closely tied to whether v1 supports IRP-less conversions at all.</li>
+			<li>Indexing the <code>(conversion_id)</code> alone for "fetch both sides of a conversion" — the PK index serves it, but a covering index could speed up the API's most common read. Defer until we measure.</li>
+			<li>Does <code>conversion_id</code> need a uniqueness check against <code>saved_item_conversions</code> when promoting? Today the save flow is "delete unsaved, insert saved" in one transaction; a unique constraint on (conversion_id, role) in saved naturally rejects double-saves. Verify in implementation.</li>
+		</ul>
+	</rd-section>
+
+	<rd-section title="Cross-references">
+		<ul>
+			<li><strong>How projected per-case metrics are computed</strong> — <a href="./03-projection-engine.html">03 · Projection engine</a></li>
+			<li><strong>How the API reads/writes these tables and where the conversion lifecycle lives</strong> — <a href="./04-system-design.html">04 · System design</a></li>
+			<li><strong>Unresolved schema-touching decisions</strong> — <a href="./05-open-questions.html#blockers">Q1, Q2 in open questions</a></li>
+			<li><strong>The decisions that produced this design</strong> — <a href="./index.html#decisions">D-1 … D-7 in index</a></li>
+		</ul>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>
