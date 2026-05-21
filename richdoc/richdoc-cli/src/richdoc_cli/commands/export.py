@@ -46,8 +46,8 @@ def group() -> None:
 @click.option(
     "-o", "--output", "output",
     type=click.Path(path_type=Path),
-    help="Output path. Single mode → file; multi mode → folder. "
-    "Default: <stem>.md (single) or <stem>-md/ (multi).",
+    help="Output path. Single mode → file (use '-' for stdout); "
+    "multi mode → folder. Default: <stem>.md (single) or <stem>-md/ (multi).",
 )
 @click.option(
     "-f", "--force", is_flag=True, help="Overwrite existing output."
@@ -80,6 +80,29 @@ def cmd_md(
     """Export to markdown (single .md or a folder of .md per chapter)."""
     in_path = _require_html(input_)
     mode = _resolve_mode(single_flag, multi_flag, default=ExportMode.MULTI)
+
+    # `-o -` → stdout (single mode only). Asset materialisation is skipped:
+    # there's no output folder to drop them into. Image references survive
+    # as the relative `assets/<hash>.<ext>` strings the caller can resolve.
+    if output is not None and str(output) == "-":
+        if mode is ExportMode.MULTI:
+            json_error(
+                "Cannot write to stdout in --multi mode (multiple files).",
+                code="INVALID_PARAMS",
+            )
+        from ..export.md.pipeline import render_to_string  # noqa: PLC0415
+
+        try:
+            text = render_to_string(
+                in_path,
+                no_book=no_book,
+                include_remote_images=include_remote_images,
+            )
+        except OSError as exc:
+            json_error(f"Could not read input: {exc}", code="INPUT_ERROR")
+        sys.stdout.write(text)
+        sys.stdout.flush()
+        return
 
     from ..export.md.pipeline import export_md  # noqa: PLC0415
 

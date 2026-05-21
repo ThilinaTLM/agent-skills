@@ -100,6 +100,12 @@ _CALLOUT_COLORS = {
 }
 
 
+_CALLOUT_BLOCK_TAGS = {
+    "p", "ul", "ol", "pre", "blockquote", "table", "hr",
+    "rd-code", "rd-diff", "rd-shell",
+}
+
+
 def _h_rd_callout(state: _State, el: ET._Element) -> None:
     type_ = (el.get("type") or "info").lower()
     title = el.get("title") or _CALLOUT_DEFAULT_TITLE.get(type_, "")
@@ -112,6 +118,13 @@ def _h_rd_callout(state: _State, el: ET._Element) -> None:
     _set_cell_shading(cell, "FAFAFA")
     cell.text = ""
 
+    # Detect whether the callout's body is inline-only (a bare text run or
+    # inline tags) versus structured (any block child like <p>, <ul>, <rd-code>).
+    has_block_children = any(
+        isinstance(c.tag, str) and c.tag.lower() in _CALLOUT_BLOCK_TAGS
+        for c in el
+    )
+
     if title:
         p = cell.paragraphs[0]
         r = p.add_run(title)
@@ -120,22 +133,37 @@ def _h_rd_callout(state: _State, el: ET._Element) -> None:
     else:
         body_p_first = cell.paragraphs[0]
 
-    runs = _inline_runs(state, el)
-    if any(r.text.strip() for r in runs):
-        # Use first body paragraph for the inline content of the callout.
-        _emit_runs(body_p_first, runs)
-    # Any block-level children (lists, code) — render as additional paragraphs
-    # in the cell. python-docx tables don't support arbitrary block nesting,
-    # so we flatten the structure: each block becomes a plain paragraph.
+    if not has_block_children:
+        # Inline-only callout: <rd-callout>just some text</rd-callout>.
+        runs = _inline_runs(state, el)
+        if any(r.text.strip() for r in runs):
+            _emit_runs(body_p_first, runs)
+        return
+
+    # Structured callout: emit each block child as its own paragraph.
+    # Any leading inline text (el.text) lands on the first body paragraph.
+    first_used = False
+    if el.text and el.text.strip():
+        body_p_first.add_run(el.text.strip())
+        first_used = True
     for child in el:
         if not isinstance(child.tag, str):
             continue
         tag = child.tag.lower()
-        if tag in ("p", "ul", "ol", "pre", "rd-code", "rd-shell"):
-            text = _flatten_inline(state, child).strip()
-            if text:
-                cp = cell.add_paragraph()
-                cp.add_run(text)
+        if tag not in _CALLOUT_BLOCK_TAGS:
+            # Skip stray inline elements (they'd be confusing siblings to <p>);
+            # the JS component wraps everything in body text, so authors who
+            # mix inline + block at the top level are rare.
+            continue
+        text = _flatten_inline(state, child).strip()
+        if not text:
+            continue
+        target = body_p_first if not first_used else cell.add_paragraph()
+        if target is body_p_first:
+            target.add_run(text)
+            first_used = True
+        else:
+            target.add_run(text)
 
 
 def _h_rd_kv(state: _State, el: ET._Element) -> None:
@@ -179,13 +207,15 @@ def _h_rd_stat(state: _State, el: ET._Element) -> None:
 
 
 def _h_rd_progress(state: _State, el: ET._Element) -> None:
-    value = el.get("value") or ""
+    from ..common.progress import parse_progress  # noqa: PLC0415
+
+    parsed = parse_progress(el.get("value"))
     label = el.get("label") or ""
     p = state.add_paragraph()
     if label:
         r = p.add_run(f"{label}: ")
         r.bold = True
-    p.add_run(value)
+    p.add_run(parsed.display)
 
 
 def _h_rd_update(state: _State, el: ET._Element) -> None:
@@ -344,6 +374,13 @@ def _h_rd_timeline(state: _State, el: ET._Element) -> None:
         render_children(state, ev)
 
 
+_STEP_BLOCK_TAGS = {
+    "p", "ul", "ol", "pre", "blockquote", "table", "hr",
+    "rd-code", "rd-diff", "rd-shell", "rd-callout", "rd-diagram",
+    "rd-figure", "rd-math", "rd-chart",
+}
+
+
 def _h_rd_steps(state: _State, el: ET._Element) -> None:
     state.list_stack.append(("ol", 0))
     for step in el:
@@ -353,18 +390,66 @@ def _h_rd_steps(state: _State, el: ET._Element) -> None:
         done = step.get("done") is not None
         marker = "☑ " if done else ""
         p = state.doc.add_paragraph(style="List Number")
-        r = p.add_run(marker)
+        if marker:
+            p.add_run(marker)
         if title:
             tr = p.add_run(title)
             tr.bold = True
-        _render_children_into(state, step)
+        # Body: walk children, emitting inline content (text / <code> /
+        # <strong> / etc.) onto the list-item paragraph and dispatching any
+        # block-level child (ul, pre, rd-code, …) as its own paragraph.
+        # `_inline_runs` already handles text + tail correctly; we only
+        # need to split the step into inline-vs-block segments first.
+        inline_runs, block_children = _split_step_body(state, step)
+        if inline_runs:
+            if title or marker:
+                p.add_run(" \u2014 ")  # em-dash separator between title and body
+            _emit_runs(p, inline_runs)
+        for block in block_children:
+            render_block(state, block)
     state.list_stack.pop()
 
 
-def _render_children_into(state: _State, el: ET._Element) -> None:
-    # Render children as additional block paragraphs after the leading list item.
-    for child in el:
-        render_block(state, child)
+def _split_step_body(state: _State, step: ET._Element) -> tuple[list, list[ET._Element]]:
+    """Return (inline_runs, block_children) for an rd-step body.
+
+    Inline content (leading text, inline tags, their tails) collapses into
+    one run list. Block children (`<p>`, `<ul>`, `<rd-code>`, …) are
+    rendered separately as follow-on paragraphs.
+    """
+    from .runs import _Run, _inline_runs  # noqa: PLC0415
+
+    from .walker import _inline_text  # noqa: PLC0415
+
+    runs: list[_Run] = []
+    blocks: list[ET._Element] = []
+    if step.text:
+        runs.append(_Run(_inline_text(step.text)))
+    # Snapshot children before any reparenting (we splice inline ones into a
+    # synthetic wrapper, which would otherwise corrupt iteration).
+    children = list(step)
+    for child in children:
+        tag = child.tag.lower() if isinstance(child.tag, str) else ""
+        tail = child.tail
+        if tag in _STEP_BLOCK_TAGS:
+            blocks.append(child)
+            if tail and tail.strip():
+                runs.append(_Run(_inline_text(tail)))
+            continue
+        # Inline element — flatten via _inline_runs through a synthetic
+        # wrapper so its text + tail are walked correctly.
+        child.tail = None
+        wrapper = ET.Element("span")
+        wrapper.append(child)
+        runs.extend(_inline_runs(state, wrapper))
+        if tail:
+            runs.append(_Run(_inline_text(tail)))
+    # Drop pure-whitespace runs at the ends.
+    while runs and not runs[0].text.strip():
+        runs.pop(0)
+    while runs and not runs[-1].text.strip():
+        runs.pop()
+    return runs, blocks
 
 
 def _h_rd_detail(state: _State, el: ET._Element) -> None:
@@ -493,18 +578,28 @@ def _h_rd_decision(state: _State, el: ET._Element) -> None:
 
 
 def _h_rd_pros_cons(state: _State, el: ET._Element) -> None:
+    # `rd-cols` linearises in DOCX (Confluence import doesn't preserve
+    # multi-column Word layouts); pros-cons follows the same convention.
+    # We emit two stacked sections — "✓ Pros" with a bulleted list, then
+    # "✗ Cons" with a bulleted list. Items aren't paired by position, so
+    # asymmetric lists no longer produce empty cells.
     pros_title = el.get("pros-title") or "Pros"
     cons_title = el.get("cons-title") or "Cons"
     pros = [c for c in el if isinstance(c.tag, str) and c.tag.lower() == "rd-pro"]
     cons = [c for c in el if isinstance(c.tag, str) and c.tag.lower() == "rd-con"]
-    rows = max(len(pros), len(cons))
-    table = state.doc.add_table(rows=1 + rows, cols=2)
-    table.style = "Table Grid"
-    _fill_row(state, table.rows[0], [f"✓ {pros_title}", f"✗ {cons_title}"], bold=True)
-    for i in range(rows):
-        ptext = _flatten_inline(state, pros[i]).strip() if i < len(pros) else ""
-        ctext = _flatten_inline(state, cons[i]).strip() if i < len(cons) else ""
-        _fill_row(state, table.rows[i + 1], [ptext, ctext])
+    for items, glyph, heading in (
+        (pros, "✓", pros_title),
+        (cons, "✗", cons_title),
+    ):
+        if not items:
+            continue
+        state.doc.add_heading(f"{glyph} {heading}", level=3)
+        for item in items:
+            text = _flatten_inline(state, item).strip()
+            if not text:
+                continue
+            p = state.doc.add_paragraph(style="List Bullet")
+            p.add_run(text)
 
 
 def _h_rd_compare(state: _State, el: ET._Element) -> None:

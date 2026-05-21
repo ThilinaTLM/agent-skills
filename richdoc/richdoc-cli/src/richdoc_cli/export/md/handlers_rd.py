@@ -160,33 +160,12 @@ def _h_rd_stat(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_progress(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    raw = el.get("value") or ""
+    from ..common.progress import parse_progress  # noqa: PLC0415
+
+    p = parse_progress(el.get("value"))
     label = el.get("label") or ""
-    pct = _progress_to_pct(raw)
-    line = f"**{label}:** {pct}" if label else f"**Progress:** {pct}"
+    line = f"**{label}:** {p.display}" if label else f"**Progress:** {p.display}"
     c.write_block(line)
-
-
-def _progress_to_pct(raw: str) -> str:
-    raw = raw.strip()
-    if not raw:
-        return "0%"
-    if raw.endswith("%"):
-        return raw
-    if "/" in raw:
-        try:
-            num, denom = raw.split("/", 1)
-            n = float(num.strip())
-            d = float(denom.strip())
-            if d > 0:
-                return f"{round(n / d * 100)}% ({raw})"
-        except ValueError:
-            pass
-    try:
-        v = float(raw)
-        return f"{round(v * 100)}%"
-    except ValueError:
-        return raw
 
 
 def _h_rd_update(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
