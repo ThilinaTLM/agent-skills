@@ -63,6 +63,12 @@
 
 ### Removed
 
+- **`richdoc export html`** (and its `export/html/` package). Richdoc
+  files are already HTML — open the source `.html` directly in a
+  browser. The bundler's one job was inlining relative assets into a
+  self-contained `.bundle.html`, which conflated "export" with "asset
+  packaging" and added a maintenance surface for a format the source
+  already is. The remaining export targets are `md` and `docx`.
 - **`richdoc export html-confluence`** (and its `export/confluence/`
   package). The Confluence HTML-import path always creates a *new*
   space, never lets you update an existing one — dead-end for any

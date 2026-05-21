@@ -35,7 +35,7 @@ Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https
 | `richdoc update [dir] [--apply]` | Refresh stale shipped assets. |
 | `richdoc lint <file>` | Validate against the rd-* schema. |
 | `richdoc components [--tag <name>]` | Print the vocabulary from the live schema. |
-| `richdoc export md\|html\|docx <file>` | Export to markdown / single-file HTML / DOCX. See [references/export.md](references/export.md). |
+| `richdoc export md\|docx <file>` | Export to markdown or DOCX. (HTML is the source format — no export needed.) See [references/export.md](references/export.md). |
 | `richdoc publish confluence <subcommand>` | Publish to Confluence Cloud via REST. Subcommands: `spaces`, `pages`, `page-by-id`, `push`. See [references/publish.md](references/publish.md). |
 
 Templates: `plan`, `research`, `comparison`, `onepager`, `adr`, `runbook`, `book-index`, `book-chapter`.
@@ -202,7 +202,7 @@ For handbooks, runbook sets, or reference manuals that don't fit in one file: pu
 ## See also
 
 - [references/elements.md](references/elements.md) — full attribute reference per tag (mirror of the schema).
-- [references/export.md](references/export.md) — markdown / HTML / DOCX export semantics.
+- [references/export.md](references/export.md) — markdown / DOCX export semantics.
 - [references/multi-file-books.md](references/multi-file-books.md) — book-mode authoring.
 - [references/diagram-langs.md](references/diagram-langs.md) — which diagram lang to pick for what.
 - [references/motion-and-themes.md](references/motion-and-themes.md) — motion vocabulary, themes, limitations.

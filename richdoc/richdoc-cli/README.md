@@ -1,6 +1,6 @@
 # richdoc-cli
 
-Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), export to markdown / html / docx (`export`), and publish to Confluence Cloud (`publish confluence`).
+Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), export to markdown / docx (`export`), and publish to Confluence Cloud (`publish confluence`). HTML is the source format and is not an export target.
 
 - See the parent skill: [`../SKILL.md`](../SKILL.md) for the full command reference and component vocabulary.
 - Requires `uv` ([install](https://docs.astral.sh/uv/)). First call provisions the Python environment automatically.
@@ -21,7 +21,7 @@ src/richdoc_cli/
   mimetypes_ext.py    # mime sniffer used by the export pipeline
   commands/           # one click subcommand per file
     new_.py init_.py update.py lint.py components.py export.py publish.py
-  export/             # the export pipeline (md / html / docx)
+  export/             # the export pipeline (md / docx)
     book.py           #   multi-file book discovery
     common/           #   format-agnostic helpers
       assets.py       #     AssetStore (file dedup + remote fetch)
@@ -29,9 +29,6 @@ src/richdoc_cli/
       walker.py       #     parse_html, inline_text, element_source
       chart_data.py   #     rd-chart data parser (returns ChartTable)
       modes.py        #     ExportMode + plan_outputs (single vs multi)
-    html/             #   HTML → self-contained .bundle.html
-      bundler.py      #     inline relative deps into one file
-      pipeline.py     #     single + multi orchestration
     md/               #   HTML → GitHub-flavored markdown
       converter.py    #     _Converter state machine + helpers
       handlers_plain.py # plain HTML element handlers
