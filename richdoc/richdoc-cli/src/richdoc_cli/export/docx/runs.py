@@ -8,28 +8,32 @@ implementation Word's hyperlink XML python-docx doesn't expose directly.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import lxml.etree as ET
 from docx.oxml.ns import qn
 
 from .state import _State
-from .walker import _inline_text
+from .walker import _element_source, _inline_text
 
 
 @dataclass
 class _Run:
-    text: str
+    text: str = ""
     bold: bool = False
     italic: bool = False
     code: bool = False
     underline: bool = False
     strike: bool = False
     hyperlink: str | None = None
+    # When set, the run is emitted as an inline `<m:oMath>` element
+    # appended to the paragraph rather than a `<w:r>` text run. Used by
+    # inline `<rd-math>` so equations land as editable Word math.
+    omath: ET._Element | None = field(default=None, repr=False)
 
 
 def _flatten_inline(state: _State, el: ET._Element) -> str:  # noqa: SLF001
-    return "".join(r.text for r in _inline_runs(state, el))
+    return "".join(r.text for r in _inline_runs(state, el) if r.text)
 
 
 def _inline_runs(
@@ -102,6 +106,18 @@ def _inline_runs(
                 runs.append(_Run(label, bold=bold, italic=italic))
             state.record_dropped("rd-icon")
             skip_children = True
+        elif tag == "rd-math":
+            from .math import latex_to_omath  # noqa: PLC0415 — keep import local
+
+            source = _element_source(child).strip()
+            omath = latex_to_omath(source) if source else None
+            if omath is not None:
+                runs.append(_Run(omath=omath))
+            elif source:
+                # Fallback: italic Cambria Math so the LaTeX still reads
+                # as math content even when conversion fails.
+                runs.append(_Run(source, italic=True))
+            skip_children = True
         elif tag == "rd-badge":
             text = _flatten_inline(state, child).strip()
             if text:
@@ -148,6 +164,12 @@ def _inline_runs(
 def _emit_runs(paragraph, runs: list[_Run]) -> None:
     """Append `runs` onto a python-docx paragraph."""
     for run_spec in runs:
+        if run_spec.omath is not None:
+            # Append the OMML directly so it nests as a sibling of <w:r>
+            # rather than wrapping it. Word and Confluence both recognise
+            # an inline <m:oMath> as part of the paragraph flow.
+            paragraph._p.append(run_spec.omath)
+            continue
         text = run_spec.text
         if not text:
             continue
@@ -165,6 +187,8 @@ def _emit_runs(paragraph, runs: list[_Run]) -> None:
             r.font.strike = True
         if run_spec.code:
             r.font.name = "Courier New"
+
+
 
 
 def _add_hyperlink(paragraph, text: str, url: str, spec: _Run) -> None:

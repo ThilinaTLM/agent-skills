@@ -18,6 +18,7 @@ from .commands.export import group as export_group
 from .commands.init_ import cmd as init_cmd
 from .commands.lint import cmd as lint_cmd
 from .commands.new_ import cmd as new_cmd
+from .commands.publish import group as publish_group
 from .commands.update import cmd as update_cmd
 from .output import json_error
 
@@ -41,6 +42,7 @@ main.add_command(update_cmd)
 main.add_command(lint_cmd)
 main.add_command(components_cmd)
 main.add_command(export_group)
+main.add_command(publish_group)
 
 
 def entrypoint() -> NoReturn:

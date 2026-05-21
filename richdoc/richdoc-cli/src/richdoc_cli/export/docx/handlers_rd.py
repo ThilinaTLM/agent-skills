@@ -5,6 +5,7 @@ from __future__ import annotations
 from io import BytesIO
 
 import lxml.etree as ET
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
 
 from ..common.chart_data import parse_chart
@@ -298,11 +299,32 @@ def _h_rd_shell(state: _State, el: ET._Element) -> None:
 
 
 def _h_rd_math(state: _State, el: ET._Element) -> None:
-    text = _element_source(el).strip()
-    if not text:
+    from .math import latex_to_omath, wrap_block  # noqa: PLC0415 — keep import local
+
+    text = _dedent(_element_source(el))
+    if not text.strip():
         return
-    p = state.add_paragraph(style="RichdocCode")
-    p.add_run(text)
+    display = (el.get("display") or "block").lower()
+    omath = latex_to_omath(text)
+    if omath is None:
+        # LaTeX we couldn't convert — fall back to italic Cambria Math so
+        # the source still travels and reads as math, not code.
+        p = state.add_paragraph()
+        if display != "inline":
+            p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run(text)
+        r.italic = True
+        r.font.name = "Cambria Math"
+        return
+    if display == "inline":
+        # Block-position inline math: rare but possible. Drop it on its own
+        # paragraph without the oMathPara wrapper so it sits on the
+        # baseline like a normal run.
+        p = state.add_paragraph()
+        p._p.append(omath)
+    else:
+        p = state.add_paragraph()
+        p._p.append(wrap_block(omath))
 
 
 def _h_rd_figure(state: _State, el: ET._Element) -> None:

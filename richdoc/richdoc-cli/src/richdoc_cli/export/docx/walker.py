@@ -88,13 +88,19 @@ def _has_any_heading(el: ET._Element) -> bool:  # noqa: SLF001
 #
 # `_inline_text` and `_element_source` are re-exported from common.walker
 # above so handler modules can keep their existing imports unchanged.
-# `_dedent` stays local: the docx variant uses `splitlines + space-only
-# indent` whereas the md variant uses `lstrip('\n') + rstrip + tab-aware
-# indent`. Unifying them risks subtle diffs in tabbed code blocks.
 # ---------------------------------------------------------------------------
 
 
 def _dedent(text: str) -> str:
+    """Strip the common leading indent across non-blank lines.
+
+    Treats spaces and tabs as equivalent characters for the purpose of
+    measuring the common prefix, matching the runtime `k()` helper that
+    `<rd-code>` / `<rd-diff>` / `<rd-shell>` use in the browser. Without
+    tab awareness, source HTML that nests `<rd-code>` inside `<rd-section>`
+    (the common case) leaves each code line prefixed with the surrounding
+    tabs, which python-docx then renders as stacked `<w:tab/>` runs.
+    """
     lines = text.splitlines()
     while lines and not lines[0].strip():
         lines.pop(0)
@@ -102,7 +108,7 @@ def _dedent(text: str) -> str:
         lines.pop()
     if not lines:
         return ""
-    indents = [len(l) - len(l.lstrip(" ")) for l in lines if l.strip()]
+    indents = [len(l) - len(l.lstrip(" \t")) for l in lines if l.strip()]
     pad = min(indents) if indents else 0
     return "\n".join(l[pad:] if len(l) >= pad else l for l in lines)
 

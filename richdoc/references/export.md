@@ -1,8 +1,15 @@
 # richdoc — export reference
 
-The richdoc CLI ships exactly three export formats: markdown, HTML, and DOCX. Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these three.
+The richdoc CLI ships four export formats:
 
-All three subcommands share a `--single` / `--multi` flag pair so the output shape is explicit:
+- **`md`** — GitHub-flavoured Markdown.
+- **`html`** — self-contained `.bundle.html` for offline reading.
+- **`docx`** — Word document for editing in Word / LibreOffice.
+- **`html-confluence`** — Confluence Cloud HTML-import zip. See its own section below.
+
+Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these.
+
+The `md` / `html` / `docx` subcommands share a `--single` / `--multi` flag pair so the output shape is explicit:
 
 - `--single` — one output file containing the whole book.
 - `--multi`  — one output file per chapter, mirroring the source tree under a folder.
@@ -72,3 +79,13 @@ Every export subcommand writes a JSON envelope to stdout (unless `-o -` is used 
 ```
 
 On failure, `{"ok": false, "code": "...", "message": "..."}`.
+
+## Confluence
+
+There is no longer an `export` subcommand for Confluence. To push a richdoc into Confluence Cloud, use the REST-API publisher — see [references/publish.md](publish.md):
+
+```bash
+richdoc publish confluence push doc.html --space-key DEV --parent-id 12345
+```
+
+It creates / updates pages in an existing space, preserves the book hierarchy in the native page tree, and renders `rd-code` / `rd-callout` / `rd-detail` as native Confluence macros (real syntax highlighting, real collapsibles) instead of the dead-end zip importer's plain-text-or-PNG fallback.

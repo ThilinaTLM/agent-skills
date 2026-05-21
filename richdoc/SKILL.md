@@ -36,6 +36,7 @@ Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https
 | `richdoc lint <file>` | Validate against the rd-* schema. |
 | `richdoc components [--tag <name>]` | Print the vocabulary from the live schema. |
 | `richdoc export md\|html\|docx <file>` | Export to markdown / single-file HTML / DOCX. See [references/export.md](references/export.md). |
+| `richdoc publish confluence <subcommand>` | Publish to Confluence Cloud via REST. Subcommands: `spaces`, `pages`, `page-by-id`, `push`. See [references/publish.md](references/publish.md). |
 
 Templates: `plan`, `research`, `comparison`, `onepager`, `adr`, `runbook`, `book-index`, `book-chapter`.
 
