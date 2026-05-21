@@ -600,12 +600,13 @@ def _h_rd_shell(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     display = (el.get("display") or "block").lower()
+    is_inline = display == "inline"
     source = dedent(_element_source(el))
     if not source.strip():
         return
     if not c.render_math:
         # Plain-text fallback: italic source.
-        if display == "inline":
+        if is_inline:
             c.write(f"<em>{xml_escape(source)}</em>")
         else:
             c.write_block(f"<p><em>{xml_escape(source)}</em></p>")
@@ -613,13 +614,12 @@ def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     png = render_math_png(source, endpoint=c.diagram_endpoint)
     if png is None:
         c.math_failed += 1
-        if display == "inline":
+        if is_inline:
             c.write(f"<em>{xml_escape(source)}</em>")
         else:
             c.write_block(f"<p><em>{xml_escape(source)}</em></p>")
         return
     c.math_rendered += 1
-    is_inline = display == "inline"
     token = c.queue_attachment(
         data=png,
         prefix="math",
@@ -630,8 +630,9 @@ def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     )
     if is_inline:
         c.write(token)
-    else:
-        c.write_block(f"<p>{token}</p>")
+        return
+    c.write_block(f"<p>{token}</p>")
+    _emit_source_expand(c, source, lang="latex", summary="Show LaTeX source")
 
 
 def _h_rd_figure(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
@@ -806,6 +807,38 @@ def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         data=png, prefix="diag", mime="image/png", ext=".png", align="center"
     )
     c.write_block(f"<p>{token}</p>")
+    _emit_source_expand(c, source, lang=lang, summary=f"Show {lang} source")
+
+
+def _emit_source_expand(
+    c: _Converter,
+    source: str,
+    *,
+    lang: str,
+    summary: str,
+) -> None:
+    """Emit the rendered-block source inside a collapsible `expand` macro.
+
+    Used by `rd-math` (block) and `rd-diagram` so the published page leads
+    with the rendered image but still keeps the original source
+    accessible — a click on the expand reveals the LaTeX / Mermaid /
+    PlantUML / D2 text, ready for editing without going back to the
+    richdoc HTML.
+    """
+    if not source.strip():
+        return
+    sub = c._spawn_sub()  # noqa: SLF001
+    emit_code_macro(sub, source, lang=lang, title=None)
+    c._merge_counters(sub)  # noqa: SLF001
+    body = "".join(sub.chunks)
+    c.write_block(
+        '<ac:structured-macro ac:name="expand">'
+        '<ac:parameter ac:name="title">'
+        f"{xml_escape(summary)}"
+        "</ac:parameter>"
+        f"<ac:rich-text-body>{body}</ac:rich-text-body>"
+        "</ac:structured-macro>"
+    )
 
 
 # ---------------------------------------------------------------------------
