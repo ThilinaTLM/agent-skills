@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# diagram CLI launcher.
+#
+# Drives the Python implementation through `uv`. uv handles Python install,
+# virtualenv creation, and dependency resolution automatically on first call.
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if ! command -v uv >/dev/null 2>&1; then
+    printf '%s\n' '{"ok":false,"error":"uv is not installed.","code":"PREREQ_MISSING","hint":"Install uv from https://docs.astral.sh/uv/ then retry."}'
+    exit 1
+fi
+
+# `uv run` syncs the project venv on demand and invokes the console script
+# defined in pyproject.toml. --quiet keeps uv from leaking progress text into
+# stdout — only the CLI's JSON output goes to stdout.
+exec uv run --quiet --project "$SCRIPT_DIR" diagram "$@"
