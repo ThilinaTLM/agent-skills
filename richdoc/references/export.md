@@ -75,7 +75,8 @@ On failure, `{"ok": false, "code": "...", "message": "..."}`.
 There is no longer an `export` subcommand for Confluence. To push a richdoc into Confluence Cloud, use the REST-API publisher — see [references/publish.md](publish.md):
 
 ```bash
-richdoc publish confluence push doc.html --space-key DEV --parent-id 12345
+export CONFLUENCE_SPACE_KEY=DEV
+richdoc publish confluence push doc.html --parent-id 12345
 ```
 
 It creates / updates pages in an existing space, preserves the book hierarchy in the native page tree, and renders `rd-code` / `rd-callout` / `rd-detail` as native Confluence macros (real syntax highlighting, real collapsibles) instead of the dead-end zip importer's plain-text-or-PNG fallback.

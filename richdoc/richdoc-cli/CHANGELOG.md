@@ -2,6 +2,50 @@
 
 ## Unreleased
 
+### Changed
+
+- **`richdoc publish confluence` is now configured exclusively via four
+  environment variables**: `CONFLUENCE_SITE`, `CONFLUENCE_EMAIL`,
+  `CONFLUENCE_TOKEN`, and the new `CONFLUENCE_SPACE_KEY`. The CLI no
+  longer accepts the `--site`, `--email`, `--token-stdin`, or
+  `--space-key` flags, and no longer prompts on a TTY (no more
+  `getpass`). When a required env var is missing, the CLI exits with
+  the new `CONFIG_MISSING` error code and a structured `missing[]`
+  field listing the unset vars so the calling agent can ask the user to
+  export them. A present-but-malformed value still surfaces as
+  `AUTH_ERROR`.
+
+  `CONFLUENCE_SPACE_KEY` is required only by `pages` and `push`. The
+  `spaces` and `page-by-id` subcommands need only the auth triple,
+  preserving the discovery flow (running `spaces` to find a value for
+  `CONFLUENCE_SPACE_KEY` would otherwise be paradoxical).
+
+  Rationale: this CLI is driven by an agent, not a human at a TTY. A
+  single env-var contract removes a category of "the agent passed the
+  wrong flag" failures and makes credential setup a one-time user
+  action.
+
+  Migration:
+
+  ```bash
+  # before
+  richdoc publish confluence push doc.html \
+      --site https://acme.atlassian.net --email me@acme.com \
+      --token-stdin --space-key DEV --parent-id 1234567
+
+  # after
+  export CONFLUENCE_SITE=https://acme.atlassian.net
+  export CONFLUENCE_EMAIL=me@acme.com
+  export CONFLUENCE_TOKEN=<token>
+  export CONFLUENCE_SPACE_KEY=DEV
+  richdoc publish confluence push doc.html --parent-id 1234567
+  ```
+
+  Internal API: `publish/confluence/auth.py` is gone. The replacement
+  `publish/confluence/config.py` exposes `Config` / `ConfigError` /
+  `resolve_config(required: tuple[str, ...])` and the constants
+  `AUTH_VARS` / `PUBLISH_VARS`.
+
 ### Added
 
 - **`richdoc publish confluence` — push richdoc HTML into an existing
@@ -69,6 +113,17 @@
   self-contained `.bundle.html`, which conflated "export" with "asset
   packaging" and added a maintenance surface for a format the source
   already is. The remaining export targets are `md` and `docx`.
+- **Dead `export/confluence/` package** (˜2.7k lines). The
+  `html-confluence` CLI was removed earlier but the implementation
+  files were left on disk. Nothing imported them; they referenced a
+  CLI that no longer exists. Now actually gone.
+- **Over-exported names in `publish/confluence/__init__.py`.** The
+  package re-exported 19 symbols; the CLI only used 6. Trimmed
+  `__all__` to the names `commands/publish.py` actually imports
+  (`ConfluenceClient`, `ConfluenceError`, `CredentialError`, `Creds`,
+  `PublishPlan`, `publish`, `resolve_creds`). Specific exception
+  subclasses and storage-format helpers remain available from their
+  defining modules.
 - **`richdoc export html-confluence`** (and its `export/confluence/`
   package). The Confluence HTML-import path always creates a *new*
   space, never lets you update an existing one — dead-end for any

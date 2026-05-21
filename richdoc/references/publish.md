@@ -8,43 +8,47 @@ ongoing workflow).
 ## Quick start
 
 ```bash
-# 1. Tell richdoc who you are. None of these are persisted to disk.
+# 1. Configure once per shell. None of these are persisted to disk.
 export CONFLUENCE_SITE="https://acme.atlassian.net"
 export CONFLUENCE_EMAIL="me@acme.com"
 export CONFLUENCE_TOKEN="<your atlassian api token>"
+export CONFLUENCE_SPACE_KEY="DEV"
 
-# 2. Browse available spaces and pick one.
+# 2. Browse available spaces and pick the one you want in $CONFLUENCE_SPACE_KEY.
+#    (This subcommand ignores $CONFLUENCE_SPACE_KEY — it's how you discover it.)
 richdoc publish confluence spaces
 # → {"ok":true,"spaces":[{"id":"…","key":"DEV","name":"Engineering",…}]}
 
-# 3. Browse pages in that space to pick a parent.
-richdoc publish confluence pages --space-key DEV -q "Docs root"
+# 3. Browse pages in $CONFLUENCE_SPACE_KEY to pick a parent.
+richdoc publish confluence pages -q "Docs root"
 
 # 4. Push the doc.
-richdoc publish confluence push docs/data-design.html \
-    --space-key DEV \
-    --parent-id 1234567
+richdoc publish confluence push docs/data-design.html --parent-id 1234567
 ```
 
 Re-running the same `push` updates the existing pages in place (matched by
 `(space, parent, title)`), re-uploads any changed attachments under the
 same filenames, and bumps each page's version. Idempotent by design.
 
-## Authentication
+## Configuration
 
-| Field | Source priority |
-|---|---|
-| Site URL | `--site URL` flag → `CONFLUENCE_SITE` env → interactive prompt |
-| Email   | `--email EMAIL` flag → `CONFLUENCE_EMAIL` env → interactive prompt |
-| Token   | `--token-stdin` (read one line from stdin) → `CONFLUENCE_TOKEN` env → hidden `getpass` prompt |
+All configuration comes from environment variables. There are no flags
+for these values and no interactive prompts.
+
+| Variable | Required by | Value |
+|---|---|---|
+| `CONFLUENCE_SITE` | all subcommands | e.g. `https://acme.atlassian.net` (bare host is auto-prefixed with `https://`) |
+| `CONFLUENCE_EMAIL` | all subcommands | Atlassian account email |
+| `CONFLUENCE_TOKEN` | all subcommands | API token — generate at <https://id.atlassian.com/manage-profile/security/api-tokens> |
+| `CONFLUENCE_SPACE_KEY` | `pages`, `push` | Target space key, e.g. `DEV` (use `spaces` to discover) |
 
 - Auth is HTTP Basic with `email:api_token` per Atlassian's documented model.
-- An API token is generated at
-  https://id.atlassian.com/manage-profile/security/api-tokens.
 - Tokens **never appear** in logs, JSON envelopes, or temp files.
-- Non-TTY invocations (CI, agent pipelines) that don't supply the token via
-  `--token-stdin` or `CONFLUENCE_TOKEN` exit with `code: AUTH_ERROR` instead
-  of blocking on a prompt.
+- A missing or empty required variable exits with `code: CONFIG_MISSING`
+  and a `missing[]` list naming the unset vars — the CLI never blocks on
+  a prompt and never reads stdin for credentials.
+- A present-but-malformed value (e.g. a `CONFLUENCE_SITE` that isn't a
+  URL) exits with `code: AUTH_ERROR`.
 - A read-only `/spaces?limit=1` probe runs before any write call so bad
   credentials fail fast.
 
@@ -69,13 +73,12 @@ List spaces visible to the token. `-q` filters by key / name substring
 ### `pages`
 
 ```bash
-richdoc publish confluence pages --space-key KEY [-q TEXT]
-    [--parent-id ID] [--limit N]
+richdoc publish confluence pages [-q TEXT] [--parent-id ID] [--limit N]
 ```
 
-List pages in a space. `-q` filters by title substring. `--parent-id`
-restricts to direct children of a specific page. Returns each page with
-`{id, title, parentId, spaceId, version, url}`.
+List pages in `$CONFLUENCE_SPACE_KEY`. `-q` filters by title substring.
+`--parent-id` restricts to direct children of a specific page. Returns
+each page with `{id, title, parentId, spaceId, version, url}`.
 
 ### `page-by-id`
 
@@ -92,10 +95,10 @@ Useful for confirming an `--parent-id` value before pushing.
 richdoc publish confluence push INPUT [OPTIONS]
 ```
 
-Publish a richdoc HTML file (single document or whole book).
+Publish a richdoc HTML file (single document or whole book) into
+`$CONFLUENCE_SPACE_KEY`.
 
 ```
---space-key KEY               Target space.
 --parent-id ID                Parent page id; new pages land under it.
 --parent-title TEXT           Resolve a parent by exact title (must be unique).
 --page-id ID                  Force update of this specific page id.
@@ -208,7 +211,7 @@ For a book (entry file linked via `<rd-toc>`):
 ## Dry-run
 
 ```bash
-richdoc publish confluence push doc.html --space-key DEV --dry-run
+richdoc publish confluence push doc.html --dry-run
 ```
 
 Walks every chapter, runs the storage-XML converter, and reports what
@@ -223,7 +226,8 @@ Useful for previewing macro layout before pushing into a sensitive space.
 
 | Code | Cause |
 |---|---|
-| `AUTH_ERROR` | Bad credentials, or no creds in a non-TTY environment. |
+| `CONFIG_MISSING` | One or more required `CONFLUENCE_*` env vars are not set. The envelope lists them under `missing[]`. |
+| `AUTH_ERROR` | Bad credentials, or a present env var value is malformed (e.g. site URL). |
 | `PERMISSION_DENIED` | Token is valid but lacks write access to the space. |
 | `NOT_FOUND` | Space key, parent id, or `--parent-title` doesn't exist. |
 | `VERSION_CONFLICT` | Someone else updated the page during the publish; retried once, then surfaced. |

@@ -4,18 +4,20 @@ Currently the only target is `confluence`. Three discovery subcommands
 plus the actual publisher live under it:
 
     richdoc publish confluence spaces      [--query …]
-    richdoc publish confluence pages       --space-key … [--query …] [--parent-id …]
+    richdoc publish confluence pages       [--query …] [--parent-id …]
     richdoc publish confluence page-by-id  PAGE_ID
-    richdoc publish confluence push        INPUT [--space-key … --parent-id …]
+    richdoc publish confluence push        INPUT [--parent-id …]
 
-Credentials are resolved through `auth.resolve_creds()` — flags, env
-vars, then interactive prompts (with `getpass` for the token). The token
-never appears in any log or JSON envelope.
+Credentials and the target space come from four environment variables:
+`CONFLUENCE_SITE`, `CONFLUENCE_EMAIL`, `CONFLUENCE_TOKEN`, and
+`CONFLUENCE_SPACE_KEY` (the last is required for `pages` and `push`
+only). There are no flags and no interactive prompts. When a required
+var is missing the CLI exits with `code: CONFIG_MISSING` and the calling
+agent should ask the user to export the listed vars.
 """
 
 from __future__ import annotations
 
-import sys
 from dataclasses import asdict
 from pathlib import Path
 
@@ -23,13 +25,15 @@ import click
 
 from ..output import json_error, json_ok
 from ..publish.confluence import (
+    Config,
+    ConfigError,
     ConfluenceClient,
     ConfluenceError,
-    CredentialError,
     PublishPlan,
     publish as run_publish,
-    resolve_creds,
+    resolve_config,
 )
+from ..publish.confluence.config import AUTH_VARS, PUBLISH_VARS
 
 
 # ---------------------------------------------------------------------------
@@ -53,45 +57,39 @@ def confluence_group() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Shared auth flags
+# Shared env-var config
 # ---------------------------------------------------------------------------
 
 
-def _auth_options(fn):
-    """Decorator: attach --site / --email / --token-stdin to a command."""
-    fn = click.option(
-        "--site", "site_url", type=str, default=None,
-        help="Confluence site URL (e.g. https://acme.atlassian.net). "
-        "Falls back to $CONFLUENCE_SITE, then prompt.",
-    )(fn)
-    fn = click.option(
-        "--email", "email", type=str, default=None,
-        help="Atlassian account email. Falls back to $CONFLUENCE_EMAIL, "
-        "then prompt.",
-    )(fn)
-    fn = click.option(
-        "--token-stdin", "token_stdin", is_flag=True,
-        help="Read the API token as one line from stdin. Falls back to "
-        "$CONFLUENCE_TOKEN, then a hidden getpass prompt.",
-    )(fn)
-    return fn
+def _load_config(required: tuple[str, ...]) -> Config:
+    """Resolve required CONFLUENCE_* env vars or emit a JSON error.
 
-
-def _make_client(
-    *, site_url: str | None, email: str | None, token_stdin: bool,
-) -> ConfluenceClient:
-    """Resolve credentials and build a client. Errors via json_error."""
+    Missing vars → `code: CONFIG_MISSING` with a `missing[]` list so the
+    agent can ask the user to export them. Present-but-malformed values
+    (e.g. bad site URL) → `code: AUTH_ERROR`.
+    """
     try:
-        creds = resolve_creds(
-            site=site_url,
-            email=email,
-            token_stdin=token_stdin,
-            allow_prompt=sys.stdin.isatty(),
-        )
-    except CredentialError as exc:
+        config, missing = resolve_config(required)
+    except ConfigError as exc:
         json_error(str(exc), code="AUTH_ERROR")
+    if missing is not None:
+        names = ", ".join(missing)
+        json_error(
+            f"Missing required environment variables: {names}.",
+            code="CONFIG_MISSING",
+            hint=(
+                "Ask the user to export these environment variables and "
+                "rerun. See references/publish.md for setup."
+            ),
+            missing=missing,
+        )
+    assert config is not None  # narrow for type checkers
+    return config
+
+
+def _make_client(config: Config) -> ConfluenceClient:
     return ConfluenceClient(
-        site=creds.site, email=creds.email, token=creds.token
+        site=config.site, email=config.email, token=config.token,
     )
 
 
@@ -106,7 +104,6 @@ def _handle_confluence_error(exc: ConfluenceError) -> None:
 
 
 @confluence_group.command("spaces")
-@_auth_options
 @click.option(
     "-q", "--query", "query", type=str, default=None,
     help="Filter spaces by key/name substring (case-insensitive).",
@@ -115,15 +112,10 @@ def _handle_confluence_error(exc: ConfluenceError) -> None:
     "--limit", type=int, default=50, show_default=True,
     help="Maximum number of spaces to return.",
 )
-def cmd_spaces(
-    site_url: str | None,
-    email: str | None,
-    token_stdin: bool,
-    query: str | None,
-    limit: int,
-) -> None:
+def cmd_spaces(query: str | None, limit: int) -> None:
     """List Confluence spaces visible to the token."""
-    client = _make_client(site_url=site_url, email=email, token_stdin=token_stdin)
+    config = _load_config(AUTH_VARS)
+    client = _make_client(config)
     try:
         spaces = client.list_spaces(query=query, limit=limit)
     except ConfluenceError as exc:
@@ -148,11 +140,6 @@ def cmd_spaces(
 
 
 @confluence_group.command("pages")
-@_auth_options
-@click.option(
-    "--space-key", "space_key", type=str, required=True,
-    help="Space key to list pages from (e.g. DEV).",
-)
 @click.option(
     "-q", "--query", "query", type=str, default=None,
     help="Filter pages by title substring (case-insensitive).",
@@ -166,18 +153,14 @@ def cmd_spaces(
     help="Maximum number of pages to return.",
 )
 def cmd_pages(
-    site_url: str | None,
-    email: str | None,
-    token_stdin: bool,
-    space_key: str,
-    query: str | None,
-    parent_id: str | None,
-    limit: int,
+    query: str | None, parent_id: str | None, limit: int,
 ) -> None:
-    """List pages in a Confluence space."""
-    client = _make_client(site_url=site_url, email=email, token_stdin=token_stdin)
+    """List pages in the configured Confluence space ($CONFLUENCE_SPACE_KEY)."""
+    config = _load_config(PUBLISH_VARS)
+    client = _make_client(config)
+    assert config.space_key is not None  # guaranteed by PUBLISH_VARS
     try:
-        space = client.get_space_by_key(space_key)
+        space = client.get_space_by_key(config.space_key)
         pages = client.list_pages(
             space_id=space.id, query=query, parent_id=parent_id, limit=limit,
         )
@@ -207,16 +190,11 @@ def cmd_pages(
 
 
 @confluence_group.command("page-by-id")
-@_auth_options
 @click.argument("page_id", metavar="PAGE_ID")
-def cmd_page_by_id(
-    site_url: str | None,
-    email: str | None,
-    token_stdin: bool,
-    page_id: str,
-) -> None:
+def cmd_page_by_id(page_id: str) -> None:
     """Resolve a Confluence page id to {id, title, parentId, spaceId, url}."""
-    client = _make_client(site_url=site_url, email=email, token_stdin=token_stdin)
+    config = _load_config(AUTH_VARS)
+    client = _make_client(config)
     try:
         page = client.get_page(page_id)
     except ConfluenceError as exc:
@@ -250,11 +228,6 @@ def cmd_page_by_id(
     "input_",
     metavar="INPUT",
     type=click.Path(dir_okay=False, exists=True, path_type=Path),
-)
-@_auth_options
-@click.option(
-    "--space-key", "space_key", type=str, required=True,
-    help="Target space key (e.g. DEV).",
 )
 @click.option(
     "--parent-id", "parent_id", type=str, default=None,
@@ -310,10 +283,6 @@ def cmd_page_by_id(
 )
 def cmd_push(
     input_: Path,
-    site_url: str | None,
-    email: str | None,
-    token_stdin: bool,
-    space_key: str,
     parent_id: str | None,
     parent_title: str | None,
     page_id_override: str | None,
@@ -335,7 +304,10 @@ def cmd_push(
             code="INVALID_PARAMS",
         )
 
-    client = _make_client(site_url=site_url, email=email, token_stdin=token_stdin)
+    config = _load_config(PUBLISH_VARS)
+    client = _make_client(config)
+    assert config.space_key is not None  # guaranteed by PUBLISH_VARS
+    space_key = config.space_key
 
     # Resolve parent-by-title to an id, if requested.
     if parent_title and parent_id:

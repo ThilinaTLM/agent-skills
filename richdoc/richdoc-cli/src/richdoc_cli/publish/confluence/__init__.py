@@ -1,51 +1,26 @@
 """Confluence Cloud publishing pipeline.
 
-Public surface used by the CLI command layer:
+Public surface used by the CLI command layer (`commands/publish.py`):
 
-- `Creds`, `resolve_creds`           — credential discovery (auth.py)
-- `ConfluenceClient`, error classes  — REST client (client.py)
-- `html_to_storage`                  — HTML → storage XML (converter.py)
-- `publish`, `PublishPlan`, `PublishResult` — orchestration (pipeline.py)
+- `Config`, `ConfigError`, `resolve_config`  — env-var configuration (config.py)
+- `ConfluenceClient`, `ConfluenceError`      — REST client (client.py)
+- `PublishPlan`, `publish`                   — orchestration (pipeline.py)
+
+Other symbols (specific exception subclasses, storage-format helpers,
+page/attachment dataclasses) are intentionally not re-exported here —
+import them from their defining module if needed.
 """
 
-from .auth import CredentialError, Creds, resolve_creds
-from .client import (
-    Attachment,
-    ConfluenceAuthError,
-    ConfluenceClient,
-    ConfluenceClientError,
-    ConfluenceConflictError,
-    ConfluenceError,
-    ConfluenceNotFoundError,
-    ConfluencePermissionError,
-    ConfluenceTooLargeError,
-    ConfluenceUpstreamError,
-    Page,
-    Space,
-)
-from .converter import StorageResult, html_to_storage
-from .pipeline import PageOutcome, PublishPlan, PublishResult, publish
+from .client import ConfluenceClient, ConfluenceError
+from .config import Config, ConfigError, resolve_config
+from .pipeline import PublishPlan, publish
 
 __all__ = [
-    "Attachment",
-    "ConfluenceAuthError",
+    "Config",
+    "ConfigError",
     "ConfluenceClient",
-    "ConfluenceClientError",
-    "ConfluenceConflictError",
     "ConfluenceError",
-    "ConfluenceNotFoundError",
-    "ConfluencePermissionError",
-    "ConfluenceTooLargeError",
-    "ConfluenceUpstreamError",
-    "CredentialError",
-    "Creds",
-    "Page",
-    "PageOutcome",
     "PublishPlan",
-    "PublishResult",
-    "Space",
-    "StorageResult",
-    "html_to_storage",
     "publish",
-    "resolve_creds",
+    "resolve_config",
 ]
