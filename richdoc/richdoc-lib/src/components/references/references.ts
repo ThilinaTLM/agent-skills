@@ -1,5 +1,5 @@
 import { type Upgradeable, define, el } from "../../lib/dom.ts";
-import { attachTooltip } from "../tooltip/tooltip-service.ts";
+import { attachTooltip } from "../../lib/tooltip-service.ts";
 import { citeSpec, citeTagName, refSpec, refTagName, spec, tagName } from "./references.schema.ts";
 
 /**

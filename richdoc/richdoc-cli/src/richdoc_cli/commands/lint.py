@@ -24,6 +24,26 @@ ALWAYS_ALLOWED_ATTRS = frozenset({"id", "class", "style"})
 # lxml has parsed the doc the damage is invisible.
 SELF_CLOSE_RE = re.compile(r"<(rd-[a-z][a-z0-9-]*)\b[^>]*?/\s*>")
 
+# Tags removed from the vocabulary. When seen in a doc, the linter
+# emits a `removed-tag` error pointing at the replacement so authors
+# get a clear migration path.
+REMOVED_TAGS: dict[str, str] = {
+    "rd-mermaid": 'use <rd-diagram lang="mermaid">',
+    "rd-plantuml": 'use <rd-diagram lang="plantuml">',
+    "rd-swatch": "removed; render the chip inline or with <rd-card>",
+    "rd-gallery": "removed; use <rd-cols> of <rd-figure>",
+    "rd-shot": "removed; child of <rd-gallery> (also removed) \u2014 use <rd-figure>",
+    "rd-embed": "removed; use <iframe> inside <rd-figure>",
+    "rd-tooltip": 'removed; use inline prose or <rd-detail variant="question">',
+    "rd-tree": "removed; nest <rd-detail> elements or use a <ul>",
+    "rd-node": "removed; child of <rd-tree> (also removed)",
+    "rd-roadmap": "removed; use <rd-compare> or an embedded image",
+    "rd-lane": "removed; child of <rd-roadmap> (also removed)",
+    "rd-item": "removed; child of <rd-lane> (also removed)",
+    "rd-quote": "removed; use <blockquote> (styled automatically)",
+    "rd-footnote": 'removed; use <rd-cite key="\u2026"> with <rd-ref>',
+}
+
 
 def _chapter_title(node: ET._Element) -> str:  # noqa: SLF001
     """Text content of an <rd-chapter>, excluding any nested <rd-chapter>.
@@ -204,6 +224,17 @@ def cmd(file: Path) -> None:
         line = node.sourceline
 
         if tag not in allowed_tags:
+            removed_hint = REMOVED_TAGS.get(tag)
+            if removed_hint is not None:
+                _add(
+                    issues,
+                    severity="error",
+                    rule="removed-tag",
+                    tag=tag,
+                    line=line,
+                    message=f"<{tag}> was removed from the richdoc vocabulary — {removed_hint}.",
+                )
+                continue
             _add(
                 issues,
                 severity="error",

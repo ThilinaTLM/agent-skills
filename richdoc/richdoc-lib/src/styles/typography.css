@@ -69,7 +69,7 @@ rd-page > h1 + p::first-letter,
 rd-page > h1 + rd-kv + p::first-letter,
 rd-page > h1 + rd-callout + p::first-letter,
 rd-page > h1 + rd-toc + p::first-letter,
-rd-page > h1 + rd-quote + p::first-letter {
+rd-page > h1 + blockquote + p::first-letter {
 	font-family: var(--rd-font-display);
 	font-weight: var(--rd-weight-semibold);
 	font-size: 3.6em;
@@ -193,15 +193,54 @@ rd-page pre code {
 	font-size: inherit;
 }
 
+/* Pull-quote — magazine-style editorial blockquote with oversized
+   opening glyph. Replaces the deleted <rd-quote> custom element. */
 rd-page blockquote {
+	display: block;
+	position: relative;
+	margin: var(--rd-space-7) 0 var(--rd-space-6);
+	padding: var(--rd-space-2) 0 var(--rd-space-2) var(--rd-space-5);
+	color: var(--rd-fg);
 	font-family: var(--rd-font-display);
-	font-size: var(--rd-text-lg);
-	line-height: var(--rd-leading-relaxed);
-	margin: 0 0 var(--rd-space-5);
-	padding: 0 0 0 var(--rd-space-5);
-	color: var(--rd-fg-muted);
+	font-size: var(--rd-text-2xl);
+	line-height: var(--rd-leading-snug);
 	font-style: italic;
-	font-variation-settings: "opsz" 72;
+	font-weight: var(--rd-weight-normal);
+	font-variation-settings: "opsz" 96;
+	letter-spacing: var(--rd-tracking-snug);
+	text-wrap: balance;
+}
+rd-page blockquote::before {
+	content: "\201C";
+	position: absolute;
+	left: 0;
+	top: -0.35em;
+	font-size: 4em;
+	font-style: normal;
+	line-height: 1;
+	color: var(--rd-accent);
+	font-variation-settings: "opsz" 144;
+	font-weight: var(--rd-weight-bold);
+	pointer-events: none;
+	opacity: 0.85;
+}
+rd-page blockquote > *:not(footer):not(cite) {
+	margin: 0 0 var(--rd-space-3);
+}
+rd-page blockquote > :last-child {
+	margin-bottom: 0;
+}
+rd-page blockquote footer,
+rd-page blockquote cite {
+	display: block;
+	margin-top: var(--rd-space-4);
+	font-family: var(--rd-font-body);
+	font-style: normal;
+	font-size: var(--rd-text-xs);
+	font-weight: var(--rd-weight-semibold);
+	letter-spacing: var(--rd-tracking-caps);
+	text-transform: uppercase;
+	color: var(--rd-fg-muted);
 }
 
 /* Editorial divider — centred ornament. */

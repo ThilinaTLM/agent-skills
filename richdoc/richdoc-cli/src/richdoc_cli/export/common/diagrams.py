@@ -8,24 +8,25 @@ Word versions and Confluence's importer is unreliable.
 The function is best-effort: any failure (network, server error, encoding)
 returns None and the caller falls back to a code block.
 
-Supported diagram kinds map onto Kroki's URL slugs:
-
-  mermaid  -> /mermaid/png
-  plantuml -> /plantuml/png
+Supported diagram kinds map onto Kroki's URL slugs. Any name accepted by
+Kroki works (mermaid, plantuml, graphviz, d2, dbml, bpmn, c4plantuml, erd,
+…). The full list is the `lang` enum on `<rd-diagram>` in the schema and
+the `--type` enum on `diagram-cli`.
 
 Trust model: the diagram source is POSTed to the configured endpoint. The
 default is the public kroki.io instance. For confidential content, pass a
-self-hosted endpoint (e.g. an internal Kroki deployment). This matches the
-existing rd-plantuml trust contract documented in SKILL.md.
+self-hosted endpoint (e.g. an internal Kroki deployment).
 """
 
 from __future__ import annotations
 
-from typing import Literal
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-DiagramKind = Literal["mermaid", "plantuml"]
+# Free-form lang name; the schema's `rd-diagram` lang enum is the
+# authoritative whitelist. The render helper just forwards the string
+# to Kroki, so any new Kroki-supported type works without code change.
+DiagramKind = str
 
 
 def render_to_png(

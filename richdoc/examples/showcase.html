@@ -35,7 +35,7 @@
 		<p>Squeeze the page to <strong>Narrow</strong> in a wide browser to see the multi-column layouts, stat tiles, and TOC adapt to the chosen content width — responsiveness is driven by container queries on <code>rd-page</code>, not the viewport.</p>
 	</rd-callout>
 
-	<p>The look is intentionally editorial<rd-footnote>Markers stay inline as small superscript numerals; the body of each note is collected at the bottom of the enclosing <code>rd-page</code> with auto-numbering and a back-link.</rd-footnote>: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
+	<p>The look is intentionally editorial: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.</p>
 
 	<rd-toc levels="2,3" title="Contents"></rd-toc>
 
@@ -114,11 +114,12 @@
 		</rd-cols>
 	</rd-section>
 
-	<rd-section title="Quotes">
-		<p>Quotes are pull-quotes: oversized Fraunces italic, an outsized opening glyph in the gutter, attribution as tracked small-caps.</p>
-		<rd-quote author="Donald Knuth" cite="Literate Programming, 1984" source-url="https://en.wikipedia.org/wiki/Literate_programming">
+	<rd-section title="Pull-quotes">
+		<p>Pull-quotes use the native <code>&lt;blockquote&gt;</code> element — styled by <code>richdoc.css</code> with an oversized opening glyph, Fraunces italic, and small-caps attribution via <code>&lt;cite&gt;</code> or <code>&lt;footer&gt;</code>.</p>
+		<blockquote>
 			<p>Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.</p>
-		</rd-quote>
+			<cite>Donald Knuth — Literate Programming, 1984</cite>
+		</blockquote>
 	</rd-section>
 
 	<rd-section title="Comparison tables">
@@ -296,7 +297,7 @@
 			</rd-event>
 			<rd-event date="2026-05-16" title="v0.3 editorial redesign">
 				Fraunces + Geist + Fira Code, hairline rules, pull-quotes, oversized stats.
-				Five new tags (<code>rd-icon</code>, <code>rd-math</code>, <code>rd-diff</code>, <code>rd-footnote</code>, glossary support via <code>rd-kv layout="stacked"</code>);
+				Five new tags (<code>rd-icon</code>, <code>rd-math</code>, <code>rd-diff</code>, glossary support via <code>rd-kv layout="stacked"</code>);
 				<code>rd-code</code> upgraded with syntax highlighting and line numbers.
 			</rd-event>
 			<rd-event date="TBD" title="v1.0 multi-doc sites">
@@ -306,17 +307,16 @@
 	</rd-section>
 
 	<rd-section title="Diagrams">
-		<p>Lazy-loaded from CDN on first encounter. If offline, the source falls back to a code block. Hover any diagram and click the corner <strong>maximize</strong> button to open the fullscreen viewer — the SVG stays vector at any zoom level. Inside the viewer: scroll wheel or pinch to zoom, drag to pan, double-click to toggle fit / 1:1, <kbd>0</kbd> to fit, <kbd>1</kbd> to reset, arrow keys to pan, <kbd>Esc</kbd> to close.</p>
-		<rd-mermaid>
+		<p>One element, ~25 diagram languages. Source is sent to a Kroki-compatible endpoint (default <code>kroki.io</code>) and the rendered SVG embeds inline. Set <code>endpoint</code> per-element or <code>&lt;rd-page diagram-endpoint="…"&gt;</code> for the whole doc; for sensitive content point at a self-hosted Kroki. Hover any diagram and click the corner <strong>maximize</strong> button for the fullscreen pan/zoom viewer (<kbd>0</kbd> fit, <kbd>1</kbd> reset, arrow keys pan, <kbd>Esc</kbd> close).</p>
+		<rd-diagram lang="mermaid" caption="Authoring loop (mermaid).">
 			flowchart LR
 				A[Agent writes .html] --> B{richdoc lint}
 				B -- OK --> C[Open in browser]
 				B -- errors --> D[Fix and re-run]
 				D --> B
 				C --> E[Human review]
-		</rd-mermaid>
-		<p><code>rd-plantuml</code> works the same way but renders server-side — the source is sent to a PlantUML-compatible server (default <code>kroki.io</code>). Set <code>endpoint</code> to a self-hosted Kroki or PlantUML instance for sensitive content.</p>
-		<rd-plantuml>
+		</rd-diagram>
+		<rd-diagram lang="plantuml" caption="Same loop in PlantUML.">
 			@startuml
 			actor Agent
 			participant "richdoc CLI" as CLI
@@ -326,17 +326,22 @@
 			Agent -> Browser : open doc.html
 			Browser --> Agent : rendered page
 			@enduml
-		</rd-plantuml>
+		</rd-diagram>
+		<rd-diagram lang="d2" caption="And in D2 — same vocabulary, different language.">
+			Browser -> API: POST /login
+			API -> DB: verify
+			API -> Browser: set cookie
+		</rd-diagram>
 	</rd-section>
 
 	<rd-section title="Figures">
 		<p>Wrap an image, SVG, or diagram with a centred caption. The caption is set in Fraunces italic with a "Fig." kicker in the accent colour.</p>
 		<rd-figure caption="Document lifecycle: author, validate, render, review.">
-			<rd-mermaid>
+			<rd-diagram lang="mermaid">
 				flowchart TB
 					Plan --> Draft --> Validate --> Publish
 					Validate -- fail --> Draft
-			</rd-mermaid>
+			</rd-diagram>
 		</rd-figure>
 	</rd-section>
 
@@ -375,7 +380,7 @@
 	</rd-section>
 
 	<rd-section title="Glossary">
-		<p>Use <code>rd-kv layout="stacked"</code> for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines. For inline previews where a full glossary entry would be overkill, reach for <rd-tooltip term="rd-tooltip">An inline term with a dotted underline. Hover, focus, or tap it to read a rich preview — including <code>code</code>, <em>emphasis</em>, or links — without leaving your place in the prose.</rd-tooltip> instead.</p>
+		<p>Use <code>rd-kv layout="stacked"</code> for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines.</p>
 		<rd-kv layout="stacked" title="Terms used in this document">
 			<rd-row key="richdoc">A small framework for AI-authored, human-read HTML documents that uses a closed vocabulary of <code>rd-*</code> custom elements.</rd-row>
 			<rd-row key="editorial">A design voice borrowed from print publications: hairline rules, oldstyle figures, drop caps, Fraunces display type, restrained colour.</rd-row>
@@ -449,7 +454,7 @@
 			<p>Bundle size is not a concern for documentation artefacts. Plot's grammar-of-graphics defaults match the editorial voice better than anything we'd hand-roll, and one library covers every chart type plus sparklines.</p>
 		</rd-decision>
 		<rd-decision status="rejected" id="ADR-015" date="2026-05-14" title="Tufte-style margin notes as a separate component">
-			<p>A floating-gutter sidenote (<code>rd-margin</code>) was prototyped but rejected: the page column is centred at 1280px with no reserved gutter, so the negative-margin float overflowed off-screen on 1024–1500px viewports — the exact range the wide-mode media query targeted. <code>rd-footnote</code> already provides an inline marker with a hover/focus tooltip preview plus a numbered entry collected at the foot of the page, which covers the same authoring intent on every viewport.</p>
+			<p>A floating-gutter sidenote (<code>rd-margin</code>) was prototyped but rejected: the page column is centred at 1280px with no reserved gutter, so the negative-margin float overflowed off-screen on 1024–1500px viewports — the exact range the wide-mode media query targeted. <code>rd-cite</code> with <code>rd-ref</code> already covers the related authoring case on every viewport.</p>
 		</rd-decision>
 		<rd-decision status="superseded" id="ADR-007" date="2026-02-01" title="Original hand-rolled SVG chart approach">
 			<p>Superseded by ADR-014.</p>
@@ -462,7 +467,7 @@
 	<rd-section title="Status updates">
 		<p>Dated reverse-chron entries for changelogs, release notes, status reports. The kind glyph and tint differ between release / change / note.</p>
 		<rd-update date="2026-05-14" kind="release" author="platform team" title="v0.4 — expanded vocabulary">
-			<p>Phase 1 expanded the framework's structural vocabulary — hero, banner, progress, steps, pros/cons, decision records, updates, tree, terminal sessions, API blocks, rubrics, and swatches all landed in one release.</p>
+			<p>Expanded the framework's structural vocabulary — hero, banner, progress, steps, pros/cons, decision records, updates, terminal sessions, API blocks, and rubrics all landed in one release.</p>
 		</rd-update>
 		<rd-update date="2026-05-12" kind="change" author="dana" title="Schema groups reorganised">
 			<p>Introduced <em>Decision &amp; planning</em> and <em>Reference</em> groupings in the schema registry. Mirrored in the SKILL.md tag tables.</p>
@@ -483,36 +488,6 @@
 		<rd-detail summary="Does it work offline?" variant="question">
 			<p>Yes. The two shipped assets (<code>richdoc.css</code>, <code>richdoc.js</code>) work over <code>file://</code>. Components that need a CDN library (mermaid, KaTeX, charts) degrade to a readable fallback when offline.</p>
 		</rd-detail>
-	</rd-section>
-
-	<rd-section title="Tree">
-		<p>Collapsible hierarchical tree, native <code>&lt;details&gt;</code> under the hood. Useful for file structures, org charts, ontologies.</p>
-		<rd-tree title="Repository layout">
-			<rd-node label="richdoc/" open>
-				<rd-node label="richdoc-cli/">
-					<rd-node label="src/richdoc_cli/">
-						<rd-node label="cli.py"></rd-node>
-						<rd-node label="commands/"></rd-node>
-						<rd-node label="schema.py"></rd-node>
-					</rd-node>
-				</rd-node>
-				<rd-node label="richdoc-lib/" open>
-					<rd-node label="src/components/" open>
-						<rd-node label="hero/"></rd-node>
-						<rd-node label="banner/"></rd-node>
-						<rd-node label="tldr/"></rd-node>
-						<rd-node label="progress/"></rd-node>
-						<rd-node label="... 30+ more"></rd-node>
-					</rd-node>
-					<rd-node label="src/lib/"></rd-node>
-					<rd-node label="build.ts"></rd-node>
-				</rd-node>
-				<rd-node label="examples/">
-					<rd-node label="showcase.html"></rd-node>
-					<rd-node label="status-onepager.html"></rd-node>
-				</rd-node>
-			</rd-node>
-		</rd-tree>
 	</rd-section>
 
 	<rd-section title="Shell sessions">
@@ -565,18 +540,6 @@ copied richdoc.js  → docs/richdoc.js</rd-output>
 				<rd-score value="5" note="no CDN"></rd-score>
 			</rd-criterion>
 		</rd-rubric>
-	</rd-section>
-
-	<rd-section title="Design tokens">
-		<p>Five swatch kinds for design-system documents. Drop them inside <code>rd-cols</code> for a gallery.</p>
-		<rd-cols n="2">
-			<rd-swatch kind="color" name="--rd-accent" value="#8a3a1a" note="Editorial rust"></rd-swatch>
-			<rd-swatch kind="color" name="--rd-bg" value="#f7f3ea" note="Cream paper"></rd-swatch>
-			<rd-swatch kind="type" name="display" value="italic 600 1.5rem/1.2 Fraunces"></rd-swatch>
-			<rd-swatch kind="type" name="body" value="400 1rem/1.55 Geist"></rd-swatch>
-			<rd-swatch kind="radius" name="--rd-radius-md" value="8px"></rd-swatch>
-			<rd-swatch kind="shadow" name="--rd-shadow-md" value="0 2px 6px rgba(20,18,14,.07), 0 1px 2px rgba(20,18,14,.04)"></rd-swatch>
-		</rd-cols>
 	</rd-section>
 
 	<rd-section title="Citations and references">
@@ -636,39 +599,6 @@ West,Add-on,11
 				<rd-chart variant="sparkline" kind="area" data="8,9,9.5,10,10.8,11.2,11.6,11.9,12.1,12.4" color="var(--rd-accent)"></rd-chart>
 			</rd-stat>
 		</rd-cols>
-	</rd-section>
-
-	<rd-section title="Roadmap">
-		<p>Horizon view rendered as a themed CSS gantt — no external library, no horizontal scrollbars. Lanes are workstreams; items are date-bracketed tasks with an optional <code>progress</code> attribute (0–1) and <code>tone</code>. A discreet “today” marker is drawn when the current date falls inside the window.</p>
-		<rd-roadmap start="2026-01-01" end="2026-09-30" unit="month" title="Platform 2026 H1+">
-			<rd-lane name="Editor">
-				<rd-item start="2026-01-01" end="2026-02-28" label="v0.3 redesign" progress="1" tone="positive"></rd-item>
-				<rd-item start="2026-03-01" end="2026-05-15" label="v0.4 vocabulary expansion" progress="0.8" tone="positive"></rd-item>
-				<rd-item start="2026-05-15" end="2026-07-31" label="v1.0 multi-doc sites" progress="0.1"></rd-item>
-			</rd-lane>
-			<rd-lane name="Tooling">
-				<rd-item start="2026-02-01" end="2026-04-15" label="CLI rewrite (Python)" progress="1" tone="positive"></rd-item>
-				<rd-item start="2026-04-15" end="2026-08-31" label="Hosted lint service" progress="0.2"></rd-item>
-			</rd-lane>
-			<rd-lane name="Community">
-				<rd-item start="2026-03-01" end="2026-05-31" label="Showcase site" progress="0.5" tone="neutral"></rd-item>
-				<rd-item start="2026-06-01" end="2026-09-30" label="Template marketplace" progress="0"></rd-item>
-			</rd-lane>
-		</rd-roadmap>
-	</rd-section>
-
-	<rd-section title="Gallery and embeds">
-		<p>Screenshot grids open in a PhotoSwipe lightbox. Embeds detect YouTube and Vimeo URLs and use the matching <code>lite-*</code> web component for fast initial paint; anything else renders as a sandboxed iframe.</p>
-		<rd-gallery cols="3" title="Recent designs">
-			<rd-shot src="https://picsum.photos/id/1015/1600/1000" alt="Mountain landscape" caption="Landscape · 1015"></rd-shot>
-			<rd-shot src="https://picsum.photos/id/1024/1600/1000" alt="Bear in a forest" caption="Wildlife · 1024"></rd-shot>
-			<rd-shot src="https://picsum.photos/id/1043/1600/1000" alt="City rooftops" caption="Urban · 1043"></rd-shot>
-			<rd-shot src="https://picsum.photos/id/1067/1600/1000" alt="Coastline" caption="Coast · 1067"></rd-shot>
-			<rd-shot src="https://picsum.photos/id/1080/1600/1000" alt="Fruit on a tree" caption="Botanical · 1080"></rd-shot>
-			<rd-shot src="https://picsum.photos/id/1084/1600/1000" alt="Tiger" caption="Wildlife · 1084"></rd-shot>
-		</rd-gallery>
-
-		<rd-embed src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="YouTube embed example" caption="YouTube embeds use lite-youtube for fast initial paint."></rd-embed>
 	</rd-section>
 
 	<rd-section title="Spoilers">

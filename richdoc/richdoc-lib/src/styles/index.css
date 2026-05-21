@@ -23,7 +23,6 @@
 /* Decoration / inline (icon first so callout's nested <rd-icon> picks
    up its styling immediately). */
 @import "../components/icon/icon.css";
-@import "../components/tooltip/tooltip.css";
 
 /* Information blocks */
 @import "../components/callout/callout.css";
@@ -33,9 +32,6 @@
 @import "../components/progress/progress.css";
 @import "../components/chart/chart.css";
 @import "../components/update/update.css";
-@import "../components/quote/quote.css";
-@import "../components/footnote/footnote.css";
-@import "../components/swatch/swatch.css";
 
 /* Comparison & code */
 @import "../components/compare/compare.css";
@@ -50,30 +46,27 @@
 @import "../components/timeline/timeline.css";
 @import "../components/steps/steps.css";
 @import "../components/detail/detail.css";
-@import "../components/tree/tree.css";
 @import "../components/checklist/checklist.css";
 
 /* Decision & planning */
 @import "../components/decision/decision.css";
 @import "../components/pros-cons/pros-cons.css";
-@import "../components/roadmap/roadmap.css";
 
 /* Reference */
 @import "../components/api/api.css";
 @import "../components/references/references.css";
 
 /* Diagrams, media */
-@import "../components/mermaid/mermaid.css";
-@import "../components/plantuml/plantuml.css";
+@import "../components/diagram/diagram.css";
 @import "../components/figure/figure.css";
-@import "../components/gallery/gallery.css";
-@import "../components/embed/embed.css";
 @import "../components/toc/toc.css";
 
-/* Preview chrome and shared diagram viewer. Both are floating overlays
-   that paint above the page; their styles must resolve before print.css
-   so the print rules can override them. */
+/* Preview chrome, shared tooltip layer (used by rd-cite), and shared
+   diagram viewer. All three are floating overlays that paint above the
+   page; their styles must resolve before print.css so the print rules
+   can override them. */
 @import "../components/prefs/prefs.css";
+@import "../lib/tooltip-layer.css";
 @import "../lib/diagram-viewer.css";
 
 @import "./print.css";

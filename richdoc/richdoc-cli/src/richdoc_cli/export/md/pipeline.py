@@ -88,6 +88,41 @@ def export_md(
     return result
 
 
+def render_to_string(
+    entry: Path,
+    *,
+    no_book: bool = False,
+    include_remote_images: bool = False,
+) -> str:
+    """Render the entry (and its book, if any) to a combined markdown string.
+
+    Used by `-o -` (stdout) where there is no output folder to materialise
+    assets into. Image references survive as the relative
+    ``assets/<hash>.<ext>`` strings the caller can resolve later.
+    """
+    discovery = discover_chapters(entry)
+    is_book = discovery.is_book and not no_book
+    chapters = discovery.chapters if is_book else discovery.chapters[:1]
+    store = AssetStore()
+    if is_book and len(chapters) > 1:
+        md_text, _ = combine_chapters_to_markdown(
+            chapters=chapters,
+            book_title=_book_title(entry, chapters),
+            asset_store=store,
+            include_remote_images=include_remote_images,
+        )
+    else:
+        single = chapters[0]
+        md_text, _ = html_to_markdown(
+            single.html,
+            asset_store=store,
+            asset_base=single.path.parent,
+            include_remote_images=include_remote_images,
+            assets_subdir="assets",
+        )
+    return md_text
+
+
 # ---------------------------------------------------------------------------
 # Single-file output (one combined .md)
 # ---------------------------------------------------------------------------

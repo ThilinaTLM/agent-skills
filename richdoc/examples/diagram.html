@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>rd-diagram — language showcase</title>
+	<link rel="stylesheet" href="../richdoc-lib/assets/richdoc.css">
+	<script src="../richdoc-lib/assets/richdoc.js" defer></script>
+</head>
+<body>
+<rd-page>
+
+	<rd-hero
+		eyebrow="Component reference"
+		title="One element, every diagram language."
+		lede="<rd-diagram lang='…'> covers ~25 diagram types via Kroki. Source goes out, SVG comes back — no client-side renderer libraries."
+		meta="Component: rd-diagram"></rd-hero>
+
+	<rd-callout type="tldr" title="Trust contract">
+		<p>Every diagram POSTs its source to a Kroki endpoint. The default is the public <code>https://kroki.io</code>. Override per-element with <code>endpoint="…"</code> or doc-wide with <code>&lt;rd-page diagram-endpoint="…"&gt;</code>. For sensitive content, point at a self-hosted Kroki or PlantUML server.</p>
+	</rd-callout>
+
+	<rd-section title="Mermaid — flowcharts and sequences">
+		<p>The most familiar of the bunch. Flowcharts, sequence diagrams, ER diagrams, gantts, state machines.</p>
+		<rd-diagram lang="mermaid" caption="Flowchart with conditional branches.">
+			flowchart LR
+				A[Agent writes .html] --> B{richdoc lint}
+				B -- OK --> C[Open in browser]
+				B -- errors --> D[Fix and re-run]
+				D --> B
+				C --> E[Human review]
+		</rd-diagram>
+	</rd-section>
+
+	<rd-section title="PlantUML — UML and sequence detail">
+		<p>Wider UML coverage than Mermaid; understands <code>!theme</code> directives. Dark-mode docs auto-inject <code>!theme cyborg-outline</code> unless you set <code>theme="…"</code> or <code>theme="none"</code>.</p>
+		<rd-diagram lang="plantuml" caption="Authoring loop as a sequence diagram.">
+			@startuml
+			actor Agent
+			participant "richdoc CLI" as CLI
+			database Browser
+			Agent -> CLI : richdoc lint doc.html
+			CLI --> Agent : ok
+			Agent -> Browser : open doc.html
+			Browser --> Agent : rendered page
+			@enduml
+		</rd-diagram>
+	</rd-section>
+
+	<rd-section title="D2 — modern architecture diagrams">
+		<p>Compact syntax for service / architecture diagrams. Strong defaults, minimal ceremony.</p>
+		<rd-diagram lang="d2" caption="Three-tier auth flow.">
+			Browser -> API: POST /login
+			API -> DB: verify credentials
+			DB -> API: ok
+			API -> Browser: set session cookie
+		</rd-diagram>
+	</rd-section>
+
+	<rd-section title="GraphViz / DOT — directed graphs">
+		<p>The classic. Useful when you want explicit node and edge styling.</p>
+		<rd-diagram lang="graphviz" caption="Build graph.">
+			digraph G {
+				rankdir=LR;
+				node [shape=box, style=rounded];
+				Source -> Compile -> Link -> Binary;
+				Source -> Test -> Binary [style=dashed];
+			}
+		</rd-diagram>
+	</rd-section>
+
+	<rd-section title="DBML — database schema">
+		<p>Schema as code. Renders an ERD with cardinality.</p>
+		<rd-diagram lang="dbml" caption="Three-table schema.">
+			Table users {
+			  id uuid [pk]
+			  email varchar [unique]
+			  created_at timestamp
+			}
+
+			Table posts {
+			  id uuid [pk]
+			  author_id uuid [ref: > users.id]
+			  body text
+			}
+
+			Table comments {
+			  id uuid [pk]
+			  post_id uuid [ref: > posts.id]
+			  author_id uuid [ref: > users.id]
+			  body text
+			}
+		</rd-diagram>
+	</rd-section>
+
+	<rd-section title="Pikchr — box-and-arrow figures">
+		<p>Compact SQLite-flavoured diagrammer; good for box-and-arrow figures inside technical prose.</p>
+		<rd-diagram lang="pikchr" caption="Three-tier request flow.">
+			box "Client"
+			arrow right "request" above
+			box "API"
+			arrow right "query" above
+			box "DB"
+		</rd-diagram>
+	</rd-section>
+
+	<rd-section title="Notes">
+		<p>If Kroki is unreachable or the browser doesn't support <code>CompressionStream</code>, the diagram source renders as a code block so the content still travels. The corner maximize button opens a shared fullscreen SVG pan/zoom viewer (mouse wheel, drag, <kbd>0</kbd>/<kbd>1</kbd>/arrows, <kbd>Esc</kbd>).</p>
+	</rd-section>
+
+</rd-page>
+</body>
+</html>

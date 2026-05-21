@@ -439,7 +439,7 @@
 }
 
 /* Viewport-entry reveal — shared primitive used by rd-card, rd-callout,
-   rd-figure, rd-quote, rd-event, rd-stat, and anything else that opts in
+   rd-figure, rd-event, rd-stat, and anything else that opts in
    via `reveal(this)` in lib/reveal.ts. The helper sets data-rd-reveal
    immediately and data-rd-revealed when the element scrolls into view. */
 [data-rd-reveal] {

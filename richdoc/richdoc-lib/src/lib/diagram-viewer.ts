@@ -19,7 +19,7 @@
  * result — visibly blurry above ~1.5×. That trap is what this two-
  * channel design avoids.
  *
- * Used by `<rd-mermaid>` and `<rd-plantuml>` via a small corner button
+ * Used by `<rd-diagram>` via a small corner button
  * each component injects after render. Reused as a singleton: the
  * <dialog> and stage are built on first call and re-used on subsequent
  * opens.

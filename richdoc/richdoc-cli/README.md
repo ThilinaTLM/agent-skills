@@ -25,7 +25,7 @@ src/richdoc_cli/
     book.py           #   multi-file book discovery
     common/           #   format-agnostic helpers
       assets.py       #     AssetStore (file dedup + remote fetch)
-      diagrams.py     #     Kroki POST helper for mermaid / plantuml
+      diagrams.py     #     Kroki POST helper for rd-diagram (any lang)
       walker.py       #     parse_html, inline_text, element_source
       chart_data.py   #     rd-chart data parser (returns ChartTable)
       modes.py        #     ExportMode + plan_outputs (single vs multi)

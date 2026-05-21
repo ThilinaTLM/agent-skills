@@ -241,7 +241,7 @@ def _inline_scripts(root: ET._Element, state: _State) -> None:  # noqa: SLF001
 
 
 # ----------------------------------------------------------------------------
-# Media: img, source, video, audio, track, poster, rd-shot, rd-embed, rd-figure
+# Media: img, source, video, audio, track, poster, rd-figure
 # ----------------------------------------------------------------------------
 
 
@@ -255,8 +255,6 @@ _MEDIA_TARGETS: tuple[tuple[str, str, str, bool], ...] = (
     ("video", "poster", _CAT_IMAGES, False),
     ("audio", "src", _CAT_OTHER, False),
     ("track", "src", _CAT_OTHER, False),
-    ("rd-shot", "src", _CAT_IMAGES, False),
-    ("rd-embed", "src", _CAT_OTHER, False),
 )
 
 

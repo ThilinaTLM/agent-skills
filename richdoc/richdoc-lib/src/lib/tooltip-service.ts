@@ -1,8 +1,7 @@
 /**
  * Tooltip helper — owns the floating popup layer, event wiring, ARIA, and
- * positioning. Used by <rd-tooltip> for author-attached previews and by
- * <rd-footnote> to give its inline marker a hover preview of the bottom-
- * of-page entry.
+ * positioning. Used by <rd-cite> to give its inline marker a hover preview
+ * of the corresponding bibliography entry.
  *
  * Design notes:
  *   - One shared `<div class="_rd-tooltip-layer">` lives in <body> and
