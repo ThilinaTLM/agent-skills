@@ -15,7 +15,25 @@ Reusable AI agent skills — drop a skill directory into your project and your a
 
 ## Installation
 
-Clone the repo and copy any skill directory into your project's skills location:
+### Install with the skills.sh CLI
+
+Use the [`skills`](https://skills.sh/docs/cli) CLI to install skills from this repository:
+
+```bash
+npx skills add ThilinaTLM/agent-skills
+```
+
+To install one skill, pass its name:
+
+```bash
+npx skills add ThilinaTLM/agent-skills --skill diagram
+```
+
+See the [skills.sh CLI docs](https://skills.sh/docs/cli) for agent selection, global installs, updates, and other options.
+
+### Manual install
+
+You can also clone the repo and copy any skill directory into your project's skills location:
 
 ```bash
 git clone https://github.com/ThilinaTLM/agent-skills.git
