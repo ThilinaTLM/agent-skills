@@ -191,7 +191,8 @@ page opens cleanly in the new editor with **no "legacy content" warnings**.
 | `rd-figure` | inner image + `<p><em>caption</em></p>` |
 | `rd-kv` (inline) | modern `<table data-layout="default">` with explicit `<colgroup>` (200px key column) and `<th><p><strong>K</strong></p></th>` rows; value rendered as inline content in a single `<p>` inside `<td>` |
 | `rd-kv` (stacked) | same table shape but with block content (lists, paragraphs, code) rendered directly inside the value `<td>` |
-| `rd-compare`, `rd-rubric`, `rd-api`, `rd-chart` (non-sparkline) | native `<table>` |
+| `rd-compare`, `rd-rubric`, `rd-chart` (non-sparkline) | native `<table>` with a bold header row (`<th><p><strong>…</strong></p></th>`) |
+| `rd-api` | one modern `<table data-layout="default">` per endpoint, rd-kv-shaped (bold key column, 200px / 760px colgroup). Rows are emitted only when present: **Endpoint** (method as native Status macro + `<code>path</code>`; GET=Green, POST=Blue, PUT/PATCH=Yellow, DELETE=Red, HEAD/OPTIONS=Grey), **Description** (`title`), **Auth** (`auth`), **Path params** / **Query params** / **Headers** / **Body** (each as `<ul>` of params grouped by `in`), **Responses** (status as Green/Yellow/Red lozenge by HTTP class). |
 | `rd-stat` | modern **Panel** (`panel-type="note"`) with bold value + meta line — panels arranged in `rd-cols` look like dashboard tiles |
 | `rd-progress`, `rd-update` | `<p>` with bold value + meta |
 | `rd-tabs` | each tab as `<h3>` + body |
@@ -211,6 +212,13 @@ When any `rd-cols` (or `rd-pros-cons`) emits a layout section, the
 converter post-processes the body and wraps everything in `<ac:layout>`,
 grouping peer content between layout-sections into `fixed-width`
 sections. Pages without multi-column content skip the wrap entirely.
+
+Plain `<table>` cells render `<th>` with the same bold wrapper as
+`rd-kv` keys (`<th><p><strong>…</strong></p></th>`) so header rows are
+visibly bold in Confluence's modern editor — the editor doesn't
+auto-bold `<th>` and only paints a light grey background by default.
+Note: editing a published page through Confluence's UI may strip the
+`<strong>` wrapper on save (ADF round-trip); republishing restores it.
 
 ## Attachments
 

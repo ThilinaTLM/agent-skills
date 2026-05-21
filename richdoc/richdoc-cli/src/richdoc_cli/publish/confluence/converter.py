@@ -438,6 +438,22 @@ def xml_attr(text: str) -> str:
     return xml_escape(text)
 
 
+def th_bold(inner_xml: str) -> str:
+    """Build a `<th>` cell whose inline content is wrapped to render bold
+    in Confluence's modern editor.
+
+    Confluence does not auto-bold `<th>` in its modern table renderer;
+    only a light grey background distinguishes header cells. Wrapping
+    the cell body in `<p><strong>...</strong></p>` matches the shape
+    Atlassian's own templates emit and survives the storage-format
+    round-trip when pages are pushed via the v2 API.
+
+    The empty-cell fallback (`&#160;`) keeps an empty header cell at the
+    usual cell height instead of collapsing to a thin sliver.
+    """
+    return f"<th><p><strong>{inner_xml or '&#160;'}</strong></p></th>"
+
+
 def cdata_safe(text: str) -> str:
     """Escape any embedded `]]>` so `text` is safe inside a CDATA block."""
     # Split `]]>` into `]]]]><![CDATA[>` so each fragment lives inside its

@@ -34,6 +34,7 @@ from .converter import (
     _Converter,
     _element_source,
     dedent,
+    th_bold,
     xml_attr,
     xml_escape,
 )
@@ -70,6 +71,40 @@ _DECISION_STATE = {
     "proposed":   ("UNDECIDED", "Blue",   "Proposed"),
     "superseded": ("UNDECIDED", "Purple", "Superseded"),
 }
+
+# Map HTTP method names onto the native Status macro `colour` palette.
+# Used by `_h_rd_api` to render the method as a coloured lozenge in the
+# endpoint table's first row.
+_METHOD_COLOUR = {
+    "GET":     "Green",
+    "POST":    "Blue",
+    "PUT":     "Yellow",
+    "PATCH":   "Yellow",
+    "DELETE":  "Red",
+    "HEAD":    "Grey",
+    "OPTIONS": "Grey",
+}
+
+
+def _response_colour(status: str) -> str | None:
+    """Pick a Status-macro colour for an HTTP response code.
+
+    2xx → Green, 3xx → Yellow, 4xx/5xx → Red. Non-numeric / unknown
+    statuses fall through to `None`, which `_status_macro` renders as
+    the default Grey lozenge.
+    """
+    try:
+        n = int(status)
+    except (TypeError, ValueError):
+        return None
+    if 200 <= n < 300:
+        return "Green"
+    if 300 <= n < 400:
+        return "Yellow"
+    if n >= 400:
+        return "Red"
+    return None
+
 
 # Map rd-badge variants onto the native Status macro `colour` value.
 # `None` falls through to the default (Grey).
@@ -333,7 +368,7 @@ def _h_rd_kv(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             value_xml = f"<p>{inline or '&#160;'}</p>"
         body_rows.append(
             "<tr>"
-            f"<th><p><strong>{xml_escape(key)}</strong></p></th>"
+            f"{th_bold(xml_escape(key))}"
             f"<td>{value_xml}</td>"
             "</tr>"
         )
@@ -507,7 +542,7 @@ def _h_rd_compare(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         body_rows.append("<tr>" + "".join(f"<td>{cell}</td>" for cell in r) + "</tr>")
     head_xml = (
         "<thead><tr>"
-        + "".join(f"<th>{cell}</th>" for cell in header_cells)
+        + "".join(th_bold(cell) for cell in header_cells)
         + "</tr></thead>"
     )
     c.write_block(
@@ -551,7 +586,7 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     head_cells = ["&#160;", *[xml_escape(o) for o in options]]
     head_xml = (
         "<thead><tr>"
-        + "".join(f"<th>{cell}</th>" for cell in head_cells)
+        + "".join(th_bold(cell) for cell in head_cells)
         + "</tr></thead>"
     )
     body_xml = "".join(
@@ -989,80 +1024,138 @@ def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_api(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    method = (el.get("method") or "").strip()
+    """rd-api → one rd-kv-shaped table per endpoint.
+
+    Rows (omitted when their source data is empty):
+
+    - **Endpoint**   — method status-macro + `<code>path</code>`
+    - **Description**— the `title` attribute
+    - **Auth**       — the `auth` attribute as `<code>`
+    - **Path params** / **Query params** / **Headers** / **Body**
+      — one `<ul>` per non-empty group, params formatted as
+      `<code>name</code> <code>type</code> <em>required</em>
+      default <code>x</code> — description`.
+    - **Responses**  — `<ul>` where each line is the status as a
+      colour-coded Status macro (Green / Yellow / Red), optional
+      content-type, and description.
+
+    The table envelope matches `_h_rd_kv` so the bold key column and
+    consistent column widths render identically in Confluence's modern
+    editor.
+    """
+    method = (el.get("method") or "GET").strip().upper() or "GET"
     path = (el.get("path") or "").strip()
     auth = (el.get("auth") or "").strip()
     title = (el.get("title") or "").strip()
-    head = (
-        f"<h3><code>{xml_escape(method)}</code> "
-        f"<code>{xml_escape(path)}</code>"
-    )
-    if title:
-        head += f" — {xml_escape(title)}"
-    head += "</h3>"
-    c.write_block(head)
-    if auth:
-        c.write_block(
-            f"<p><em>auth:</em> <code>{xml_escape(auth)}</code></p>"
-        )
-    params, responses = [], []
+
+    groups: dict[str, list[ET._Element]] = {
+        "path": [], "query": [], "header": [], "body": [],
+    }
+    responses: list[ET._Element] = []
     for child in el:
         if not isinstance(child.tag, str):
             continue
         t = child.tag.lower()
         if t == "rd-param":
-            params.append(child)
+            in_ = (child.get("in") or "query").strip().lower()
+            if in_ not in groups:
+                in_ = "query"
+            groups[in_].append(child)
         elif t == "rd-response":
             responses.append(child)
-    if params:
-        head_xml = (
-            "<thead><tr>"
-            "<th>Param</th><th>In</th><th>Required</th>"
-            "<th>Type</th><th>Default</th><th>Description</th>"
-            "</tr></thead>"
+
+    rows: list[str] = []
+
+    def add_row(key: str, value_xml: str) -> None:
+        rows.append(
+            "<tr>"
+            f"{th_bold(xml_escape(key))}"
+            f"<td>{value_xml}</td>"
+            "</tr>"
         )
-        body_rows = []
-        for p in params:
-            name = p.get("name") or ""
-            in_ = p.get("in") or "query"
-            req = "✓" if p.get("required") is not None else ""
-            type_ = p.get("type") or ""
-            default = p.get("default") or ""
-            desc = c.render_inline(p).strip()
-            body_rows.append(
-                "<tr>"
-                f"<td><code>{xml_escape(name)}</code></td>"
-                f"<td>{xml_escape(in_)}</td>"
-                f"<td>{xml_escape(req)}</td>"
-                f"<td>{xml_escape(type_)}</td>"
-                f"<td>{xml_escape(default)}</td>"
-                f"<td>{desc}</td>"
-                "</tr>"
-            )
-        c.write_block(
-            f"<table>{head_xml}<tbody>{''.join(body_rows)}</tbody></table>"
-        )
+
+    method_macro = _status_macro(method, _METHOD_COLOUR.get(method, "Grey"))
+    path_xml = f"<code>{xml_escape(path)}</code>" if path else ""
+    endpoint_value = f"<p>{method_macro}{(' ' + path_xml) if path_xml else ''}</p>"
+    add_row("Endpoint", endpoint_value)
+
+    if title:
+        add_row("Description", f"<p>{xml_escape(title)}</p>")
+    if auth:
+        add_row("Auth", f"<p><code>{xml_escape(auth)}</code></p>")
+
+    group_labels = {
+        "path":   "Path params",
+        "query":  "Query params",
+        "header": "Headers",
+        "body":   "Body",
+    }
+    for key in ("path", "query", "header", "body"):
+        plist = groups.get(key) or []
+        if not plist:
+            continue
+        items: list[str] = []
+        for p in plist:
+            items.append(f"<li>{_render_param_line(c, p)}</li>")
+        add_row(group_labels[key], f"<ul>{''.join(items)}</ul>")
+
     if responses:
-        head_xml = (
-            "<thead><tr>"
-            "<th>Status</th><th>Type</th><th>Description</th>"
-            "</tr></thead>"
-        )
-        body_rows = []
-        for r in responses:
-            status = r.get("status") or ""
-            type_ = r.get("type") or ""
-            desc = c.render_inline(r).strip()
-            body_rows.append(
-                "<tr>"
-                f"<td><code>{xml_escape(status)}</code></td>"
-                f"<td>{xml_escape(type_)}</td>"
-                f"<td>{desc}</td>"
-                "</tr>"
-            )
-        c.write_block(
-            f"<table>{head_xml}<tbody>{''.join(body_rows)}</tbody></table>"
-        )
+        items = [f"<li>{_render_response_line(c, r)}</li>" for r in responses]
+        add_row("Responses", f"<ul>{''.join(items)}</ul>")
+
+    c.write_block(
+        '<table data-layout="default">'
+        "<colgroup>"
+        '<col style="width: 200.0px;" />'
+        '<col style="width: 760.0px;" />'
+        "</colgroup>"
+        f"<tbody>{''.join(rows)}</tbody>"
+        "</table>"
+    )
+
+
+def _render_param_line(c: _Converter, p: ET._Element) -> str:  # noqa: SLF001
+    """Render one `<rd-param>` as a single inline list-item body.
+
+    Format: ``<code>name</code> <code>type</code> <em>required</em>
+    default <code>x</code> — description``. Each segment is omitted
+    when its source attribute is empty.
+    """
+    name = (p.get("name") or "").strip()
+    type_ = (p.get("type") or "").strip()
+    default = (p.get("default") or "").strip()
+    bits: list[str] = [f"<code>{xml_escape(name)}</code>"] if name else []
+    if type_:
+        bits.append(f"<code>{xml_escape(type_)}</code>")
+    if p.get("required") is not None:
+        bits.append("<em>required</em>")
+    if default:
+        bits.append(f"default <code>{xml_escape(default)}</code>")
+    line = " ".join(bits)
+    desc = c.render_inline(p).strip()
+    if desc:
+        line = f"{line} — {desc}" if line else desc
+    return line
+
+
+def _render_response_line(c: _Converter, r: ET._Element) -> str:  # noqa: SLF001
+    """Render one `<rd-response>` as a single inline list-item body.
+
+    Format: ``{status status-macro} <code>type</code> — description``.
+    Status macro colour comes from `_response_colour`.
+    """
+    status = (r.get("status") or "").strip()
+    type_ = (r.get("type") or "").strip()
+    bits: list[str] = []
+    if status:
+        bits.append(_status_macro(status, _response_colour(status)))
+    if type_:
+        bits.append(f"<code>{xml_escape(type_)}</code>")
+    line = " ".join(bits)
+    desc = c.render_inline(r).strip()
+    if desc:
+        line = f"{line} — {desc}" if line else desc
+    return line
 
 
 # ---------------------------------------------------------------------------

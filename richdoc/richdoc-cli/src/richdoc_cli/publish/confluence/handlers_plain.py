@@ -26,6 +26,7 @@ from .converter import (
     _Converter,
     cdata_safe,
     dedent,
+    th_bold,
     xml_attr,
     xml_escape,
 )
@@ -251,25 +252,28 @@ def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     rows_xml: list[str] = []
     for tr in el.iter("tr"):
         cells: list[str] = []
-        any_th = False
         for cell in tr:
             if not isinstance(cell.tag, str):
                 continue
             t = cell.tag.lower()
-            if t not in ("th", "td"):
-                continue
             if t == "th":
-                any_th = True
-            inner = c.render_block_inner(cell).strip()
-            if not inner:
-                # Confluence renders an empty cell as a thin sliver; pad
-                # with a non-breaking space for visual stability.
-                inner = "&#160;"
-            cells.append(f"<{t}>{inner}</{t}>")
+                # Confluence's modern editor doesn't auto-bold `<th>`
+                # cells; wrap inline content with `<p><strong>…</strong></p>`
+                # so headers actually look like headers.
+                inner = c.render_inline(cell).strip()
+                cells.append(th_bold(inner))
+            elif t == "td":
+                inner = c.render_block_inner(cell).strip()
+                if not inner:
+                    # Confluence renders an empty cell as a thin sliver;
+                    # pad with a non-breaking space for visual stability.
+                    inner = "&#160;"
+                cells.append(f"<td>{inner}</td>")
+            else:
+                continue
         if not cells:
             continue
         rows_xml.append(f"<tr>{''.join(cells)}</tr>")
-        del any_th
     if not rows_xml:
         return
     c.write_block(f"<table><tbody>{''.join(rows_xml)}</tbody></table>")
