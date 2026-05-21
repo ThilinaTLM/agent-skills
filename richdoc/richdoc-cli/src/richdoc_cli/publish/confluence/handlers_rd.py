@@ -1,28 +1,36 @@
 """rd-* component handlers for the Confluence storage-format converter.
 
-Confluence's storage format gives us native macros for code, callouts,
-expand/collapse, and tables — which lets the publish path keep richdoc
-documents *editable* in the Confluence UI after the push, instead of the
-PNG-soup the abandoned zip exporter produced.
+Confluence's storage format gives us native cloud-editor elements for
+layouts, panels, decisions, status lozenges, code, expand/collapse, and
+tables — which lets the publish path keep richdoc documents *editable*
+in the Confluence UI after the push, with no "legacy content" warnings.
 
 Mapping cheat-sheet (long form lives in references/publish.md):
 
+- rd-cols / rd-pros-cons        → native `<ac:layout-section>` (page layout)
+- rd-card / rd-stat             → modern Panel (`<ac:adf-node type="panel">`)
+- rd-callout / rd-banner        → modern Panel (same form as cards)
+- rd-decision                   → modern Decision (`<ac:adf-node type="decision-list">`)
+- rd-badge                      → native Status macro (coloured lozenge)
+- rd-kv                         → modern table with `data-layout` + col widths
 - rd-code / rd-diff / rd-shell  → native `code` macro
-- rd-callout / rd-banner        → native `info` / `note` / `warning` / `tip` macros
-- rd-detail                     → native `expand` macro (still collapsible!)
+- rd-detail                     → native `expand` macro (still collapsible)
 - rd-math / rd-diagram          → Kroki PNG → page attachment → <ac:image>
-- rd-toc                        → dropped (Confluence native sidebar shows the tree)
+- rd-toc                        → inline Contents block in book mode, dropped otherwise
 - everything else               → plain XHTML built from the relevant attributes
 """
 
 from __future__ import annotations
 
+import re
+import uuid
 
 import lxml.etree as ET
 
 from ...export.common.chart_data import parse_chart
 from ...export.common.diagrams import render_to_png
 from .converter import (
+    TocEntry,
     _Converter,
     _element_source,
     dedent,
@@ -33,14 +41,46 @@ from .handlers_plain import emit_code_macro
 from .math import render_math_png
 
 
-# Map richdoc callout/banner types onto Confluence macro names.
-_CALLOUT_MACRO = {
-    "info": "info",
-    "note": "note",
-    "tldr": "note",
-    "success": "tip",
-    "warn": "warning",
-    "danger": "warning",
+# Map richdoc callout/banner types onto modern Panel `panel-type` values.
+_PANEL_TYPE_CALLOUT = {
+    "info":    "info",
+    "note":    "note",
+    "tldr":    "note",
+    "success": "success",
+    "warn":    "warning",
+    "danger":  "error",
+}
+
+# Map richdoc rd-card / rd-stat accent onto modern Panel `panel-type`.
+_PANEL_TYPE_CARD = {
+    "":        "note",   # no accent
+    "default": "note",
+    "info":    "info",
+    "success": "success",
+    "warn":    "warning",
+    "danger":  "error",
+    "note":    "note",
+}
+
+# Map rd-decision `status` onto the modern Decision element's state and
+# the inline status-lozenge label / colour.
+_DECISION_STATE = {
+    "accepted":   ("DECIDED",   "Green",  "Accepted"),
+    "rejected":   ("UNDECIDED", "Red",    "Rejected"),
+    "proposed":   ("UNDECIDED", "Blue",   "Proposed"),
+    "superseded": ("UNDECIDED", "Purple", "Superseded"),
+}
+
+# Map rd-badge variants onto the native Status macro `colour` value.
+# `None` falls through to the default (Grey).
+_BADGE_COLOUR = {
+    "":        None,
+    "default": None,
+    "muted":   None,
+    "info":    "Blue",
+    "success": "Green",
+    "warn":    "Yellow",
+    "danger":  "Red",
 }
 
 
@@ -54,9 +94,11 @@ def _h_rd_page(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    """rd-hero → <h1> + meta paragraphs. Title duplicates the page title;
-    Confluence editors typically prefer the page-title-only convention but
-    keeping the h1 keeps standalone exports recognisable."""
+    """rd-hero → <h1> + meta paragraphs. Body children are rendered as
+    peer-level chunks so any rd-cols inside the hero can bubble up to
+    the page-body top level (where Confluence requires layout-sections
+    to live).
+    """
     title = (el.get("title") or "").strip()
     eyebrow = (el.get("eyebrow") or "").strip()
     lede = (el.get("lede") or "").strip()
@@ -68,38 +110,164 @@ def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(
             "<p><em>" + xml_escape(" · ".join(bits)) + "</em></p>"
         )
-    inner = c.render_block_inner_wrapped(el)
-    if inner:
-        c.write_block(inner)
+    c.render_children(el)
 
 
 def _h_rd_section(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    """rd-section → <h2> + peer-level body children.
+
+    Renders children as peers (not inside a wrapped sub-buffer) so any
+    rd-cols nested in the section emits its layout-section at the
+    page-body top level.
+    """
     title = (el.get("title") or "").strip()
     if title:
         c.write_block(f"<h2>{xml_escape(title)}</h2>")
-    inner = c.render_block_inner_wrapped(el)
-    if inner:
-        c.write_block(inner)
+    c.render_children(el)
 
 
 def _h_rd_card(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    """rd-card → modern Panel with the card's accent mapped to a
+    `panel-type`. Title becomes a bold first paragraph inside the panel
+    body so it visually stands out without resorting to a heading.
+    """
     title = (el.get("title") or "").strip()
-    if title:
-        c.write_block(f"<h3>{xml_escape(title)}</h3>")
-    inner = c.render_block_inner_wrapped(el)
-    if inner:
-        c.write_block(inner)
+    accent = (el.get("accent") or "").strip().lower()
+    panel_type = _PANEL_TYPE_CARD.get(accent, "note")
+    body = c.render_block_inner_wrapped(el)
+    if not title and not body:
+        return
+    _emit_panel(c, panel_type=panel_type, title=title or None, body=body)
 
 
 def _h_rd_cols(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    # Confluence has a native multi-column macro, but it's part of the
-    # Adaptavist suite, not core. We linearise instead.
-    c.render_children(el)
+    """rd-cols → native `<ac:layout-section>` at page-body top level.
+
+    Confluence's modern editor renders layout-sections as full-width
+    multi-column slots. They are only legal as direct children of
+    `<ac:layout>` at the body root, so nested rd-cols (inside a panel /
+    expand / card / detail) falls back to a linearised rendering: each
+    column is emitted as a peer block-level chunk.
+    """
+    columns: list[str] = []
+    for child in el:
+        if not isinstance(child.tag, str):
+            continue
+        sub = c._spawn_sub()  # noqa: SLF001
+        sub.render(child)
+        rendered = "".join(sub.chunks).strip()
+        c._merge_counters(sub)  # noqa: SLF001
+        if rendered:
+            columns.append(rendered)
+    if not columns:
+        return
+    if c.in_isolated_body or len(columns) == 1:
+        # Inside a sub-buffer or single column — just write the columns
+        # back-to-back. Single-column rd-cols also takes this path; a
+        # one-cell layout-section is needless editor chrome.
+        for col in columns:
+            c.write_block(col)
+        return
+    for chunk in _chunk_columns(columns):
+        _emit_layout_section(c, chunk, ac_type=_layout_type(len(chunk)))
+
+
+def _emit_layout_section(
+    c: _Converter,
+    columns: list[str],
+    *,
+    ac_type: str,
+) -> None:
+    cells = "".join(
+        f"<ac:layout-cell>{col}</ac:layout-cell>" for col in columns
+    )
+    c.write_block(
+        f'<ac:layout-section ac:type="{xml_attr(ac_type)}" ac:breakout-mode="default">'
+        f"{cells}"
+        "</ac:layout-section>"
+    )
+
+
+def _layout_type(n: int) -> str:
+    """Map column count to the `<ac:layout-section ac:type>` name.
+
+    Confluence Cloud layout-sections accept a fixed cell count per
+    type: `single` (1), `two_equal` (2), `three_equal` (3). Any larger
+    count is split into multiple sections by `_chunk_columns` before
+    this function is called.
+    """
+    if n <= 1:
+        return "single"
+    if n == 2:
+        return "two_equal"
+    return "three_equal"
+
+
+def _chunk_columns(columns: list[str]) -> list[list[str]]:
+    """Split N columns into chunks of ≤3, preferring symmetric splits.
+
+    Confluence Cloud caps the layout-section cell count at 3 per
+    section, but richdoc lets authors write rd-cols n="4" / n="5" /
+    n="6". The cleanest visual is to break those into multiple
+    consecutive sections instead of overflowing the cell limit:
+
+    - n=4  → 2 + 2  (two `two_equal` sections)
+    - n=5  → 3 + 2
+    - n=6  → 3 + 3
+    - n=7  → 3 + 2 + 2  (avoid a stranded 1-cell row at the end)
+    - n=8  → 3 + 3 + 2
+    - n≥9 → chunk by 3 from the front, rebalance the tail when the
+      final chunk would be size 1
+    """
+    n = len(columns)
+    if n == 0:
+        return []
+    if n == 4:
+        return [columns[:2], columns[2:]]
+    if n == 5:
+        return [columns[:3], columns[3:]]
+    chunks: list[list[str]] = []
+    i = 0
+    while i < n:
+        chunks.append(columns[i : i + 3])
+        i += 3
+    # If the last chunk has just 1 cell, rebalance the last two chunks
+    # so we don't leave a stranded full-width tile at the end.
+    if len(chunks) >= 2 and len(chunks[-1]) == 1:
+        tail = chunks.pop()[0]
+        prev = chunks.pop()
+        chunks.append(prev[:-1])
+        chunks.append([prev[-1], tail])
+    return chunks
+
+
+def _emit_panel(
+    c: _Converter,
+    *,
+    panel_type: str,
+    title: str | None,
+    body: str,
+) -> None:
+    """Emit a modern Panel element (the cloud-editor `/panel` form)."""
+    parts: list[str] = []
+    if title:
+        parts.append(f"<p><strong>{xml_escape(title)}</strong></p>")
+    if body:
+        parts.append(body)
+    content = "".join(parts) or "<p>&#160;</p>"
+    c.write_block(
+        "<ac:adf-extension>"
+        '<ac:adf-node type="panel">'
+        f'<ac:adf-attribute key="panel-type">{xml_attr(panel_type)}</ac:adf-attribute>'
+        f"<ac:adf-content>{content}</ac:adf-content>"
+        "</ac:adf-node>"
+        "</ac:adf-extension>"
+    )
 
 
 def _h_rd_banner(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     type_ = (el.get("type") or "info").lower()
-    macro = _CALLOUT_MACRO.get(type_, "info")
+    panel_type = _PANEL_TYPE_CALLOUT.get(type_, "info")
     attr_message = (el.get("message") or "").strip()
     if attr_message:
         body = f"<p>{xml_escape(attr_message)}</p>"
@@ -108,7 +276,7 @@ def _h_rd_banner(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         if not inner:
             return
         body = f"<p>{inner}</p>"
-    c.write_block(_emit_callout(macro=macro, title=None, body=body))
+    _emit_panel(c, panel_type=panel_type, title=None, body=body)
 
 
 def _h_rd_callout(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
@@ -116,28 +284,11 @@ def _h_rd_callout(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     title = (el.get("title") or "").strip()
     if not title and type_ == "tldr":
         title = "TL;DR"
-    macro = _CALLOUT_MACRO.get(type_, "info")
+    panel_type = _PANEL_TYPE_CALLOUT.get(type_, "info")
     body = c.render_block_inner_wrapped(el)
     if not body and not title:
         return
-    c.write_block(_emit_callout(macro=macro, title=title or None, body=body))
-
-
-def _emit_callout(*, macro: str, title: str | None, body: str) -> str:
-    """Build a Confluence callout macro (`info`, `note`, `tip`, `warning`)."""
-    params = ""
-    if title:
-        params = (
-            '<ac:parameter ac:name="title">'
-            f"{xml_escape(title)}"
-            "</ac:parameter>"
-        )
-    return (
-        f'<ac:structured-macro ac:name="{xml_attr(macro)}">'
-        f"{params}"
-        f"<ac:rich-text-body>{body or ''}</ac:rich-text-body>"
-        "</ac:structured-macro>"
-    )
+    _emit_panel(c, panel_type=panel_type, title=title or None, body=body)
 
 
 # ---------------------------------------------------------------------------
@@ -146,6 +297,24 @@ def _emit_callout(*, macro: str, title: str | None, body: str) -> str:
 
 
 def _h_rd_kv(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    """Render rd-kv as a modern Confluence table with a narrow, bold key
+    column.
+
+    Three details matter for the cloud editor's render quality:
+
+    1. `data-layout="default"` keeps the modern table chrome (resize
+       handles, "highlight first column" toggle), so the table doesn't
+       drop back to the legacy renderer.
+    2. An explicit `<colgroup>` with a 200px first column stops Confluence
+       from giving the key column half the table width.
+    3. The `<th>` body is `<p><strong>...</strong></p>` — matches
+       Atlassian's own Decision template normalisation, so the editor
+       doesn't warn that the cell isn't a paragraph.
+
+    Inline layouts render the row's children as one inline XML fragment
+    (wrapped in a single `<p>` inside the cell); stacked layouts render
+    a full block body so paragraphs, lists, and code survive.
+    """
     title = (el.get("title") or "").strip()
     layout = (el.get("layout") or "inline").lower()
     rows = [r for r in el if isinstance(r.tag, str) and r.tag.lower() == "rd-row"]
@@ -153,30 +322,30 @@ def _h_rd_kv(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"<p><strong>{xml_escape(title)}</strong></p>")
     if not rows:
         return
-    if layout == "stacked":
-        # Definition-list-ish — Confluence has no native <dl>; use a
-        # bullet list with <strong> labels.
-        items: list[str] = []
-        for r in rows:
-            key = (r.get("key") or "").strip()
+    body_rows: list[str] = []
+    for r in rows:
+        key = (r.get("key") or "").strip()
+        if layout == "stacked":
             value = c.render_block_inner(r).strip()
-            items.append(
-                f"<li><strong>{xml_escape(key)}</strong><br/>{value}</li>"
-                if value
-                else f"<li><strong>{xml_escape(key)}</strong></li>"
-            )
-        c.write_block(f"<ul>{''.join(items)}</ul>")
-    else:
-        items = []
-        for r in rows:
-            key = (r.get("key") or "").strip()
-            value = c.render_inline(r).strip()
-            items.append(
-                f"<li><strong>{xml_escape(key)}:</strong> {value}</li>"
-                if value
-                else f"<li><strong>{xml_escape(key)}</strong></li>"
-            )
-        c.write_block(f"<ul>{''.join(items)}</ul>")
+            value_xml = value or "<p>&#160;</p>"
+        else:
+            inline = c.render_inline(r).strip()
+            value_xml = f"<p>{inline or '&#160;'}</p>"
+        body_rows.append(
+            "<tr>"
+            f"<th><p><strong>{xml_escape(key)}</strong></p></th>"
+            f"<td>{value_xml}</td>"
+            "</tr>"
+        )
+    c.write_block(
+        '<table data-layout="default">'
+        "<colgroup>"
+        '<col style="width: 200.0px;" />'
+        '<col style="width: 760.0px;" />'
+        "</colgroup>"
+        f"<tbody>{''.join(body_rows)}</tbody>"
+        "</table>"
+    )
 
 
 def _h_rd_row(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
@@ -185,29 +354,87 @@ def _h_rd_row(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_badge(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    variant = (el.get("variant") or "").strip()
-    inner = c.render_inline(el).strip()
-    label = inner or variant or "badge"
-    c.write(f"<strong>[{label}]</strong>")
+    """rd-badge → native Status macro (coloured lozenge).
+
+    Renders inline so badges nest naturally inside rd-kv `<td>` cells,
+    prose paragraphs, and decision-item titles. The label falls back to
+    the variant name (or the literal string "badge") when the rd-badge
+    has no inline text — mirrors the prior `[label]` behaviour.
+    """
+    variant = (el.get("variant") or "").strip().lower()
+    label = c.render_inline(el).strip() or variant or "badge"
+    c.write(_status_macro(label, _BADGE_COLOUR.get(variant)))
+
+
+def _status_macro(label: str, colour: str | None) -> str:
+    """Build a Confluence native Status macro storage fragment.
+
+    `colour` accepts Atlassian's case-sensitive palette names
+    (Grey / Blue / Red / Yellow / Green / Purple). `None` omits the
+    parameter, which the editor renders as the default grey "Not
+    started" lozenge.
+    """
+    colour_xml = (
+        f'<ac:parameter ac:name="colour">{xml_attr(colour)}</ac:parameter>'
+        if colour
+        else ""
+    )
+    # The label inside `title` is plain text (the macro renders it as
+    # the lozenge label) — strip any HTML the inline renderer produced
+    # so we don't end up with markup leaking into the lozenge title.
+    plain = _strip_inline_html(label)
+    return (
+        '<ac:structured-macro ac:name="status" ac:schema-version="1">'
+        f'<ac:parameter ac:name="title">{xml_escape(plain)}</ac:parameter>'
+        f"{colour_xml}"
+        "</ac:structured-macro>"
+    )
+
+
+_INLINE_HTML_RE = re.compile(r"<[^>]+>")
+
+
+def _strip_inline_html(text: str) -> str:
+    """Drop simple inline tags from `text`. The status macro `title`
+    parameter is plain text — unwrapping `<strong>` / `<em>` here keeps
+    a status lozenge readable when the source rd-badge wrapped its body
+    in formatting tags.
+    """
+    return _INLINE_HTML_RE.sub("", text).strip()
 
 
 def _h_rd_stat(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    """rd-stat → modern Panel (neutral `note` type) styled as a stat tile.
+
+    Inside the panel we emit the value as a bold paragraph and the label
+    + trend / delta as a subdued line below — same content as before, but
+    wrapped in a panel so a row of rd-stats inside an rd-cols renders as
+    a row of dashboard tiles.
+    """
     value = (el.get("value") or "").strip()
     label = (el.get("label") or "").strip()
     trend = (el.get("trend") or "").strip()
     delta = (el.get("delta") or "").strip()
-    extras = []
+    extras: list[str] = []
     if trend:
         glyph = {"up": "▲", "down": "▼", "flat": "→"}.get(trend, trend)
         extras.append(glyph)
     if delta:
         extras.append(delta)
-    pieces = [f"<strong>{xml_escape(value)}</strong>"]
+    body_parts: list[str] = []
+    if value:
+        body_parts.append(f"<p><strong>{xml_escape(value)}</strong></p>")
+    meta_bits: list[str] = []
     if label:
-        pieces.append(f" — {xml_escape(label)}")
+        meta_bits.append(xml_escape(label))
     if extras:
-        pieces.append(f" <em>({xml_escape(' '.join(extras))})</em>")
-    c.write_block(f"<p>{''.join(pieces)}</p>")
+        meta_bits.append(f"<em>({xml_escape(' '.join(extras))})</em>")
+    if meta_bits:
+        body_parts.append("<p>" + " ".join(meta_bits) + "</p>")
+    body = "".join(body_parts)
+    if not body:
+        return
+    _emit_panel(c, panel_type="note", title=None, body=body)
     for child in el:
         if isinstance(child.tag, str) and child.tag.lower().startswith("rd-"):
             c.dropped.append(child.tag.lower())
@@ -272,11 +499,11 @@ def _h_rd_compare(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     width = max(len(headers), max((len(r) for r in rows), default=0))
     header_cells = [xml_escape(h) for h in headers]
     while len(header_cells) < width:
-        header_cells.append("&nbsp;")
+        header_cells.append("&#160;")
     body_rows: list[str] = []
     for r in rows:
         while len(r) < width:
-            r.append("&nbsp;")
+            r.append("&#160;")
         body_rows.append("<tr>" + "".join(f"<td>{cell}</td>" for cell in r) + "</tr>")
     head_xml = (
         "<thead><tr>"
@@ -319,9 +546,9 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
                     xml_escape(f"{v}" + (f" — {note}" if note else ""))
                 )
             else:
-                cells.append("&nbsp;")
+                cells.append("&#160;")
         rows.append([xml_escape(f"{label} (×{weight:g})"), *cells])
-    head_cells = ["&nbsp;", *[xml_escape(o) for o in options]]
+    head_cells = ["&#160;", *[xml_escape(o) for o in options]]
     head_xml = (
         "<thead><tr>"
         + "".join(f"<th>{cell}</th>" for cell in head_cells)
@@ -587,9 +814,49 @@ def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_toc(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    """Confluence has a native page tree in the sidebar — an in-page TOC
-    is redundant and visually noisy. Drop it."""
-    c.dropped.append("rd-toc")
+    """Render rd-toc as an inline "Contents" block of cross-page links.
+
+    The pipeline builds the TocEntry tree from the entry chapter's
+    `<rd-toc>` once per publish and passes it to every chapter walk, so
+    each chapter shows the same Contents tree (mirroring the rd-toc
+    sidebar in the HTML book). For single-file documents there is no
+    `toc_entries` payload and we drop the element as before.
+    """
+    entries = c.toc_entries
+    if not entries:
+        c.dropped.append("rd-toc")
+        return
+    title = (el.get("title") or "Contents").strip()
+    body = _render_toc_tree(c, entries)
+    if not body:
+        c.dropped.append("rd-toc")
+        return
+    c.write_block(f"<p><strong>{xml_escape(title)}</strong></p>")
+    c.write_block(body)
+
+
+def _render_toc_tree(c: _Converter, entries: list[TocEntry]) -> str:  # noqa: SLF001
+    items: list[str] = []
+    for e in entries:
+        label = xml_escape(e.title or "Untitled")
+        url = (
+            c.cross_page_links.get(str(e.target_rel))
+            or c.cross_page_links.get(e.target_rel.as_posix())
+            if e.target_rel is not None
+            else None
+        )
+        if e.target_rel is not None and e.target_rel == c.chapter_rel:
+            head = f"<strong>{label}</strong>"  # active chapter — don't self-link
+        elif url:
+            head = f'<a href="{xml_attr(url)}">{label}</a>'
+        elif e.href:
+            # External href or unresolved — preserve as a plain link.
+            head = f'<a href="{xml_attr(e.href)}">{label}</a>'
+        else:
+            head = f"<strong>{label}</strong>"  # group header
+        nested = _render_toc_tree(c, list(e.children)) if e.children else ""
+        items.append(f"<li>{head}{nested}</li>")
+    return f"<ul>{''.join(items)}</ul>" if items else ""
 
 
 def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
@@ -606,21 +873,46 @@ def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_decision(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    status = (el.get("status") or "proposed").strip()
+    """Render rd-decision as a modern Decision element (`/decision`).
+
+    The decision-list contains a single decision-item whose inline
+    content is the bold ID + title, followed by the status lozenge and
+    date / deciders meta. The body paragraphs are emitted as peer-level
+    siblings of the decision-list — not nested inside it — so multiple
+    consecutive rd-decisions each get their own decision marker without
+    the body content disappearing into the inline title slot.
+    """
+    status_raw = (el.get("status") or "proposed").strip().lower()
+    state, colour, status_label = _DECISION_STATE.get(
+        status_raw, ("UNDECIDED", "Grey", status_raw.title() or "Pending"),
+    )
     id_ = (el.get("id") or "").strip()
+    title = (el.get("title") or "").strip()
     date = (el.get("date") or "").strip()
     deciders = (el.get("deciders") or "").strip()
-    title = (el.get("title") or "").strip()
     head_bits = [b for b in (id_, title) if b]
-    head = "<h2>" + xml_escape(": ".join(head_bits) if head_bits else "Decision") + "</h2>"
-    c.write_block(head)
-    meta_bits = [f"[{status.upper()}]"]
-    if date:
-        meta_bits.append(date)
-    if deciders:
-        meta_bits.append(deciders)
+    label = ": ".join(head_bits) if head_bits else "Decision"
+    status_xml = _status_macro(status_label, colour)
+    meta_extras = " · ".join([b for b in (date, deciders) if b])
+    inline_parts = [f"<strong>{xml_escape(label)}</strong>", status_xml]
+    if meta_extras:
+        inline_parts.append(xml_escape(meta_extras))
+    inline = " · ".join(inline_parts)
+    list_id = uuid.uuid4().hex
+    item_id = uuid.uuid4().hex
     c.write_block(
-        "<p><em>" + xml_escape(" · ".join(meta_bits)) + "</em></p>"
+        "<ac:adf-extension>"
+        '<ac:adf-node type="decision-list">'
+        f'<ac:adf-attribute key="local-id">{list_id}</ac:adf-attribute>'
+        "<ac:adf-content>"
+        '<ac:adf-node type="decision-item">'
+        f'<ac:adf-attribute key="local-id">{item_id}</ac:adf-attribute>'
+        f'<ac:adf-attribute key="state">{state}</ac:adf-attribute>'
+        f"<ac:adf-content>{inline}</ac:adf-content>"
+        "</ac:adf-node>"
+        "</ac:adf-content>"
+        "</ac:adf-node>"
+        "</ac:adf-extension>"
     )
     inner = c.render_block_inner_wrapped(el)
     if inner:
@@ -628,6 +920,9 @@ def _h_rd_decision(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    """Render rd-pros-cons as a two-column `<ac:layout-section>` (or
+    linearised when nested in an isolated body).
+    """
     pros_title = (el.get("pros-title") or "Pros").strip()
     cons_title = (el.get("cons-title") or "Cons").strip()
     pros, cons = [], []
@@ -640,16 +935,24 @@ def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             pros.append(f"<li>{text}</li>")
         elif t == "rd-con":
             cons.append(f"<li>{text}</li>")
+    columns: list[str] = []
     if pros:
-        c.write_block(
-            f"<h4>{xml_escape(pros_title)}</h4>"
+        columns.append(
+            f"<p><strong>{xml_escape(pros_title)}</strong></p>"
             f"<ul>{''.join(pros)}</ul>"
         )
     if cons:
-        c.write_block(
-            f"<h4>{xml_escape(cons_title)}</h4>"
+        columns.append(
+            f"<p><strong>{xml_escape(cons_title)}</strong></p>"
             f"<ul>{''.join(cons)}</ul>"
         )
+    if not columns:
+        return
+    if c.in_isolated_body or len(columns) == 1:
+        for col in columns:
+            c.write_block(col)
+        return
+    _emit_layout_section(c, columns, ac_type=_layout_type(len(columns)))
 
 
 def _h_rd_api(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001

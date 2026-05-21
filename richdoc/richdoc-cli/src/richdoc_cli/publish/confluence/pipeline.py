@@ -35,7 +35,7 @@ from .client import (
     ConfluenceConflictError,
     Page,
 )
-from .converter import PendingAttachment, html_to_storage, xml_attr
+from .converter import PendingAttachment, TocEntry, html_to_storage, xml_attr
 
 
 # ---------------------------------------------------------------------------
@@ -108,8 +108,15 @@ def publish(plan: PublishPlan, client: ConfluenceClient) -> PublishResult:
     is_book = discovery.is_book and not plan.no_book
 
     # Build a TOC-driven parent map: each chapter knows the relative path of
-    # its parent chapter (or None for the book entry / single page).
-    parent_map = _build_parent_map(plan.input_path, chapters) if is_book else {}
+    # its parent chapter (or None for the book entry / single page). The
+    # same walk also yields the rd-toc tree as `TocEntry`s so every chapter
+    # can render an inline Contents block with resolved Confluence links.
+    if is_book:
+        parent_map, toc_entries = _build_toc_structures(
+            plan.input_path, chapters
+        )
+    else:
+        parent_map, toc_entries = {}, None
 
     # Walk every chapter into storage XML up-front so we know titles and
     # cross-page link targets before any network call.
@@ -118,6 +125,7 @@ def publish(plan: PublishPlan, client: ConfluenceClient) -> PublishResult:
         walk = _walk_chapter(
             chapter=ch,
             plan=plan,
+            toc_entries=toc_entries,
         )
         walks.append(walk)
 
@@ -212,16 +220,26 @@ def publish(plan: PublishPlan, client: ConfluenceClient) -> PublishResult:
     attachments_skipped = 0
     if plan.dry_run:
         # For dry-run we just record the storage XML and the attachment plan.
+        # Re-walk in book mode so the preview reflects the cross-page link
+        # map exactly as a real publish would — placeholder URLs and all.
         bodies = []
         for walk, outcome in zip(walks, page_outcomes):
+            preview_walk = walk
+            if is_book:
+                preview_walk = _walk_chapter(
+                    chapter=walk.chapter,
+                    plan=plan,
+                    cross_page_links=cross_page_links,
+                    toc_entries=toc_entries,
+                )
             bodies.append({
                 "chapter": str(walk.chapter.relative),
                 "title": outcome.title,
                 "parent_id": outcome.parent_id,
-                "body_preview": walk.body_template,
+                "body_preview": preview_walk.body_template,
                 "pending_attachments": [
                     {"filename": pa.filename, "mime": pa.mime, "bytes": len(pa.data)}
-                    for pa in walk.pending
+                    for pa in preview_walk.pending
                 ],
             })
         return PublishResult(
@@ -242,12 +260,17 @@ def publish(plan: PublishPlan, client: ConfluenceClient) -> PublishResult:
 
     for walk, outcome in zip(walks, page_outcomes):
         page = chapter_pages[walk.chapter.relative]
-        # Re-render the storage body with resolved cross-page links if any
-        # chapter ended up needing them. We always re-walk in book mode so
-        # the second pass sees the populated map; for single-page mode the
-        # first pass already produced the final body.
-        if walks[0] is not walk or any("/" in str(w.chapter.relative) for w in walks):
-            walk = _walk_chapter(chapter=walk.chapter, plan=plan, cross_page_links=cross_page_links)
+        # Re-render the storage body with resolved cross-page links
+        # whenever we're in book mode — every chapter needs cross_page_links
+        # to resolve its rd-toc Contents block and any in-body chapter links.
+        # In single-file mode the first pass already produced the final body.
+        if is_book:
+            walk = _walk_chapter(
+                chapter=walk.chapter,
+                plan=plan,
+                cross_page_links=cross_page_links,
+                toc_entries=toc_entries,
+            )
         # Upload attachments.
         existing_atts = (
             {a.title for a in client.list_attachments(page.id)} if walk.pending else set()
@@ -329,6 +352,7 @@ def _walk_chapter(
     chapter: ChapterFile,
     plan: PublishPlan,
     cross_page_links: dict[str, str] | None = None,
+    toc_entries: list[TocEntry] | None = None,
 ) -> _ChapterWalk:
     """Run the converter against one chapter; produce a walk record."""
     result = html_to_storage(
@@ -340,6 +364,8 @@ def _walk_chapter(
         diagram_endpoint=plan.diagram_endpoint,
         cross_page_links=cross_page_links,
         title_override=chapter.title,
+        chapter_rel=chapter.relative,
+        toc_entries=toc_entries,
     )
     return _ChapterWalk(
         chapter=chapter,
@@ -371,21 +397,23 @@ def _find_existing(
 
 
 # ---------------------------------------------------------------------------
-# Book TOC → parent map
+# Book TOC → parent map + TocEntry tree
 # ---------------------------------------------------------------------------
 
 
-def _build_parent_map(
+def _build_toc_structures(
     entry: Path, chapters: list[ChapterFile]
-) -> dict[Path, Path | None]:
-    """Parse the entry file's `<rd-toc>` and produce {chapter_rel: parent_rel}.
+) -> tuple[dict[Path, Path | None], list[TocEntry] | None]:
+    """Parse the entry file's `<rd-toc>` once and produce two things:
 
-    The entry chapter has `None` as its parent — the publish caller maps
-    that onto `plan.parent_id` or the space root. All other chapters in
-    book mode default to nesting under the entry chapter; if a chapter
-    appears under another *page-backed* TOC node, it nests under that
-    instead. Group headers (TOC nodes without an `href`) are transparent
-    — their children inherit the group's effective parent.
+    1. `parent_map` — `{chapter_rel: parent_rel}` used by the pipeline
+       to nest pages under their TOC parent. Defaults to nesting every
+       non-entry chapter under the entry, overridden by explicit TOC
+       placement. Group headers are transparent.
+     2. `toc_entries` — a `TocEntry` tree mirroring the rd-toc, used by
+        the converter to render the inline "Contents" block on every
+        chapter. Returns `None` when the entry has no real TOC — in
+        that case the converter falls back to dropping `rd-toc`.
     """
     parser = LH.HTMLParser(recover=True)
     root = LH.document_fromstring(entry.read_text(encoding="utf-8"), parser=parser)
@@ -401,7 +429,10 @@ def _build_parent_map(
     )
     entry_rel = chapters[0].relative
     if toc is None:
-        return {entry_rel: None, **{ch.relative: entry_rel for ch in chapters[1:]}}
+        return (
+            {entry_rel: None, **{ch.relative: entry_rel for ch in chapters[1:]}},
+            None,
+        )
 
     base_dir = entry.parent
     rel_by_path: dict[Path, Path] = {ch.path: ch.relative for ch in chapters}
@@ -411,30 +442,56 @@ def _build_parent_map(
     parent_map: dict[Path, Path | None] = {ch.relative: entry_rel for ch in chapters}
     parent_map[entry_rel] = None
 
-    def visit(node: ET._Element, parent_rel: Path | None) -> None:
+    def visit(node: ET._Element, parent_rel: Path | None) -> list[TocEntry]:
+        out: list[TocEntry] = []
         for ch in node:
             if not (isinstance(ch.tag, str) and ch.tag.lower() == "rd-chapter"):
                 continue
             href = (ch.get("href") or "").strip()
+            title = _chapter_label(ch)
             child_parent = parent_rel
-            this_rel: Path | None = None
+            target_rel: Path | None = None
             if href and not _is_external(href):
                 target = (base_dir / href).resolve()
                 if target in rel_by_path:
-                    this_rel = rel_by_path[target]
+                    target_rel = rel_by_path[target]
                     # The entry chapter always lives directly under the
                     # user-supplied parent_id, regardless of how it appears
                     # in its own TOC.
-                    if this_rel != entry_rel:
-                        parent_map[this_rel] = parent_rel
-                    child_parent = this_rel
-            # Group headers (no href) are transparent: their children
-            # inherit the same effective parent.
-            visit(ch, child_parent)
+                    if target_rel != entry_rel:
+                        parent_map[target_rel] = parent_rel
+                    child_parent = target_rel
+            children = visit(ch, child_parent)
+            out.append(
+                TocEntry(
+                    title=title,
+                    href=href or None,
+                    target_rel=target_rel,
+                    children=tuple(children),
+                )
+            )
+        return out
 
     # Top-level TOC entries default to nesting under the entry chapter.
-    visit(toc, entry_rel)
-    return parent_map
+    entries = visit(toc, entry_rel)
+    return parent_map, entries
+
+
+def _chapter_label(node: ET._Element) -> str:
+    """Mirror book.py's chapter-title extraction: text content of `node`
+    with nested `<rd-chapter>` sub-trees removed."""
+    parts: list[str] = []
+    if node.text:
+        parts.append(node.text)
+    for child in node:
+        if isinstance(child.tag, str) and child.tag.lower() == "rd-chapter":
+            if child.tail:
+                parts.append(child.tail)
+            continue
+        parts.extend(child.itertext())
+        if child.tail:
+            parts.append(child.tail)
+    return " ".join("".join(parts).split()).strip()
 
 
 def _is_external(href: str) -> bool:

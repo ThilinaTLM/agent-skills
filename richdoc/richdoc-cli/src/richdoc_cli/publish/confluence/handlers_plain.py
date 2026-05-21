@@ -17,6 +17,7 @@ Inline formatting (`<strong>`, `<em>`, `<s>`, `<code>`, `<sup>`, `<sub>`,
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import lxml.etree as ET
 import lxml.html as LH
@@ -144,6 +145,47 @@ def _h_blockquote(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 _REL_HTML = re.compile(r"^([^:/?#][^?#]*?)\.html?(#[^?]*)?(\?.*)?$")
 
+# Virtual root used so `Path.resolve()` collapses `./` and `../` without
+# touching the filesystem. The actual directory does not need to exist;
+# resolve(strict=False) is the default since Python 3.6.
+_VIRTUAL_BOOK_ROOT = Path("/__richdoc_book__")
+
+
+def _resolve_chapter_href(c: _Converter, href: str) -> str | None:  # noqa: SLF001
+    """Map a relative `.html` href on the current chapter onto a known
+    Confluence URL, or return None if no rewrite applies.
+
+    Handles `./other.html`, `other.html`, `../sub/other.html`, and any
+    `#fragment` / `?query` tail consistently — the lookup key is the
+    chapter's path relative to the book root, which is what the pipeline
+    stores in `cross_page_links`.
+    """
+    if not c.cross_page_links:
+        return None
+    if not href or href.startswith(("#", "//")):
+        return None
+    first = href.split("/", 1)[0]
+    if ":" in first:
+        return None
+    m = _REL_HTML.match(href)
+    if not m:
+        return None
+    raw_stem = m.group(1) + ".html"
+    fragment = m.group(2) or ""
+    base = _VIRTUAL_BOOK_ROOT
+    if c.chapter_rel is not None:
+        base = (_VIRTUAL_BOOK_ROOT / c.chapter_rel).parent
+    try:
+        resolved = (base / raw_stem).resolve()
+        key = resolved.relative_to(_VIRTUAL_BOOK_ROOT)
+    except (OSError, ValueError):
+        return None
+    url = (
+        c.cross_page_links.get(str(key))
+        or c.cross_page_links.get(key.as_posix())
+    )
+    return (url + fragment) if url else None
+
 
 def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     href = (el.get("href") or "").strip()
@@ -153,16 +195,9 @@ def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     if not href:
         c.write(inner)
         return
-    # Cross-chapter link rewriting: if `cross_page_links` knows about this
-    # relative .html path, swap in the resolved Confluence URL.
-    if c.cross_page_links and not href.startswith(("#", "//")) and ":" not in href.split("/", 1)[0]:
-        match = _REL_HTML.match(href)
-        if match:
-            target = match.group(1) + ".html"
-            fragment = match.group(2) or ""
-            replacement = c.cross_page_links.get(target)
-            if replacement:
-                href = replacement + fragment
+    rewritten = _resolve_chapter_href(c, href)
+    if rewritten:
+        href = rewritten
     c.write(f'<a href="{xml_attr(href)}">{inner}</a>')
 
 
@@ -229,7 +264,7 @@ def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             if not inner:
                 # Confluence renders an empty cell as a thin sliver; pad
                 # with a non-breaking space for visual stability.
-                inner = "&nbsp;"
+                inner = "&#160;"
             cells.append(f"<{t}>{inner}</{t}>")
         if not cells:
             continue

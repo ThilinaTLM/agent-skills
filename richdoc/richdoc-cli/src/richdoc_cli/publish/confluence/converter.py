@@ -66,6 +66,18 @@ class PendingAttachment:
     is_inline: bool = False  # true → no ac:align, embedded inline
 
 
+@dataclass(frozen=True)
+class TocEntry:
+    """One node in a book's rd-toc tree, used by `_h_rd_toc` to render an
+    inline Contents block with cross-page links resolved by the pipeline.
+    """
+
+    title: str
+    href: str | None          # original href as written in rd-chapter, if any
+    target_rel: Path | None   # resolved relative to book root, or None for group / external
+    children: tuple["TocEntry", ...] = ()
+
+
 @dataclass
 class StorageResult:
     """What the converter produces for one chapter."""
@@ -96,6 +108,8 @@ def html_to_storage(
     diagram_endpoint: str = "https://kroki.io",
     cross_page_links: dict[str, str] | None = None,
     title_override: str | None = None,
+    chapter_rel: Path | None = None,
+    toc_entries: list[TocEntry] | None = None,
 ) -> StorageResult:
     """Convert one richdoc HTML chapter into Confluence storage format.
 
@@ -107,6 +121,15 @@ def html_to_storage(
     `title_override` is used by the pipeline to inject the resolved
     chapter title from `<rd-toc>`; when omitted the converter picks
     `<rd-hero title>` or first `<h1>` or the doc `<title>`.
+
+    `chapter_rel` is the chapter's path relative to the book root. It
+    drives href normalisation in `_h_a` so `./other.html`, `other.html`,
+    and `../sub/other.html` all resolve to the same chapter. `None` in
+    single-file mode.
+
+    `toc_entries` is the rd-toc tree shared by every chapter in a book.
+    `_h_rd_toc` uses it to emit an inline Contents block. `None` outside
+    book mode — in which case `rd-toc` is dropped as before.
     """
     # Ensure dispatch table is populated. Side-effect import only.
     from . import handler_table  # noqa: F401, PLC0415
@@ -122,6 +145,8 @@ def html_to_storage(
         render_math=render_math,
         diagram_endpoint=diagram_endpoint,
         cross_page_links=dict(cross_page_links or {}),
+        chapter_rel=chapter_rel,
+        toc_entries=list(toc_entries) if toc_entries else None,
     )
     title = title_override or _resolve_title(root)
     conv.render_children(target)
@@ -159,6 +184,8 @@ class _Converter:
     render_math: bool = True
     diagram_endpoint: str = "https://kroki.io"
     cross_page_links: dict[str, str] = field(default_factory=dict)
+    chapter_rel: Path | None = None
+    toc_entries: list[TocEntry] | None = None
 
     chunks: list[str] = field(default_factory=list)
     pending: list[PendingAttachment] = field(default_factory=list)
@@ -167,6 +194,13 @@ class _Converter:
     diagrams_failed: int = 0
     math_rendered: int = 0
     math_failed: int = 0
+    # True when this converter is rendering into a sub-buffer that will
+    # be baked into one parent chunk (e.g. a panel's <ac:adf-content>,
+    # an expand macro's <ac:rich-text-body>, a layout cell). Block-level
+    # constructs that *must* sit at the page-body top level (currently
+    # only <ac:layout-section>) check this flag and fall back to a
+    # linearised rendering when it is True.
+    in_isolated_body: bool = False
     # Citation collection (scattered rd-ref → single bibliography below)
     refs_collected: dict[str, dict[str, str]] = field(default_factory=dict)
     refs_order: list[str] = field(default_factory=list)
@@ -198,6 +232,9 @@ class _Converter:
             render_math=self.render_math,
             diagram_endpoint=self.diagram_endpoint,
             cross_page_links=self.cross_page_links,
+            chapter_rel=self.chapter_rel,
+            toc_entries=self.toc_entries,
+            in_isolated_body=True,
         )
         sub.pending = self.pending  # shared list — handlers append directly
         sub.dropped = self.dropped
@@ -342,7 +379,8 @@ class _Converter:
         # between block tags, so leaving it alone keeps the body safe.
         out = "".join(self.chunks)
         out = re.sub(r"\n{3,}", "\n\n", out)
-        return out.strip()
+        out = _wrap_in_layout(out.strip())
+        return out
 
     def _refs_emitted_inline(self) -> bool:
         # If an rd-references block already rendered, it'd have written a
@@ -465,6 +503,85 @@ def _format_ref_li(attrs: dict[str, str]) -> str:
     if note:
         line += f" {note}"
     return f"<li>{line}</li>"
+
+
+# ---------------------------------------------------------------------------
+# Layout post-processing
+# ---------------------------------------------------------------------------
+
+
+_AC_NS = "http://atlassian.com/content"
+_RI_NS = "http://atlassian.com/resource/identifier"
+_AT_NS = "http://www.w3.org/1999/xlink"
+_AC = f"{{{_AC_NS}}}"
+_RI = f"{{{_RI_NS}}}"
+_AT = f"{{{_AT_NS}}}"
+_NSMAP = {"ac": _AC_NS, "ri": _RI_NS, "at": _AT_NS}
+_NS_PREFIX_RE = re.compile(
+    r' xmlns:(?:ac|ri|at)="(?:'
+    + re.escape(_AC_NS)
+    + "|"
+    + re.escape(_RI_NS)
+    + "|"
+    + re.escape(_AT_NS)
+    + ')"'
+)
+
+
+def _wrap_in_layout(body: str) -> str:
+    """Wrap the page body in ``<ac:layout>`` when it contains any
+    ``<ac:layout-section>``. Confluence requires layout-sections to be
+    direct children of ``<ac:layout>`` at the body top level; this pass
+    groups any peer content between layout-sections into ``fixed-width``
+    sections so the entire body becomes a sequence of layout-sections.
+
+    Pages with no layout-section pass through unchanged.
+    """
+    if "<ac:layout-section" not in body:
+        return body
+    wrapped = (
+        f'<root xmlns:ac="{_AC_NS}" xmlns:ri="{_RI_NS}" xmlns:at="{_AT_NS}">'
+        f"{body}</root>"
+    )
+    parser = ET.XMLParser(strip_cdata=False)
+    try:
+        root = ET.fromstring(wrapped, parser)  # noqa: S320 — trusted, self-generated
+    except ET.XMLSyntaxError:
+        # Defensive: never break the publish if a handler emitted
+        # something the parser refuses. The legacy section macro path
+        # never tripped this; modern panels likewise stay well-formed.
+        return body
+    layout = ET.Element(f"{_AC}layout", nsmap=_NSMAP)
+    pending: list[ET._Element] = []
+
+    def flush() -> None:
+        if not pending:
+            return
+        sec = ET.SubElement(layout, f"{_AC}layout-section")
+        sec.set(f"{_AC}type", "fixed-width")
+        cell = ET.SubElement(sec, f"{_AC}layout-cell")
+        for el in pending:
+            cell.append(el)
+        pending.clear()
+
+    # Preserve any leading text inside <root> as a paragraph in the
+    # first fixed-width section.
+    if root.text and root.text.strip():
+        p = ET.SubElement(ET.Element("_tmp"), "p")
+        p.text = root.text
+        pending.append(p)
+    for child in list(root):
+        if child.tag == f"{_AC}layout-section":
+            flush()
+            layout.append(child)
+        else:
+            pending.append(child)
+    flush()
+    xml = ET.tostring(layout, encoding="unicode")
+    # Strip the xmlns declarations lxml adds on the outermost element;
+    # the rest of the storage body uses bare ac: / ri: prefixes without
+    # declarations and Confluence accepts that style.
+    return _NS_PREFIX_RE.sub("", xml)
 
 
 def dedent(text: str) -> str:

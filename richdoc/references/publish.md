@@ -152,6 +152,13 @@ The success envelope is:
 
 For a book (entry file linked via `<rd-toc>`):
 
+Any `<a href="./other.html">`-style reference inside a chapter body is
+rewritten to the resolved Confluence URL regardless of `./` or `../`
+prefixing. The shared `rd-toc` is also rendered inline on every page
+as a "Contents" block of cross-page links, mirroring how rd-toc is
+present in every chapter file in the HTML source.
+
+
 - The **entry chapter** is published under `--parent-id` (or the space root).
 - Every other chapter nests under either:
   - The page-backed TOC parent (if there is one in the `<rd-toc>` tree), or
@@ -163,36 +170,47 @@ For a book (entry file linked via `<rd-toc>`):
 
 ## rd-* component mapping
 
+Every rd-* element targets a cloud-editor-native element — modern
+layouts, panels, decisions, status lozenges, tables — so a published
+page opens cleanly in the new editor with **no "legacy content" warnings**.
+
 | Component | Confluence rendering |
 |---|---|
-| `rd-page` | unwrapped |
-| `rd-hero` | `<h1>` + meta paragraph (eyebrow · lede · meta) |
-| `rd-section` | `<h2>` + body |
-| `rd-card` | `<h3>` + body |
-| `rd-cols` | linearised |
-| `rd-callout`, `rd-banner` | native `info` / `note` / `tip` / `warning` macros |
+| `rd-page` | unwrapped; children rendered as page-body peers |
+| `rd-hero` | `<h1>` + meta paragraph (eyebrow · lede · meta) + peer-level body children |
+| `rd-section` | `<h2>` + peer-level body children (so nested `rd-cols` can emit page-level layout sections) |
+| `rd-card` | modern **Panel** (`<ac:adf-node type="panel">`); accent maps to `panel-type` (`default → note`, `info → info`, `success → success`, `warn → warning`, `danger → error`); title becomes a bold first paragraph inside the panel |
+| `rd-cols` | native **layout sections** (`<ac:layout-section ac:type="two_equal\|three_equal">`) at the page-body top level. `n=4 → 2+2`, `n=5 → 3+2`, larger n chunked by 3. Nested inside a panel / expand / detail the columns linearise (layout sections can't nest inside macros). |
+| `rd-pros-cons` | one `two_equal` layout section with bold pros / cons headers + lists; linearises when nested |
+| `rd-callout`, `rd-banner` | modern **Panel** — same form as `rd-card`. Type maps to `panel-type` (`info → info`, `note/tldr → note`, `success → success`, `warn → warning`, `danger → error`). |
 | `rd-detail` | native **`expand`** macro — collapsibility preserved |
 | `rd-code` / `rd-diff` / `rd-shell` / `<pre>` | native **`code`** macro with language + title |
 | `rd-checklist` | native `<ac:task-list>` with interactive checkboxes |
 | `rd-math` (block + inline) | Kroki TikZ → PNG attachment → `<ac:image>` |
 | `rd-diagram` | Kroki → PNG attachment → `<ac:image>` |
 | `rd-figure` | inner image + `<p><em>caption</em></p>` |
-| `rd-kv` (inline) | `<ul>` with `<strong>key:</strong> value` items |
-| `rd-kv` (stacked) | `<ul>` with one entry per row, key in `<strong>` + `<br/>` body |
+| `rd-kv` (inline) | modern `<table data-layout="default">` with explicit `<colgroup>` (200px key column) and `<th><p><strong>K</strong></p></th>` rows; value rendered as inline content in a single `<p>` inside `<td>` |
+| `rd-kv` (stacked) | same table shape but with block content (lists, paragraphs, code) rendered directly inside the value `<td>` |
 | `rd-compare`, `rd-rubric`, `rd-api`, `rd-chart` (non-sparkline) | native `<table>` |
-| `rd-stat`, `rd-progress`, `rd-update` | `<p>` with bold value + meta |
+| `rd-stat` | modern **Panel** (`panel-type="note"`) with bold value + meta line — panels arranged in `rd-cols` look like dashboard tiles |
+| `rd-progress`, `rd-update` | `<p>` with bold value + meta |
 | `rd-tabs` | each tab as `<h3>` + body |
-| `rd-timeline`, `rd-pros-cons` | `<ul>` |
+| `rd-timeline` | `<ul>` |
 | `rd-steps` | `<ol>` |
-| `rd-decision` | `<h2>` + status meta + body |
+| `rd-decision` | modern **Decision** element (`<ac:adf-node type="decision-list">` with a single `decision-item`). `status` maps to the ADF state (`accepted → DECIDED`, everything else → `UNDECIDED`) and to an inline status lozenge (Accepted=Green, Rejected=Red, Proposed=Blue, Superseded=Purple). Title is bold inline (`ID: Title`) followed by the lozenge and `date · deciders`. Body paragraphs sit as siblings of the decision-list. |
 | `rd-references` + scattered `rd-ref` | auto-generated `<ol>` bibliography after the body, cited-first ordering |
 | `rd-cite` | `<sup>[n]</sup>` numbered by cite order |
-| `rd-badge` | `<strong>[label]</strong>` |
+| `rd-badge` | native **Status macro** (`<ac:structured-macro ac:name="status">`) — inline coloured lozenge. Variants map to colour: `default/muted → Grey`, `info → Blue`, `success → Green`, `warn → Yellow`, `danger → Red` |
 | `rd-icon` | label text only (no glyph) |
-| `rd-toc` | dropped — Confluence's native sidebar shows the page tree |
+| `rd-toc` | rendered on every chapter as a small `<strong>Title</strong>` + nested `<ul>` Contents block (book mode); each chapter resolves to its Confluence URL, the current page renders as bold (no self-link), and group headers stay as bold non-link items. Single-file mode still drops the element. |
 | `rd-chart variant="sparkline"` | dropped |
 | `<img src="local.png">` | uploaded as attachment + `<ac:image>` reference |
-| `<a href="./chapter.html">` | href rewritten to the resolved Confluence URL |
+| `<a href="./chapter.html">` | href rewritten to the resolved Confluence URL. Handles `./`, `../`, plain relative, and `#fragment` / `?query` tails. |
+
+When any `rd-cols` (or `rd-pros-cons`) emits a layout section, the
+converter post-processes the body and wraps everything in `<ac:layout>`,
+grouping peer content between layout-sections into `fixed-width`
+sections. Pages without multi-column content skip the wrap entirely.
 
 ## Attachments
 
