@@ -15,7 +15,7 @@ export function slugify(s: string): string {
 
 /**
  * Strip common leading whitespace from a multi-line string.
- * Used by <rd-code> and <rd-mermaid> so authors can indent their content
+ * Used by <rd-code> and <rd-diagram> so authors can indent their content
  * to match surrounding HTML without it leaking into the rendered output.
  */
 export function stripCommonIndent(s: string): string {

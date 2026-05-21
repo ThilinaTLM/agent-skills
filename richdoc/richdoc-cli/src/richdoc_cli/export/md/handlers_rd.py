@@ -204,39 +204,6 @@ def _h_rd_update(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(inner)
 
 
-def _h_rd_quote(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    author = el.get("author") or ""
-    cite = el.get("cite") or ""
-    inner = c.render_block_inner(el).strip()
-    quoted_lines = [f"> {line}" if line else ">" for line in inner.split("\n")]
-    if author or cite:
-        attrib = f"— {author}" if author else ""
-        if cite:
-            attrib = (attrib + f", *{cite}*") if attrib else f"— *{cite}*"
-        quoted_lines.append(f"> {attrib}")
-    c.write_block("\n".join(quoted_lines))
-
-
-def _h_rd_footnote(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    body = _strip_outer_blanks(c.render_block_inner(el)).strip()
-    c.footnotes.append(body)
-    n = len(c.footnotes)
-    c.write(f"[^{n}]")
-
-
-def _h_rd_swatch(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    name = el.get("name") or ""
-    value = el.get("value") or ""
-    kind = el.get("kind") or ""
-    note = el.get("note") or ""
-    bits = [f"**{name}**", f"`{value}`"]
-    if kind:
-        bits.append(f"_{kind}_")
-    if note:
-        bits.append(note)
-    c.write_block(" — ".join(bits))
-
-
 # ---------------------------------------------------------------------------
 # Comparison and code
 # ---------------------------------------------------------------------------
@@ -393,36 +360,6 @@ def _chart_table_to_markdown(table) -> str:  # noqa: ANN001 — ChartTable
     return "\n".join(lines)
 
 
-def _h_rd_gallery(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    title = el.get("title") or ""
-    if title:
-        c.write_block(f"### {title}")
-    items = []
-    for shot in el:
-        if not (isinstance(shot.tag, str) and shot.tag.lower() == "rd-shot"):
-            continue
-        src = shot.get("src") or ""
-        alt = shot.get("alt") or ""
-        caption = shot.get("caption") or ""
-        src = c.rewrite_image_src(src)
-        item = f"- ![{alt}]({src})"
-        if caption:
-            item += f" — {caption}"
-        items.append(item)
-    if items:
-        c.write_block("\n".join(items))
-
-
-def _h_rd_embed(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    src = el.get("src") or ""
-    title = el.get("title") or "Embed"
-    caption = el.get("caption") or ""
-    if src:
-        c.write_block(f"[▶ {title}]({src})")
-    if caption:
-        c.write_block(f"*{caption}*")
-
-
 # ---------------------------------------------------------------------------
 # Sequenced / interactive
 # ---------------------------------------------------------------------------
@@ -490,26 +427,6 @@ def _h_rd_detail(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write_block(f"<details{open_attr}>\n<summary>{summary}</summary>\n\n{inner}\n\n</details>")
 
 
-def _h_rd_tree(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    title = el.get("title") or ""
-    if title:
-        c.write_block(f"**{title}**")
-    lines: list[str] = []
-
-    def walk(node: ET._Element, depth: int) -> None:  # noqa: SLF001
-        if not (isinstance(node.tag, str) and node.tag.lower() == "rd-node"):
-            return
-        label = node.get("label") or ""
-        lines.append("  " * depth + f"- {label}")
-        for child in node:
-            walk(child, depth + 1)
-
-    for child in el:
-        walk(child, 0)
-    if lines:
-        c.write_block("\n".join(lines))
-
-
 def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     lines = []
     for task in el:
@@ -531,14 +448,13 @@ def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block("\n".join(lines))
 
 
-def _h_rd_mermaid(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     text = _dedent(_element_source(el))
-    _emit_fenced(c, text, "mermaid")
-
-
-def _h_rd_plantuml(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    text = _dedent(_element_source(el))
-    _emit_fenced(c, text, "plantuml")
+    lang = (el.get("lang") or "").strip().lower() or "text"
+    # GFM only natively renders ```mermaid; for every other lang the
+    # source still travels with a meaningful info string so downstream
+    # processors (or the human reader) can recognise the language.
+    _emit_fenced(c, text, lang)
 
 
 # ---------------------------------------------------------------------------
@@ -620,17 +536,6 @@ def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.dropped.append("rd-icon")
 
 
-def _h_rd_tooltip(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    term = el.get("term") or ""
-    body = c.render_inline(el).strip()
-    if term and body:
-        c.write(f"{term} ({body})")
-    elif term:
-        c.write(term)
-    else:
-        c.write(body)
-
-
 # ---------------------------------------------------------------------------
 # Decision and planning
 # ---------------------------------------------------------------------------
@@ -677,36 +582,6 @@ def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"#### {pros_title}\n" + "\n".join(pros))
     if cons:
         c.write_block(f"#### {cons_title}\n" + "\n".join(cons))
-
-
-def _h_rd_roadmap(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    title = el.get("title") or ""
-    if title:
-        c.write_block(f"### {title}")
-    for lane in el:
-        if not (isinstance(lane.tag, str) and lane.tag.lower() == "rd-lane"):
-            continue
-        name = lane.get("name") or ""
-        if name:
-            c.write_block(f"#### {name}")
-        rows = []
-        for item in lane:
-            if not (isinstance(item.tag, str) and item.tag.lower() == "rd-item"):
-                continue
-            start = item.get("start") or ""
-            end = item.get("end") or ""
-            label = item.get("label") or ""
-            progress = item.get("progress") or ""
-            pct = _progress_to_pct(progress) if progress else ""
-            rows.append([label, start, end, pct])
-        if rows:
-            lines = [
-                "| Item | Start | End | Progress |",
-                "| --- | --- | --- | --- |",
-            ]
-            for r in rows:
-                lines.append("| " + " | ".join(r) + " |")
-            c.write_block("\n".join(lines))
 
 
 def _h_rd_api(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001

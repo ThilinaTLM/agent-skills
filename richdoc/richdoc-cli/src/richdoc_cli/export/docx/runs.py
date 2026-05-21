@@ -86,14 +86,6 @@ def _inline_runs(
         elif tag == "br":
             runs.append(_Run("\n"))
             skip_children = True
-        elif tag == "rd-footnote":
-            mark = child.get("mark") or "*"
-            runs.append(_Run(f"[{mark}]", bold=bold, italic=italic))
-            # Also flatten body so context isn't lost.
-            body = _flatten_inline(state, child).strip()
-            if body:
-                runs.append(_Run(f" ({body})", italic=True))
-            skip_children = True
         elif tag == "rd-cite":
             key = child.get("key") or ""
             if key not in state.cite_order:
@@ -109,14 +101,6 @@ def _inline_runs(
             if label:
                 runs.append(_Run(label, bold=bold, italic=italic))
             state.record_dropped("rd-icon")
-            skip_children = True
-        elif tag == "rd-tooltip":
-            term = child.get("term") or ""
-            body = _flatten_inline(state, child).strip()
-            if term and body:
-                runs.append(_Run(f"{term} ({body})", bold=bold, italic=italic))
-            elif term:
-                runs.append(_Run(term, bold=bold, italic=italic))
             skip_children = True
         elif tag == "rd-badge":
             text = _flatten_inline(state, child).strip()

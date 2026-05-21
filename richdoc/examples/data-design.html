@@ -137,7 +137,7 @@ SELECT uc.*
 
 		<p>The full picture, including the existing tables we read from but never write to. New tables and columns are highlighted with the <code>&lt;&lt;new&gt;&gt;</code> stereotype.</p>
 
-		<rd-plantuml>
+		<rd-diagram lang="plantuml">
 @startuml
 !theme plain
 hide circle
@@ -286,7 +286,7 @@ ss ||--o{ ipr : "supc"
 ss ||--o{ spm : "supc"
 
 @enduml
-		</rd-plantuml>
+		</rd-diagram>
 
 		<p>Two important shapes to read off the diagram:</p>
 		<ul>
@@ -636,7 +636,7 @@ SELECT oi.opco_itm_id,
 
 	<rd-section title="Conversion lifecycle (state diagram)">
 
-		<rd-plantuml>
+		<rd-diagram lang="plantuml">
 @startuml
 !theme plain
 skinparam state {
@@ -688,7 +688,7 @@ note right of vN
 end note
 
 @enduml
-		</rd-plantuml>
+		</rd-diagram>
 
 		<p>Notes on each transition:</p>
 		<ul>

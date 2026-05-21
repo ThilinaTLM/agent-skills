@@ -16,8 +16,7 @@ rd-figure > svg {
 	border-radius: var(--rd-panel-radius);
 	background: var(--rd-panel-bg);
 }
-rd-figure > rd-mermaid,
-rd-figure > rd-plantuml {
+rd-figure > rd-diagram {
 	margin: 0 auto;
 }
 rd-figure > ._rd-figure-cap {

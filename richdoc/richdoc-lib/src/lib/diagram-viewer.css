@@ -127,7 +127,7 @@ dialog._rd-diagram-viewer ._rd-diagram-viewer-content > img {
 	user-select: none;
 }
 
-/* Corner trigger button used by rd-mermaid + rd-plantuml. Lives at the
+/* Corner trigger button used by rd-diagram. Lives at the
    top-right of the diagram panel, low-opacity by default so it doesn't
    dominate, full opacity on hover/focus or when the host is hovered. */
 ._rd-diagram-fullscreen-btn {
@@ -157,8 +157,7 @@ dialog._rd-diagram-viewer ._rd-diagram-viewer-content > img {
 }
 ._rd-diagram-fullscreen-btn:hover,
 ._rd-diagram-fullscreen-btn:focus-visible,
-rd-mermaid:hover ._rd-diagram-fullscreen-btn,
-rd-plantuml:hover ._rd-diagram-fullscreen-btn {
+rd-diagram:hover ._rd-diagram-fullscreen-btn {
 	opacity: 1;
 	color: var(--rd-fg);
 	border-color: var(--rd-border-strong);

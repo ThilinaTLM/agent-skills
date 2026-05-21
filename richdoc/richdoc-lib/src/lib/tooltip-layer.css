@@ -1,29 +1,10 @@
-/* Tooltip — rich hover/focus preview. The component renders an inline
- * trigger with a dotted-underline affordance; the helper in tooltip-service.ts
- * manages a single shared layer at the end of <body> that hosts whichever
- * popup is currently visible. */
+/* Shared floating tooltip layer.
+ *
+ * Owned by lib/tooltip-service.ts and used by <rd-cite> for citation
+ * preview popups. One <div class="_rd-tooltip-layer"> lives in <body>
+ * and hosts whichever popup is currently visible.
+ */
 
-rd-tooltip {
-	display: inline;
-}
-
-._rd-tooltip-trigger {
-	border-bottom: 1px dotted var(--rd-fg-muted);
-	cursor: help;
-	text-decoration: none;
-	color: inherit;
-	/* Avoid the focus ring landing on a 0-height span on Safari. */
-	display: inline;
-	outline-offset: 2px;
-}
-._rd-tooltip-trigger:hover,
-._rd-tooltip-trigger:focus-visible {
-	border-bottom-color: var(--rd-accent);
-	color: var(--rd-accent);
-}
-
-/* Shared layer pinned to the viewport. Pointer events pass through except
- * on the visible popup itself. */
 ._rd-tooltip-layer {
 	position: fixed;
 	inset: 0;
@@ -61,8 +42,8 @@ rd-tooltip {
 
 /* The little arrow. Drawn as a rotated square tucked behind the popup so
  * its bottom-left edge inherits the popup's border on the appropriate
- * side. `--rd-tt-arrow-x` is set by the positioning code in tooltip-service.ts
- * and clamped to stay within the popup edges. */
+ * side. `--rd-tt-arrow-x` is set by the positioning code in
+ * tooltip-service.ts and clamped to stay within the popup edges. */
 ._rd-tooltip-layer > [role="tooltip"]::before {
 	content: "";
 	position: absolute;
@@ -116,9 +97,5 @@ rd-tooltip {
 @media print {
 	._rd-tooltip-layer {
 		display: none;
-	}
-	._rd-tooltip-trigger {
-		border-bottom: none;
-		cursor: auto;
 	}
 }

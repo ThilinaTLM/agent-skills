@@ -203,20 +203,6 @@ def _h_rd_update(state: _State, el: ET._Element) -> None:
     render_children(state, el)
 
 
-def _h_rd_quote(state: _State, el: ET._Element) -> None:
-    runs = _inline_runs(state, el)
-    if any(r.text.strip() for r in runs):
-        p = state.doc.add_paragraph(style="Intense Quote")
-        _emit_runs(p, runs)
-    author = el.get("author") or ""
-    cite = el.get("cite") or ""
-    bits = [b for b in (author, cite) if b]
-    if bits:
-        p = state.add_paragraph()
-        r = p.add_run("— " + ", ".join(bits))
-        r.italic = True
-
-
 def _h_rd_cols(state: _State, el: ET._Element) -> None:
     # Flatten to sequential rendering — Confluence Word import doesn't
     # preserve Word columns reliably, and rd-cols is structural parallelism.
@@ -291,8 +277,8 @@ def _h_rd_math(state: _State, el: ET._Element) -> None:
 
 def _h_rd_figure(state: _State, el: ET._Element) -> None:
     caption = el.get("caption") or ""
-    # rd-figure wraps an arbitrary block (img, rd-plantuml, rd-mermaid,
-    # rd-chart, etc.) plus an optional caption.
+    # rd-figure wraps an arbitrary block (img, rd-diagram, rd-chart,
+    # etc.) plus an optional caption.
     render_children(state, el)
     if caption:
         p = state.add_paragraph()
@@ -332,39 +318,6 @@ def _chart_to_table(state: _State, raw: str) -> bool:  # noqa: SLF001
         padded = row + [""] * (width - len(row)) if len(row) < width else row
         _fill_row(state, table.rows[i], padded)
     return True
-
-
-def _h_rd_gallery(state: _State, el: ET._Element) -> None:
-    title = el.get("title") or ""
-    if title:
-        state.doc.add_heading(title, level=3)
-    for shot in el:
-        if not (isinstance(shot.tag, str) and shot.tag.lower() == "rd-shot"):
-            continue
-        src = shot.get("src") or ""
-        alt = shot.get("alt") or ""
-        caption = shot.get("caption") or ""
-        if not src:
-            continue
-        _embed_image(state, src, alt=alt)
-        if caption:
-            p = state.add_paragraph()
-            r = p.add_run(caption)
-            r.italic = True
-            r.font.size = Pt(9)
-
-
-def _h_rd_embed(state: _State, el: ET._Element) -> None:
-    src = el.get("src") or ""
-    title = el.get("title") or "Embed"
-    caption = el.get("caption") or ""
-    p = state.add_paragraph()
-    runs = [_Run(f"▶ {title}", hyperlink=src or None, underline=bool(src))]
-    _emit_runs(p, runs)
-    if caption:
-        p2 = state.add_paragraph()
-        r = p2.add_run(caption)
-        r.italic = True
 
 
 def _h_rd_tabs(state: _State, el: ET._Element) -> None:
@@ -421,29 +374,6 @@ def _h_rd_detail(state: _State, el: ET._Element) -> None:
     render_children(state, el)
 
 
-def _h_rd_tree(state: _State, el: ET._Element) -> None:
-    title = el.get("title") or ""
-    if title:
-        state.doc.add_heading(title, level=3)
-    _emit_tree_nodes(state, el, depth=0)
-
-
-def _emit_tree_nodes(state: _State, parent: ET._Element, *, depth: int) -> None:
-    for node in parent:
-        if not (isinstance(node.tag, str) and node.tag.lower() == "rd-node"):
-            continue
-        label = node.get("label") or ""
-        style_level = min(depth, 2)
-        style = ["List Bullet", "List Bullet 2", "List Bullet 3"][style_level]
-        p = state.doc.add_paragraph(label, style=style)
-        # Inline content after label
-        inline_runs = _inline_runs(state, node)
-        if any(r.text.strip() for r in inline_runs):
-            p.add_run(" ")
-            _emit_runs(p, inline_runs)
-        _emit_tree_nodes(state, node, depth=depth + 1)
-
-
 def _h_rd_checklist(state: _State, el: ET._Element) -> None:
     for task in el:
         if not (isinstance(task.tag, str) and task.tag.lower() == "rd-task"):
@@ -465,14 +395,15 @@ def _h_rd_checklist(state: _State, el: ET._Element) -> None:
             r.font.size = Pt(8)
 
 
-def _h_rd_mermaid(state: _State, el: ET._Element) -> None:
+def _h_rd_diagram(state: _State, el: ET._Element) -> None:
     text = _dedent(_element_source(el))
-    _render_diagram(state, text, kind="mermaid")
-
-
-def _h_rd_plantuml(state: _State, el: ET._Element) -> None:
-    text = _dedent(_element_source(el))
-    _render_diagram(state, text, kind="plantuml")
+    lang = (el.get("lang") or "").strip().lower()
+    if not lang:
+        # Without a lang we can't talk to Kroki; emit the source as a
+        # plain code block so the content still travels.
+        _emit_code(state, text, lang="text")
+        return
+    _render_diagram(state, text, kind=lang)
 
 
 def _render_diagram(state: _State, text: str, *, kind: str) -> None:
@@ -630,34 +561,6 @@ def _h_rd_rubric(state: _State, el: ET._Element) -> None:
     _fill_row(state, table.rows[-1], total_row, bold=True)
 
 
-def _h_rd_roadmap(state: _State, el: ET._Element) -> None:
-    title = el.get("title") or ""
-    if title:
-        state.doc.add_heading(title, level=3)
-    lanes = [l for l in el if isinstance(l.tag, str) and l.tag.lower() == "rd-lane"]  # noqa: E741
-    if not lanes:
-        return
-    table = state.doc.add_table(rows=1, cols=4)
-    table.style = "Table Grid"
-    _fill_row(state, table.rows[0], ["Lane", "Item", "Start", "End"], bold=True)
-    for lane in lanes:
-        name = lane.get("name") or ""
-        for item in lane:
-            if not (isinstance(item.tag, str) and item.tag.lower() == "rd-item"):
-                continue
-            row = table.add_row()
-            _fill_row(
-                state,
-                row,
-                [
-                    name,
-                    item.get("label") or "",
-                    item.get("start") or "",
-                    item.get("end") or "",
-                ],
-            )
-
-
 def _h_rd_api(state: _State, el: ET._Element) -> None:
     method = el.get("method") or ""
     path = el.get("path") or ""
@@ -706,25 +609,6 @@ def _h_rd_api(state: _State, el: ET._Element) -> None:
             )
 
 
-def _h_rd_swatch(state: _State, el: ET._Element) -> None:
-    kind = el.get("kind") or ""
-    name = el.get("name") or ""
-    value = el.get("value") or ""
-    note = el.get("note") or ""
-    p = state.add_paragraph()
-    r = p.add_run(f"{kind}: {name} = ")
-    r.bold = True
-    code = p.add_run(value)
-    code.font.name = "Courier New"
-    if note:
-        p.add_run(f"  ({note})")
-
-
-def _h_rd_footnotes(state: _State, el: ET._Element) -> None:
-    # Top-level rd-footnotes is auto-injected at runtime; ignore here.
-    state.record_dropped("rd-footnotes")
-
-
 def _h_rd_references(state: _State, el: ET._Element) -> None:
     # rd-references placement marker — emit collected refs here if any.
     _emit_references(state, title=el.get("title") or "References")
@@ -733,15 +617,6 @@ def _h_rd_references(state: _State, el: ET._Element) -> None:
 
 def _h_rd_ref(state: _State, el: ET._Element) -> None:
     _collect_ref(state, el)
-
-
-def _h_rd_footnote(state: _State, el: ET._Element) -> None:
-    # Block-level rd-footnote shouldn't happen; render inline body as a paragraph.
-    text = _flatten_inline(state, el).strip()
-    if text:
-        p = state.add_paragraph()
-        r = p.add_run(text)
-        r.italic = True
 
 
 def _h_rd_cite(state: _State, el: ET._Element) -> None:

@@ -32,14 +32,12 @@
 	rd-compare,
 	rd-code,
 	rd-diff,
-	rd-mermaid,
-	rd-plantuml,
+	rd-diagram,
 	rd-math,
 	rd-toc,
 	rd-tabs,
 	rd-stat,
 	rd-figure,
-	rd-quote,
 	rd-detail {
 		box-shadow: none;
 		break-inside: avoid;

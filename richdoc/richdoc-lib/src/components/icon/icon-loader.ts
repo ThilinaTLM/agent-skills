@@ -1,5 +1,5 @@
 /**
- * Runtime icon resolver. Every `<rd-icon name="…">` resolves through a single
+ * Runtime icon resolver. Every `<rd-icon name="...">` resolves through a single
  * lazy path: fetch the matching `lucide-static` SVG from jsDelivr on first
  * reference, cache the inner-SVG markup in memory so repeat uses share one
  * network round-trip, and let the browser HTTP cache (`cache: "force-cache"`)
@@ -7,10 +7,10 @@
  *
  * Failure mode: if the network request fails (offline, blocked CDN, unknown
  * name) the loader resolves to `null` and `<rd-icon>` renders an empty <svg>
- * shell at the slot's size — the layout never shifts. The host element is
+ * shell at the slot's size - the layout never shifts. The host element is
  * marked with `data-rd-icon-missing` so CSS can opt in to a placeholder.
  *
- * Framework chrome (callouts, checklists, banners, …) constructs `<rd-icon>`
+ * Framework chrome (callouts, checklists, banners, ...) constructs `<rd-icon>`
  * elements with a small fixed set of names. We prewarm those names at boot
  * (see `prewarmFrameworkIcons`) so the fetches are in flight before any
  * component's `connectedCallback` runs, eliminating a visible icon flash on
@@ -22,7 +22,7 @@ import { LUCIDE_CDN_BASE } from "./lucide-version.ts";
 const cache = new Map<string, Promise<string | null>>();
 
 /**
- * Strip the outer `<svg …>` wrapper from a Lucide static file and return just
+ * Strip the outer `<svg ...>` wrapper from a Lucide static file and return just
  * the children. Lucide's SVG files are pretty-printed with newlines, so we
  * collapse internal whitespace to keep the inline markup compact when
  * injected into a host <svg> on the page.
@@ -47,14 +47,14 @@ export function loadIconInner(name: string): Promise<string | null> {
 /**
  * Icon names hard-coded inside the framework's own components. Prewarming
  * these on script load lets callouts / banners / checklists / details /
- * steps / pros-cons / trees / updates render their chrome icons without a
+ * steps / pros-cons / updates render their chrome icons without a
  * visible flash, because the fetch is in flight before any
  * `connectedCallback` runs.
  *
  * Keep this list in sync with the icon names hard-coded inside
- * `src/components/*` — search for `createElement("rd-icon")` and add any
- * new framework-internal glyph here. Author-supplied icons (e.g.
- * `<rd-node icon="…">`) intentionally do not prewarm.
+ * `src/components/*` - search for `createElement("rd-icon")` and add any
+ * new framework-internal glyph here. Author-supplied icons intentionally
+ * do not prewarm.
  */
 const FRAMEWORK_ICONS = [
 	// callout (CALLOUT_ICONS)
@@ -74,7 +74,7 @@ const FRAMEWORK_ICONS = [
 	"package",
 	"git-commit",
 	"bell",
-	// pros-cons / tree
+	// pros-cons
 	"x",
 	"chevron-right",
 ] as const;

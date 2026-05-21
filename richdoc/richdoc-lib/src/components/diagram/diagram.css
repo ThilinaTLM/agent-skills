@@ -1,4 +1,4 @@
-rd-plantuml {
+rd-diagram {
 	display: block;
 	position: relative;
 	background: var(--rd-panel-bg);
@@ -9,15 +9,25 @@ rd-plantuml {
 	overflow-x: auto;
 	text-align: center;
 }
-rd-plantuml svg,
-rd-plantuml img {
+rd-diagram svg,
+rd-diagram img {
 	max-width: 100%;
 	height: auto;
 }
-rd-plantuml > ._rd-plantuml-fallback {
+rd-diagram > ._rd-diagram-caption {
+	display: block;
+	margin-top: var(--rd-space-3);
+	font-family: var(--rd-font-display);
+	font-style: italic;
+	font-size: var(--rd-text-sm);
+	color: var(--rd-fg-muted);
+	text-align: center;
+}
+rd-diagram > ._rd-diagram-fallback {
 	text-align: left;
 	font-family: var(--rd-font-mono);
 	font-size: var(--rd-text-sm);
 	color: var(--rd-fg-muted);
 	white-space: pre-wrap;
+	margin: 0;
 }

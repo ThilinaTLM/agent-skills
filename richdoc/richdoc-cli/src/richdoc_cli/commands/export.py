@@ -241,7 +241,7 @@ def cmd_html(
 )
 @click.option(
     "--no-render-diagrams", is_flag=True,
-    help="Skip server-side rendering of rd-mermaid / rd-plantuml; embed "
+    help="Skip server-side rendering of rd-diagram; embed "
     "source as a code block instead.",
 )
 @click.option(
