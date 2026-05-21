@@ -23,6 +23,15 @@ ERROR_CODES = frozenset(
         "LINT_ERRORS",
         "PREREQ_MISSING",
         "INTERNAL_ERROR",
+        "CONFIG_MISSING",
+        # publish / Confluence REST errors
+        "AUTH_ERROR",
+        "PERMISSION_DENIED",
+        "NOT_FOUND",
+        "VERSION_CONFLICT",
+        "ATTACHMENT_TOO_LARGE",
+        "UPSTREAM_ERROR",
+        "AMBIGUOUS_MATCH",
     }
 )
 

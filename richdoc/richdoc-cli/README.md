@@ -1,6 +1,6 @@
 # richdoc-cli
 
-Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), and export to markdown / html / docx (`export`).
+Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), export to markdown / docx (`export`), and publish to Confluence Cloud (`publish confluence`). HTML is the source format and is not an export target.
 
 - See the parent skill: [`../SKILL.md`](../SKILL.md) for the full command reference and component vocabulary.
 - Requires `uv` ([install](https://docs.astral.sh/uv/)). First call provisions the Python environment automatically.
@@ -20,8 +20,8 @@ src/richdoc_cli/
   paths.py            # canonical filesystem paths
   mimetypes_ext.py    # mime sniffer used by the export pipeline
   commands/           # one click subcommand per file
-    new_.py init_.py update.py lint.py components.py export.py
-  export/             # the export pipeline (md / html / docx)
+    new_.py init_.py update.py lint.py components.py export.py publish.py
+  export/             # the export pipeline (md / docx)
     book.py           #   multi-file book discovery
     common/           #   format-agnostic helpers
       assets.py       #     AssetStore (file dedup + remote fetch)
@@ -29,9 +29,6 @@ src/richdoc_cli/
       walker.py       #     parse_html, inline_text, element_source
       chart_data.py   #     rd-chart data parser (returns ChartTable)
       modes.py        #     ExportMode + plan_outputs (single vs multi)
-    html/             #   HTML → self-contained .bundle.html
-      bundler.py      #     inline relative deps into one file
-      pipeline.py     #     single + multi orchestration
     md/               #   HTML → GitHub-flavored markdown
       converter.py    #     _Converter state machine + helpers
       handlers_plain.py # plain HTML element handlers
@@ -39,16 +36,27 @@ src/richdoc_cli/
       handler_table.py # the dispatch dict (populates converter.HANDLERS)
       combiner.py     #   single-mode: stitch chapters into one .md
       pipeline.py     #   single + multi orchestration
-    docx/             #   HTML → .docx (Confluence-import compatible)
+    docx/             #   HTML → .docx (Word / LibreOffice)
       state.py        #     _State + DocxResult
       document.py     #     Document factory + RichdocCode style
       runs.py         #     _Run, inline runs, hyperlinks, li splitting
       tables.py       #     table cell helpers (borders, shading, fill)
       walker.py       #     render_source / render_children / render_block
       references.py   #     citation collection + References section
+      math.py         #     LaTeX → OMML via latex2mathml + MML2OMML.xsl
       handlers_plain.py / handlers_rd.py / handler_table.py
       pipeline.py     #   single + multi orchestration
+  publish/            # remote publish targets
+    confluence/       #   Confluence Cloud REST publisher
+      auth.py         #     flag / env / getpass credential resolution
+      client.py       #     stdlib REST client (urllib + email.mime multipart)
+      converter.py    #     HTML → storage-format XML state machine
+      handlers_plain.py # plain HTML → storage XML
+      handlers_rd.py  #     rd-* → storage XML + native macros
+      handler_table.py # the dispatch dict
+      math.py         #     Kroki TikZ → PNG for rd-math
+      pipeline.py     #     create / update pages + upload attachments
 ```
 
-The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the two formats share helpers via `export/common/`.
+The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the two formats share helpers via `export/common/`. `publish/confluence/` reuses `export/common/` (book discovery, asset store, walker helpers) but emits Confluence storage-format XML instead of one of the export formats.
 

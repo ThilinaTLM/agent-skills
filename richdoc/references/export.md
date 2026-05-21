@@ -1,13 +1,18 @@
 # richdoc — export reference
 
-The richdoc CLI ships exactly three export formats: markdown, HTML, and DOCX. Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these three.
+The richdoc CLI ships two export formats:
 
-All three subcommands share a `--single` / `--multi` flag pair so the output shape is explicit:
+- **`md`** — GitHub-flavoured Markdown.
+- **`docx`** — Word document for editing in Word / LibreOffice.
+
+There is no `html` export target: richdoc files are already HTML. Open the source `.html` directly in a browser, or use `richdoc publish confluence push` for Confluence (see the Confluence section below). Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these.
+
+The `md` / `docx` subcommands share a `--single` / `--multi` flag pair so the output shape is explicit:
 
 - `--single` — one output file containing the whole book.
 - `--multi`  — one output file per chapter, mirroring the source tree under a folder.
 
-Defaults match the format: `md` defaults to `--multi`, `html` and `docx` default to `--single`. For a non-book input both modes still work (multi produces a folder with one file). The two flags are mutually exclusive. The JSON envelope reports the resolved `mode`.
+Defaults match the format: `md` defaults to `--multi`, `docx` defaults to `--single`. For a non-book input both modes still work (multi produces a folder with one file). The two flags are mutually exclusive. The JSON envelope reports the resolved `mode`.
 
 `--no-book` overrides auto-detection and renders only the entry file, regardless of the mode flag.
 
@@ -30,14 +35,6 @@ Defaults match the format: `md` defaults to `--multi`, `html` and `docx` default
 `-o -` writes the markdown to stdout (single mode only).
 
 Every `rd-*` component maps to the closest markdown idiom: callouts to GFM admonitions (`> [!NOTE]`), `rd-compare` / `rd-rubric` / `rd-api` to tables, `rd-code` / `rd-diff` / `rd-shell` to fenced code blocks, `rd-checklist` to GFM task lists, `rd-diagram` to a fenced block with the lang as the info string (` ```mermaid ` etc.), `rd-detail` to a raw `<details>` block, `rd-cite` / `rd-ref` to a bibliography section. Components without a natural markdown form (`rd-chart`, `rd-icon`, single-file `rd-toc`) are dropped and reported in the JSON envelope's `dropped[]` field.
-
-## `richdoc export html <file> [-o <path>] [--single|--multi]`
-
-**Default (`--single`)** writes one self-contained `.html` file with every relative dependency inlined as a `data:` URI. CDN dependencies (mermaid removed; KaTeX, highlight.js, Observable Plot, Lucide, PhotoSwipe) are preserved. Default location: `<input-stem>.bundle.html`. `-o -` writes to stdout.
-
-**`--multi`** writes one HTML file per chapter into a folder, mirroring the source tree. Shared assets land in `<out>/assets/`.
-
-`rd-diagram` is rendered server-side via Kroki (`--diagram-endpoint <url>`, default `https://kroki.io`) and embedded as PNG so the bundled HTML works offline. Skip rendering and embed source as a code block with `--no-render-diagrams`.
 
 ## `richdoc export docx <file> [-o <path>] [--single|--multi]`
 
@@ -63,7 +60,7 @@ Every export subcommand writes a JSON envelope to stdout (unless `-o -` is used 
 {
   "ok": true,
   "mode": "single|multi",
-  "format": "md|html|docx",
+  "format": "md|docx",
   "outputs": [{"path": "/abs/path/out.md", "bytes": 12345}, ...],
   "dropped": ["rd-chart", ...],
   "diagrams_rendered": 3,
@@ -72,3 +69,14 @@ Every export subcommand writes a JSON envelope to stdout (unless `-o -` is used 
 ```
 
 On failure, `{"ok": false, "code": "...", "message": "..."}`.
+
+## Confluence
+
+There is no longer an `export` subcommand for Confluence. To push a richdoc into Confluence Cloud, use the REST-API publisher — see [references/publish.md](publish.md):
+
+```bash
+export CONFLUENCE_SPACE_KEY=DEV
+richdoc publish confluence push doc.html --parent-id 12345
+```
+
+It creates / updates pages in an existing space, preserves the book hierarchy in the native page tree, and renders `rd-code` / `rd-callout` / `rd-detail` as native Confluence macros (real syntax highlighting, real collapsibles) instead of the dead-end zip importer's plain-text-or-PNG fallback.

@@ -1,9 +1,8 @@
 """`richdoc export <fmt> <input>` — unified export command.
 
-Three subcommands, one consistent flag layout:
+Two subcommands, one consistent flag layout:
 
     richdoc export md   INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
-    richdoc export html INPUT [-o OUT] [-f] [--no-book] [--single|--multi]
     richdoc export docx INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
 
 - `--single`: produce one output file containing the whole book.
@@ -14,6 +13,10 @@ Three subcommands, one consistent flag layout:
 This module is intentionally thin: it parses flags, delegates to the
 appropriate pipeline in `export.<fmt>.pipeline`, and turns the structured
 result into a JSON envelope.
+
+HTML is *not* an export target: richdoc files are already HTML. Open
+the source `.html` directly in a browser, or use `richdoc publish
+confluence push` for Confluence.
 """
 
 from __future__ import annotations
@@ -27,7 +30,7 @@ from ..export.common.modes import ExportMode
 from ..output import json_error, json_ok
 
 
-@click.group("export", help="Export a richdoc HTML file to markdown / html / docx.")
+@click.group("export", help="Export a richdoc HTML file to markdown / docx.")
 def group() -> None:
     pass
 
@@ -131,102 +134,6 @@ def cmd_md(
         "missing": result.missing,
         "dropped": result.dropped,
     }
-    json_ok(**payload)
-
-
-# ---------------------------------------------------------------------------
-# html
-# ---------------------------------------------------------------------------
-
-
-@group.command("html")
-@click.argument(
-    "input_",
-    metavar="INPUT",
-    type=click.Path(dir_okay=False, exists=True, path_type=Path),
-)
-@click.option(
-    "-o", "--output", "output",
-    type=click.Path(path_type=Path),
-    help="Output path. Single mode → file (use '-' for stdout); "
-    "multi mode → folder. Default: <stem>.bundle.html (single) or "
-    "<stem>-html/ (multi).",
-)
-@click.option(
-    "-f", "--force", is_flag=True, help="Overwrite existing output."
-)
-@click.option(
-    "--no-book", is_flag=True,
-    help="Disable book auto-detection. Only the entry file is exported.",
-)
-@click.option(
-    "--single", "single_flag", is_flag=True,
-    help="Inline only the entry file (default).",
-)
-@click.option(
-    "--multi", "multi_flag", is_flag=True,
-    help="Bundle each chapter into its own .bundle.html under a folder.",
-)
-def cmd_html(
-    input_: Path,
-    output: Path | None,
-    force: bool,
-    no_book: bool,
-    single_flag: bool,
-    multi_flag: bool,
-) -> None:
-    """Export to a self-contained .html (single) or a folder of bundles (multi)."""
-    in_path = _require_html(input_)
-    mode = _resolve_mode(single_flag, multi_flag, default=ExportMode.SINGLE)
-
-    # `-o -` → stdout (single mode only).
-    if output is not None and str(output) == "-":
-        if mode is ExportMode.MULTI:
-            json_error(
-                "Cannot write to stdout in --multi mode (multiple files).",
-                code="INVALID_PARAMS",
-            )
-        from ..export.html.pipeline import bundle_to_string  # noqa: PLC0415
-
-        try:
-            text = bundle_to_string(in_path)
-        except OSError as exc:
-            json_error(f"Could not read input: {exc}", code="INPUT_ERROR")
-        sys.stdout.write(text)
-        sys.stdout.flush()
-        return
-
-    from ..export.html.pipeline import export_html  # noqa: PLC0415
-
-    try:
-        result = export_html(
-            in_path,
-            output=output,
-            mode=mode,
-            no_book=no_book,
-            force=force,
-        )
-    except FileExistsError as exc:
-        json_error(str(exc), code="FILE_EXISTS", hint="Re-run with --force to overwrite.")
-    except OSError as exc:
-        json_error(f"Could not write output: {exc}", code="OUTPUT_ERROR")
-
-    plan = result.plan
-    payload: dict = {
-        "input": str(in_path),
-        "output": str(plan.root),
-        "mode": plan.mode.value,
-        "book": result.is_book,
-        "files": _relative_paths(result.files_written, plan.root, plan.mode),
-        "inlined": result.inlined,
-        "kept_absolute": result.kept_absolute,
-        "missing": result.missing,
-    }
-    if result.missing:
-        payload["hint"] = (
-            "Some relative assets could not be read. "
-            "The bundle still works but those references stay relative."
-        )
     json_ok(**payload)
 
 
