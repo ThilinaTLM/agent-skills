@@ -158,6 +158,15 @@ prefixing. The shared `rd-toc` is also rendered inline on every page
 as a "Contents" block of cross-page links, mirroring how rd-toc is
 present in every chapter file in the HTML source.
 
+Every chapter also gets a **prev/next nav** appended to the bottom of
+its body: a single-row `two_equal` layout-section with `← <prev>` and a
+yellow `PREVIOUS` lozenge in the left cell, and a green `NEXT` lozenge
++ `<next> →` in the right cell. Order follows the flattened rd-toc
+(depth-first, skipping group headers without an `href`). The first and
+last chapters get only the side they have a neighbour for; the empty
+side renders a placeholder so the two-column layout stays balanced.
+Single-file mode emits no nav.
+
 
 - The **entry chapter** is published under `--parent-id` (or the space root).
 - Every other chapter nests under either:
@@ -203,7 +212,7 @@ page opens cleanly in the new editor with **no "legacy content" warnings**.
 | `rd-cite` | `<sup>[n]</sup>` numbered by cite order |
 | `rd-badge` | native **Status macro** (`<ac:structured-macro ac:name="status">`) — inline coloured lozenge. Variants map to colour: `default/muted → Grey`, `info → Blue`, `success → Green`, `warn → Yellow`, `danger → Red` |
 | `rd-icon` | label text only (no glyph) |
-| `rd-toc` | rendered on every chapter as a small `<strong>Title</strong>` + nested `<ul>` Contents block (book mode); each chapter resolves to its Confluence URL, the current page renders as bold (no self-link), and group headers stay as bold non-link items. Single-file mode still drops the element. |
+| `rd-toc` | rendered on every chapter as a small `<strong>Title</strong>` + nested `<ul>` Contents block at the top of the body, plus a single-row `two_equal` prev/next nav appended at the bottom (`← link PREVIOUS` / `NEXT link →` lozenges, Yellow + Green). Each chapter resolves to its Confluence URL, the current page renders as bold (no self-link), and group headers stay as bold non-link items. Single-file mode still drops the element and emits no nav. |
 | `rd-chart variant="sparkline"` | dropped |
 | `<img src="local.png">` | uploaded as attachment + `<ac:image>` reference |
 | `<a href="./chapter.html">` | href rewritten to the resolved Confluence URL. Handles `./`, `../`, plain relative, and `#fragment` / `?query` tails. |

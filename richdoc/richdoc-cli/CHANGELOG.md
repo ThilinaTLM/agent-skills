@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Added
+
+- **Prev/next chapter nav at the bottom of every book chapter** in
+  `richdoc publish confluence`. Each chapter body now ends with a
+  single-row `two_equal` layout-section: `← <prev>` + a yellow
+  `PREVIOUS` Confluence Status lozenge in the left cell, and a green
+  `NEXT` lozenge + `<next> →` in the right cell. Order follows the
+  flattened `<rd-toc>` (depth-first, skipping group headers without an
+  `href`). The first and last chapters get only the side they have a
+  neighbour for; the empty side renders a placeholder so the layout
+  stays two-column. Single-file mode emits no nav. The top of the page
+  is unchanged — the existing rd-toc "Contents" block already gives
+  readers a full chapter overview there.
+
 ### Changed
 
 - **`richdoc publish confluence` is now configured exclusively via four
