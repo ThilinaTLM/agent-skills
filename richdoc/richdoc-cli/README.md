@@ -67,11 +67,11 @@ Install dev tooling and run the gates locally:
 ```bash
 uv sync --extra dev
 uv run ruff check src     # lint
-uv run mypy src           # type-check
+uv run ty check           # type-check
 ```
 
 The repo ships a `.pre-commit-config.yaml` at the root that runs ruff
-and mypy (plus the lib's biome / tsc) before every commit. Enable it
+and ty (plus the lib's biome / tsc) before every commit. Enable it
 once per clone:
 
 ```bash

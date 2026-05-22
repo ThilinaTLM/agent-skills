@@ -41,6 +41,7 @@ class _State:
     cite_counter: int = 0
     cite_order: list[str] = field(default_factory=list)
     refs_collected: dict[str, dict[str, str]] = field(default_factory=dict)
+    refs_emitted: bool = False
     # True once an rd-toc has been rendered — subsequent ones (shared TOC in
     # every chapter of a book) are skipped.
     toc_emitted: bool = False

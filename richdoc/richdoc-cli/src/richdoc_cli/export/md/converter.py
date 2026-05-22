@@ -41,8 +41,8 @@ _MD_REF_RENDERER = RefRenderer(
     url_only=lambda url: f"<{url}>",
 )
 
-# Re-exports for sibling handler modules. Listed here so ruff F401 and
-# mypy's `no-implicit-reexport` both treat them as intentional.
+# Re-exports for sibling handler modules. Listed here so linters and
+# type checkers treat them as intentional.
 __all__ = [
     "HANDLERS",
     "_Converter",

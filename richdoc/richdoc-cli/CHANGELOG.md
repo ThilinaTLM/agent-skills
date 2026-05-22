@@ -14,9 +14,9 @@
 ### Developer experience
 
 - **Test + lint baseline.** Adds a `[project.optional-dependencies]
-dev` group (pytest, syrupy, ruff, mypy, lxml-stubs) plus ruff, mypy,
+dev` group (pytest, syrupy, ruff, ty, lxml-stubs) plus ruff, ty,
 and pytest config in `pyproject.toml`. Run the gates with
-`uv run ruff check src tests`, `uv run mypy src`, and
+`uv run ruff check src tests`, `uv run ty check`, and
 `uv run pytest`. See `tests/README.md` for the snapshot conventions.
 - **Snapshot test suite (91 tests / 49 snapshots).** Locks every
   command's JSON envelope against the reference fixtures in
@@ -27,7 +27,7 @@ and pytest config in `pyproject.toml`. Run the gates with
   patch the client to keep CI offline.
 - **Pre-commit hooks** (`.pre-commit-config.yaml`) replace CI as the
   enforcement point for the gates. Local `pre-commit install` wires
-  ruff + mypy + pytest (CLI) and biome + tsc + vitest (lib) into
+  ruff + ty + pytest (CLI) and biome + tsc + vitest (lib) into
   `git commit`, plus a small set of hygiene hooks (trailing
   whitespace, EOF newlines, YAML / TOML well-formedness,
   merge-conflict markers, large-file guard). Every hook is scoped

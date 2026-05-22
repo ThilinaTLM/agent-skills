@@ -37,8 +37,8 @@ def sourceline_of(el: ET._Element) -> int | None:
     """Return ``el.sourceline`` as ``int | None``.
 
     Works around an lxml-stubs declaration
-    (``sourceline = ...  # Optional[int]``) that mypy parses as the
-    literal ``EllipsisType`` instead of the type in the comment. Routing
+    (``sourceline = ...  # Optional[int]``) that type checkers can parse as
+    the literal ``EllipsisType`` instead of the type in the comment. Routing
     every read through this helper keeps the call sites clean.
     """
     value = getattr(el, "sourceline", None)

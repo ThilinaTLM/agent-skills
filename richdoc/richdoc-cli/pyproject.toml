@@ -14,7 +14,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff>=0.6",
-    "mypy>=1.10",
+    "ty>=0.0.38",
     "lxml-stubs>=0.5",
 ]
 
@@ -96,35 +96,34 @@ ignore = [
 external = ["S310", "S320"]
 
 # ---------------------------------------------------------------------------
-# Mypy
+# ty
 # ---------------------------------------------------------------------------
 #
-# `strict = true` flips on the bulk of mypy's checks; the knobs below
-# acknowledge the deliberate Any seams in this codebase:
-#
-#   - JSON envelopes are `dict[str, Any]` because the shape varies per
-#     command. Tightening this needs a per-command TypedDict hierarchy
-#     that's worth a separate plan.
-#   - lxml-stubs leaves Element attribute access broadly typed; the
-#     same follow-up plan will introduce typed lxml wrappers.
-#   - Private helpers without return annotations are common in this
-#     codebase. `disallow_untyped_defs` is off in Phase 1 — we keep the
-#     stricter `disallow_untyped_calls` so untyped helpers can't pollute
-#     typed callers.
-#
-# A follow-up plan tightens these. Don't try in Phase 1.
+# Selection rationale:
+#   - Keep ty's default error diagnostics.
+#   - Treat warnings as failing diagnostics so pre-commit/CI doesn't allow
+#     questionable type states to drift.
+#   - Enable the ignored-by-default "possible" diagnostics as warnings; they
+#     catch issues common in parser/export pipelines without making every
+#     dynamic third-party seam a hard type error.
+#   - Model `docx` and `latex2mathml` as Any-backed dependencies, matching the
+#     previous missing-import ignore seam.
 
-[tool.mypy]
-python_version = "3.11"
-strict = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-disallow_any_explicit = false
-disallow_any_generics = false
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-files = ["src"]
+[tool.ty.src]
+include = ["src"]
 
-[[tool.mypy.overrides]]
-module = ["docx.*", "latex2mathml.*"]
-ignore_missing_imports = true
+[tool.ty.environment]
+python-version = "3.11"
+
+[tool.ty.analysis]
+replace-imports-with-any = ["docx.**", "latex2mathml.**"]
+
+[tool.ty.rules]
+division-by-zero = "error"
+possibly-unresolved-reference = "warn"
+possibly-missing-attribute = "warn"
+possibly-missing-import = "warn"
+unsupported-dynamic-base = "warn"
+
+[tool.ty.terminal]
+error-on-warning = true

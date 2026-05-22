@@ -680,7 +680,9 @@ def _h_rd_compare(c: _Converter, el: ET._Element) -> None:
 
 
 def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:
-    options = [o.strip() for o in (el.get("options") or "").split(",") if o.strip()]
+    options: list[str] = [
+        str(o.strip()) for o in (el.get("options") or "").split(",") if o.strip()
+    ]
     title = (el.get("title") or "").strip()
     if title:
         c.write_block(f"<h3>{xml_escape(title)}</h3>")
@@ -712,7 +714,7 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:
             else:
                 cells.append("&#160;")
         rows.append([xml_escape(f"{label} (×{weight:g})"), *cells])
-    head_cells = ["&#160;", *[xml_escape(o) for o in options]]
+    head_cells: list[str] = ["&#160;", *[xml_escape(o) for o in options]]
     head_xml = (
         "<thead><tr>"
         + "".join(th_bold(cell) for cell in head_cells)
@@ -728,7 +730,8 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:
         + "".join(f"<td><strong>{xml_escape(f'{t:g}')}</strong></td>" for t in totals)
         + "</tr>"
     )
-    colgroup = _auto_colgroup([options, *rows, ["Total", *[f"{t:g}" for t in totals]]])
+    total_cells: list[str] = ["Total", *[f"{t:g}" for t in totals]]
+    colgroup = _auto_colgroup([options, *rows, total_cells])
     c.write_block(
         f'<table data-layout="default">{colgroup}{head_xml}<tbody>{body_xml}{totals_xml}</tbody></table>'
     )
