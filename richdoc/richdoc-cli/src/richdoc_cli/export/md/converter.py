@@ -14,19 +14,47 @@ and the dispatch dict is assembled in `handler_table.py`.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
 
 import lxml.etree as ET
 
 from ..common.assets import AssetStore
+from ..common.references import RefRenderer
+from ..common.references import format_ref as _format_ref_canonical
+from ..common.text import dedent as _dedent_canonical
 from ..common.walker import (
     body_of,
-    element_source as _element_source,
-    inline_text as _inline_text,
     parse_html,
 )
+from ..common.walker import (
+    element_source as _element_source,
+)
+from ..common.walker import (
+    inline_text as _inline_text,
+)
+
+_MD_REF_RENDERER = RefRenderer(
+    escape=lambda s: s,
+    link=lambda text, url: f"[{text}]({url})",
+    url_only=lambda url: f"<{url}>",
+)
+
+# Re-exports for sibling handler modules. Listed here so ruff F401 and
+# mypy's `no-implicit-reexport` both treat them as intentional.
+__all__ = [
+    "HANDLERS",
+    "_Converter",
+    "_ListCtx",
+    "_dedent",
+    "_element_source",
+    "_emit_fenced",
+    "_inline_text",
+    "_strip_outer_blanks",
+    "format_ref",
+    "html_to_markdown",
+]
 
 # ---------------------------------------------------------------------------
 # Public entry point
@@ -52,7 +80,7 @@ def html_to_markdown(
     Returns (text, dropped_tag_names).
     """
     # Ensure handler registration has fired exactly once.
-    from . import handler_table  # noqa: F401, PLC0415 — side-effect import
+    from . import handler_table  # noqa: F401 — side-effect import
 
     root = parse_html(source)
     target = body_of(root)
@@ -71,7 +99,7 @@ def html_to_markdown(
 # Dispatch registry — populated by handler_table.py
 # ---------------------------------------------------------------------------
 
-HANDLERS: dict[str, Callable[["_Converter", "ET._Element"], None]] = {}
+HANDLERS: dict[str, Callable[[_Converter, ET._Element], None]] = {}
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +175,7 @@ class _Converter:
         self.chunks.append(text)
         self.chunks.append("\n\n")
 
-    def _spawn_sub(self) -> "_Converter":
+    def _spawn_sub(self) -> _Converter:
         sub = _Converter(
             asset_store=self.asset_store,
             asset_base=self.asset_base,
@@ -164,7 +192,7 @@ class _Converter:
         sub.dropped = self.dropped
         return sub
 
-    def render_inline(self, el: ET._Element) -> str:  # noqa: SLF001
+    def render_inline(self, el: ET._Element) -> str:
         """Render `el` and its children as an inline string (no block separators)."""
         sub = self._spawn_sub()
         # render only children, including the element's text
@@ -177,7 +205,7 @@ class _Converter:
         self._cite_counter = sub._cite_counter
         return "".join(sub.chunks)
 
-    def render_block_inner(self, el: ET._Element) -> str:  # noqa: SLF001
+    def render_block_inner(self, el: ET._Element) -> str:
         """Render the children of `el` to markdown (block-level), returning the chunk."""
         sub = self._spawn_sub()
         sub.render_children(el)
@@ -190,7 +218,7 @@ class _Converter:
             body = body.lstrip(" \t")
         return body
 
-    def render_children(self, el: ET._Element) -> None:  # noqa: SLF001
+    def render_children(self, el: ET._Element) -> None:
         if el.text:
             self.write(_inline_text(el.text))
         for child in el:
@@ -200,7 +228,7 @@ class _Converter:
 
     # ---- dispatch ---------------------------------------------------------
 
-    def render(self, el: ET._Element) -> None:  # noqa: SLF001
+    def render(self, el: ET._Element) -> None:
         tag = el.tag
         if not isinstance(tag, str):
             return  # comments / PIs
@@ -265,24 +293,13 @@ class _Converter:
 
 
 def _dedent(text: str) -> str:
-    """Mirror the JS k() helper used by `<rd-code>` / `<rd-diff>` / `<rd-shell>`.
+    """Local alias for the canonical `export.common.text.dedent`.
 
-    Strip leading newlines, trailing whitespace, then remove the common
-    leading indent across non-blank lines.
+    Existing handler modules import `_dedent` from this module; the
+    re-export keeps their imports stable until they're moved to import
+    the canonical name directly.
     """
-    text = text.lstrip("\n").rstrip()
-    lines = text.split("\n")
-    min_indent = None
-    for line in lines:
-        if not line.strip():
-            continue
-        m = re.match(r"^[ \t]*", line)
-        n = len(m.group(0)) if m else 0
-        if min_indent is None or n < min_indent:
-            min_indent = n
-    if not min_indent:
-        return "\n".join(lines)
-    return "\n".join(line[min_indent:] if len(line) >= min_indent else line for line in lines)
+    return _dedent_canonical(text)
 
 
 def _strip_trailing_ws_outside_fences(text: str) -> str:
@@ -322,29 +339,9 @@ def _emit_fenced(c: _Converter, text: str, lang: str, title: str | None = None) 
 
 
 def format_ref(attrs: dict[str, str]) -> str:
-    """Format a citation entry. Public — used by both the converter's
-    finalise() and the rd-references handler."""
-    bits: list[str] = []
-    author = attrs.get("author")
-    title = attrs.get("title")
-    url = attrs.get("url")
-    date = attrs.get("date")
-    publisher = attrs.get("publisher")
-    note = attrs.get("note")
-    if author:
-        bits.append(author)
-    if title:
-        if url:
-            bits.append(f'"[{title}]({url})"')
-        else:
-            bits.append(f'"{title}"')
-    elif url:
-        bits.append(f"<{url}>")
-    if publisher:
-        bits.append(publisher)
-    if date:
-        bits.append(date)
-    line = ". ".join(bits) + ("." if bits else "")
-    if note:
-        line += f" {note}"
-    return line
+    """Format a citation entry for the markdown exporter.
+
+    Thin wrapper around ``export.common.references.format_ref`` with
+    the markdown-specific link / url-only renderers.
+    """
+    return _format_ref_canonical(attrs, renderer=_MD_REF_RENDERER)

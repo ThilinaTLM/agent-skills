@@ -11,7 +11,6 @@ from . import handlers_plain as p
 from . import handlers_rd as r
 from .converter import HANDLERS
 
-
 HANDLERS.update({
     # plain HTML
     "h1": p._h_h(1),

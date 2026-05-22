@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from functools import cache
 from typing import Any
 
 from .paths import SCHEMA_PATH
@@ -20,15 +21,13 @@ class SchemaFile:
     path: str
 
 
-_CACHED: SchemaFile | None = None
-
-
+@cache
 def load_schema() -> SchemaFile:
-    """Read and cache schema.json. Raises FileNotFoundError-ish errors with a hint."""
-    global _CACHED
-    if _CACHED is not None:
-        return _CACHED
+    """Read and cache schema.json. Raises `SchemaLoadError` with a hint.
 
+    Cached across the process via ``functools.cache``; tests that need
+    a fresh read can call ``load_schema.cache_clear()``.
+    """
     try:
         text = SCHEMA_PATH.read_text(encoding="utf-8")
     except FileNotFoundError as exc:
@@ -54,12 +53,11 @@ def load_schema() -> SchemaFile:
             f"richdoc schema at {SCHEMA_PATH} is missing a 'tags' object."
         )
 
-    _CACHED = SchemaFile(
+    return SchemaFile(
         tags=tags,
         generated=parsed.get("generated"),
         path=str(SCHEMA_PATH),
     )
-    return _CACHED
 
 
 class SchemaLoadError(RuntimeError):

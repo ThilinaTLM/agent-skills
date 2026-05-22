@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import click
 
-from ..output import json_error, json_ok
-from ..schema import SchemaLoadError, load_schema
+from ..output import json_ok
+from ..schema import load_schema
+from ._safe import safe_command
 
 
 @click.command("components")
@@ -15,13 +16,10 @@ from ..schema import SchemaLoadError, load_schema
     default=None,
     help="Show only the spec for one rd-* tag (e.g. rd-stat).",
 )
+@safe_command
 def cmd(tag: str | None) -> None:
     """List every richdoc tag with its allowed attributes and children."""
-    try:
-        schema = load_schema()
-    except SchemaLoadError as exc:
-        json_error(str(exc), code="INPUT_ERROR")
-
+    schema = load_schema()
     entries = list(schema.tags.items())
     if tag is not None:
         entries = [(t, spec) for (t, spec) in entries if t == tag]

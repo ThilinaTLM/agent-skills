@@ -31,14 +31,13 @@ from .converter import (
     xml_escape,
 )
 
-
 # ---------------------------------------------------------------------------
 # Inline / structural HTML
 # ---------------------------------------------------------------------------
 
 
 def _h_h(level: int):
-    def handler(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    def handler(c: _Converter, el: ET._Element) -> None:
         inner = c.render_inline(el).strip()
         if not inner:
             return
@@ -47,23 +46,23 @@ def _h_h(level: int):
     return handler
 
 
-def _h_p(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_p(c: _Converter, el: ET._Element) -> None:
     inner = c.render_inline(el).strip()
     if not inner:
         return
     c.write_block(f"<p>{inner}</p>")
 
 
-def _h_br(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_br(c: _Converter, el: ET._Element) -> None:
     c.write("<br/>")
 
 
-def _h_hr(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_hr(c: _Converter, el: ET._Element) -> None:
     c.write_block("<hr/>")
 
 
 def _wrap(tag: str):
-    def handler(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    def handler(c: _Converter, el: ET._Element) -> None:
         inner = c.render_inline(el).strip()
         if not inner:
             return
@@ -72,7 +71,7 @@ def _wrap(tag: str):
     return handler
 
 
-def _h_code_inline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_code_inline(c: _Converter, el: ET._Element) -> None:
     # Inline <code> — get the literal text, escape, wrap in <code>.
     text = el.text or ""
     for child in el:
@@ -85,7 +84,7 @@ def _h_code_inline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write(f"<code>{xml_escape(text)}</code>")
 
 
-def _h_pre(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_pre(c: _Converter, el: ET._Element) -> None:
     """Render <pre> / <pre><code class="language-X"> as a native code macro."""
     code = el.find("code")
     lang = ""
@@ -132,7 +131,7 @@ def _macro_param(name: str, value: str) -> str:
     )
 
 
-def _h_blockquote(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_blockquote(c: _Converter, el: ET._Element) -> None:
     inner = c.render_block_inner_wrapped(el)
     if not inner:
         return
@@ -186,7 +185,7 @@ def _auto_colgroup(rows: list[list[str]]) -> str:
     return f"<colgroup>{cols}</colgroup>"
 
 
-def _resolve_chapter_href(c: _Converter, href: str) -> str | None:  # noqa: SLF001
+def _resolve_chapter_href(c: _Converter, href: str) -> str | None:
     """Map a relative `.html` href on the current chapter onto a known
     Confluence URL, or return None if no rewrite applies.
 
@@ -222,7 +221,7 @@ def _resolve_chapter_href(c: _Converter, href: str) -> str | None:  # noqa: SLF0
     return (url + fragment) if url else None
 
 
-def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_a(c: _Converter, el: ET._Element) -> None:
     href = (el.get("href") or "").strip()
     inner = c.render_inline(el).strip()
     if not inner:
@@ -236,7 +235,7 @@ def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write(f'<a href="{xml_attr(href)}">{inner}</a>')
 
 
-def _h_img(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_img(c: _Converter, el: ET._Element) -> None:
     src = (el.get("src") or "").strip()
     alt = el.get("alt") or ""
     if not src:
@@ -258,7 +257,7 @@ def _h_img(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_list(kind: str):
-    def handler(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    def handler(c: _Converter, el: ET._Element) -> None:
         items: list[str] = []
         for child in el:
             if not (isinstance(child.tag, str) and child.tag.lower() == "li"):
@@ -272,12 +271,12 @@ def _h_list(kind: str):
     return handler
 
 
-def _h_li(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_li(c: _Converter, el: ET._Element) -> None:
     # Handled inside _h_list; if encountered loose, render children.
     c.render_children(el)
 
 
-def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_table(c: _Converter, el: ET._Element) -> None:
     """Emit a native `<table>` preserving header / body rows.
 
     Confluence ignores `<thead>` / `<tbody>` containers but does render
@@ -331,16 +330,16 @@ def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_unwrap(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_unwrap(c: _Converter, el: ET._Element) -> None:
     c.render_children(el)
 
 
-def _h_drop(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_drop(c: _Converter, el: ET._Element) -> None:
     if isinstance(el.tag, str) and el.tag.lower().startswith("rd-"):
         c.dropped.append(el.tag.lower())
 
 
-def _h_figure(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_figure(c: _Converter, el: ET._Element) -> None:
     """A plain <figure>: render children, append <figcaption> as <em>.
 
     We don't emit `<figure>` itself — Confluence's storage format drops

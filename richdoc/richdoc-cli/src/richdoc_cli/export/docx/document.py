@@ -18,7 +18,7 @@ def _register_code_style(doc: DocumentT) -> None:
     styles = doc.styles
     if "RichdocCode" in [s.name for s in styles]:
         return
-    from docx.enum.style import WD_STYLE_TYPE  # noqa: PLC0415 — lazy
+    from docx.enum.style import WD_STYLE_TYPE
 
     style = styles.add_style("RichdocCode", WD_STYLE_TYPE.PARAGRAPH)
     style.base_style = styles["Normal"]

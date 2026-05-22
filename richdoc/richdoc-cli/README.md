@@ -60,3 +60,30 @@ src/richdoc_cli/
 
 The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the two formats share helpers via `export/common/`. `publish/confluence/` reuses `export/common/` (book discovery, asset store, walker helpers) but emits Confluence storage-format XML instead of one of the export formats.
 
+## Development
+
+Install dev tooling and run the gates locally:
+
+```bash
+uv sync --extra dev
+uv run ruff check src tests   # lint
+uv run mypy src               # type-check
+uv run pytest                 # tests + snapshots (see tests/README.md)
+```
+
+The snapshot suite under `tests/` makes refactors safe; pair every
+behavioural change with a deliberate `pytest --snapshot-update` and
+read the diff before committing.
+
+The repo ships a `.pre-commit-config.yaml` at the root that runs ruff,
+mypy, and pytest (plus the lib's biome / tsc / vitest) before every
+commit. Enable it once per clone:
+
+```bash
+pip install pre-commit    # or: uv tool install pre-commit
+pre-commit install        # writes .git/hooks/pre-commit
+```
+
+Run the full suite manually with `pre-commit run --all-files`. Hooks
+are scoped to `^richdoc/` paths so editing other skills in this repo
+doesn't trigger them.

@@ -1,4 +1,4 @@
-import type { TagSpec } from "../../lib/types.ts";
+import type { SchemaBundle, TagSpec } from "../../lib/types.ts";
 import { LUCIDE_NAMES } from "./lucide-names.generated.ts";
 
 export const tagName = "rd-icon";
@@ -13,3 +13,8 @@ export const spec: TagSpec = {
 		size: ["sm", "md", "lg"],
 	},
 };
+
+// Registry bundle consumed by `schema-registry.ts`. Lists the parent
+// tag and every child tag in one declarative record so adding or
+// removing a child only touches this file.
+export const bundle: SchemaBundle = { tagName, spec };

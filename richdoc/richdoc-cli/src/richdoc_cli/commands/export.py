@@ -28,6 +28,7 @@ import click
 
 from ..export.common.modes import ExportMode
 from ..output import json_error, json_ok
+from ._safe import safe_command
 
 
 @click.group("export", help="Export a richdoc HTML file to markdown / docx.")
@@ -71,6 +72,7 @@ def group() -> None:
     "--include-remote-images", is_flag=True,
     help="Fetch http(s) image URLs and copy them into assets/.",
 )
+@safe_command
 def cmd_md(
     input_: Path,
     output: Path | None,
@@ -93,35 +95,27 @@ def cmd_md(
                 "Cannot write to stdout in --multi mode (multiple files).",
                 code="INVALID_PARAMS",
             )
-        from ..export.md.pipeline import render_to_string  # noqa: PLC0415
+        from ..export.md.pipeline import render_to_string
 
-        try:
-            text = render_to_string(
-                in_path,
-                no_book=no_book,
-                include_remote_images=include_remote_images,
-            )
-        except OSError as exc:
-            json_error(f"Could not read input: {exc}", code="INPUT_ERROR")
+        text = render_to_string(
+            in_path,
+            no_book=no_book,
+            include_remote_images=include_remote_images,
+        )
         sys.stdout.write(text)
         sys.stdout.flush()
         return
 
-    from ..export.md.pipeline import export_md  # noqa: PLC0415
+    from ..export.md.pipeline import export_md
 
-    try:
-        result = export_md(
-            in_path,
-            output=output,
-            mode=mode,
-            no_book=no_book,
-            include_remote_images=include_remote_images,
-            force=force,
-        )
-    except FileExistsError as exc:
-        json_error(str(exc), code="FILE_EXISTS", hint="Re-run with --force to overwrite.")
-    except OSError as exc:
-        json_error(f"Could not write output: {exc}", code="OUTPUT_ERROR")
+    result = export_md(
+        in_path,
+        output=output,
+        mode=mode,
+        no_book=no_book,
+        include_remote_images=include_remote_images,
+        force=force,
+    )
 
     plan = result.plan
     payload: dict = {
@@ -178,6 +172,7 @@ def cmd_md(
     "--diagram-endpoint", default="https://kroki.io", show_default=True,
     help="Kroki-compatible server used to render diagrams.",
 )
+@safe_command
 def cmd_docx(
     input_: Path,
     output: Path | None,
@@ -200,37 +195,29 @@ def cmd_docx(
                 "Cannot write to stdout in --multi mode (multiple files).",
                 code="INVALID_PARAMS",
             )
-        from ..export.docx.pipeline import render_to_bytes  # noqa: PLC0415
+        from ..export.docx.pipeline import render_to_bytes
 
-        try:
-            docx = render_to_bytes(
-                in_path,
-                no_book=no_book,
-                render_diagrams=render_diagrams,
-                diagram_endpoint=diagram_endpoint,
-            )
-        except OSError as exc:
-            json_error(f"Could not read input: {exc}", code="INPUT_ERROR")
+        docx = render_to_bytes(
+            in_path,
+            no_book=no_book,
+            render_diagrams=render_diagrams,
+            diagram_endpoint=diagram_endpoint,
+        )
         sys.stdout.buffer.write(docx.data)
         sys.stdout.flush()
         return
 
-    from ..export.docx.pipeline import export_docx  # noqa: PLC0415
+    from ..export.docx.pipeline import export_docx
 
-    try:
-        result = export_docx(
-            in_path,
-            output=output,
-            mode=mode,
-            no_book=no_book,
-            render_diagrams=render_diagrams,
-            diagram_endpoint=diagram_endpoint,
-            force=force,
-        )
-    except FileExistsError as exc:
-        json_error(str(exc), code="FILE_EXISTS", hint="Re-run with --force to overwrite.")
-    except OSError as exc:
-        json_error(f"Could not write output: {exc}", code="OUTPUT_ERROR")
+    result = export_docx(
+        in_path,
+        output=output,
+        mode=mode,
+        no_book=no_book,
+        render_diagrams=render_diagrams,
+        diagram_endpoint=diagram_endpoint,
+        force=force,
+    )
 
     plan = result.plan
     payload: dict = {

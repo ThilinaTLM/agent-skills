@@ -13,14 +13,31 @@ from io import BytesIO
 import lxml.etree as ET
 from docx.shared import Inches, RGBColor
 
+from ..common.text import dedent as _dedent_canonical
 from ..common.walker import (
     body_of,
-    element_source as _element_source,
-    inline_text as _inline_text,
     parse_html,
+)
+from ..common.walker import (
+    element_source as _element_source,
+)
+from ..common.walker import (
+    inline_text as _inline_text,
 )
 from .state import _State
 
+# Re-exports consumed by sibling handler modules (runs.py / handlers_*.py).
+__all__ = [
+    "_dedent",
+    "_element_source",
+    "_embed_image",
+    "_emit_code",
+    "_has_any_heading",
+    "_inline_text",
+    "render_block",
+    "render_children",
+    "render_source",
+]
 
 # ---------------------------------------------------------------------------
 # Source → tree → block dispatch
@@ -38,7 +55,7 @@ def render_source(state: _State, source: str, *, chapter_title: str | None = Non
     render_children(state, target)
 
 
-def render_children(state: _State, el: ET._Element) -> None:  # noqa: SLF001
+def render_children(state: _State, el: ET._Element) -> None:
     if el.text and el.text.strip():
         state.add_paragraph(_inline_text(el.text))
     for child in el:
@@ -47,9 +64,9 @@ def render_children(state: _State, el: ET._Element) -> None:  # noqa: SLF001
             state.add_paragraph(_inline_text(child.tail))
 
 
-def render_block(state: _State, el: ET._Element) -> None:  # noqa: SLF001
-    from .handler_table import BLOCK_HANDLERS  # noqa: PLC0415 — lazy to avoid cycles
-    from .runs import _flatten_inline  # noqa: PLC0415
+def render_block(state: _State, el: ET._Element) -> None:
+    from .handler_table import BLOCK_HANDLERS
+    from .runs import _flatten_inline
 
     tag = el.tag
     if not isinstance(tag, str):
@@ -70,7 +87,7 @@ def render_block(state: _State, el: ET._Element) -> None:  # noqa: SLF001
     handler(state, el)
 
 
-def _has_any_heading(el: ET._Element) -> bool:  # noqa: SLF001
+def _has_any_heading(el: ET._Element) -> bool:
     """Detect whether the chapter has its own top heading anywhere inside
     its rd-page (or top-level if no rd-page). Used to decide whether we need
     to inject a TOC-derived chapter heading."""
@@ -92,25 +109,13 @@ def _has_any_heading(el: ET._Element) -> bool:  # noqa: SLF001
 
 
 def _dedent(text: str) -> str:
-    """Strip the common leading indent across non-blank lines.
+    """Local alias for the canonical `export.common.text.dedent`.
 
-    Treats spaces and tabs as equivalent characters for the purpose of
-    measuring the common prefix, matching the runtime `k()` helper that
-    `<rd-code>` / `<rd-diff>` / `<rd-shell>` use in the browser. Without
-    tab awareness, source HTML that nests `<rd-code>` inside `<rd-section>`
-    (the common case) leaves each code line prefixed with the surrounding
-    tabs, which python-docx then renders as stacked `<w:tab/>` runs.
+    Existing handler modules import `_dedent` from this module; the
+    re-export keeps their imports stable until they're moved to import
+    the canonical name directly.
     """
-    lines = text.splitlines()
-    while lines and not lines[0].strip():
-        lines.pop(0)
-    while lines and not lines[-1].strip():
-        lines.pop()
-    if not lines:
-        return ""
-    indents = [len(l) - len(l.lstrip(" \t")) for l in lines if l.strip()]
-    pad = min(indents) if indents else 0
-    return "\n".join(l[pad:] if len(l) >= pad else l for l in lines)
+    return _dedent_canonical(text)
 
 
 # ---------------------------------------------------------------------------
@@ -144,7 +149,7 @@ def _embed_image(state: _State, src: str, *, alt: str = "") -> None:
     try:
         state.doc.add_picture(BytesIO(ref.data), width=Inches(6.0))
         state.images_embedded += 1
-    except Exception:  # noqa: BLE001 — unsupported format etc.
+    except Exception:
         p = state.add_paragraph()
         r = p.add_run(f"[image: {alt or src}]")
         r.italic = True

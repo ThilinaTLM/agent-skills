@@ -7,6 +7,7 @@ import re
 import lxml.etree as ET
 
 from ..common.chart_data import parse_chart
+from ..common.walker import iter_text
 from .converter import (
     _Converter,
     _dedent,
@@ -14,7 +15,6 @@ from .converter import (
     _emit_fenced,
     _strip_outer_blanks,
 )
-
 
 _CALLOUT_KEYWORDS = {
     "info": "NOTE",
@@ -31,18 +31,18 @@ _CALLOUT_KEYWORDS = {
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_page(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_page(c: _Converter, el: ET._Element) -> None:
     c.render_children(el)
 
 
-def _h_rd_banner(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_banner(c: _Converter, el: ET._Element) -> None:
     type_ = (el.get("type") or "info").lower()
     message = el.get("message") or _strip_outer_blanks(c.render_inline(el)).strip() or type_
     kw = _CALLOUT_KEYWORDS.get(type_, "NOTE")
     c.write_block(f"> [!{kw}]\n> **{type_.upper()}** — {message}")
 
 
-def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_hero(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or ""
     eyebrow = el.get("eyebrow") or ""
     lede = el.get("lede") or ""
@@ -57,7 +57,7 @@ def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(extras_inner)
 
 
-def _h_rd_section(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_section(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or ""
     if title:
         c.write_block(f"## {title}")
@@ -66,7 +66,7 @@ def _h_rd_section(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(inner)
 
 
-def _h_rd_callout(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_callout(c: _Converter, el: ET._Element) -> None:
     type_ = (el.get("type") or "info").lower()
     title = el.get("title") or ""
     kw = _CALLOUT_KEYWORDS.get(type_, "NOTE")
@@ -83,11 +83,11 @@ def _h_rd_callout(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(header)
 
 
-def _h_rd_cols(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_cols(c: _Converter, el: ET._Element) -> None:
     c.render_children(el)
 
 
-def _h_rd_card(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_card(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or ""
     if title:
         c.write_block(f"### {title}")
@@ -101,7 +101,7 @@ def _h_rd_card(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_kv(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_kv(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or ""
     layout = (el.get("layout") or "inline").lower()
     if title:
@@ -124,19 +124,19 @@ def _h_rd_kv(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             c.write_block("\n".join(lines))
 
 
-def _h_rd_row(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_row(c: _Converter, el: ET._Element) -> None:
     # Handled inside rd-kv. If encountered loose, render inline.
     c.render_children(el)
 
 
-def _h_rd_badge(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_badge(c: _Converter, el: ET._Element) -> None:
     variant = el.get("variant") or ""
     inner = c.render_inline(el).strip()
     label = inner or variant or "badge"
     c.write(f"`[{label}]`")
 
 
-def _h_rd_stat(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_stat(c: _Converter, el: ET._Element) -> None:
     value = el.get("value") or ""
     label = el.get("label") or ""
     trend = el.get("trend") or ""
@@ -159,8 +159,8 @@ def _h_rd_stat(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             c.dropped.append(child.tag.lower())
 
 
-def _h_rd_progress(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    from ..common.progress import parse_progress  # noqa: PLC0415
+def _h_rd_progress(c: _Converter, el: ET._Element) -> None:
+    from ..common.progress import parse_progress
 
     p = parse_progress(el.get("value"))
     label = el.get("label") or ""
@@ -168,7 +168,7 @@ def _h_rd_progress(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write_block(line)
 
 
-def _h_rd_update(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_update(c: _Converter, el: ET._Element) -> None:
     date = el.get("date") or ""
     kind = el.get("kind") or ""
     author = el.get("author") or ""
@@ -188,7 +188,7 @@ def _h_rd_update(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_compare(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_compare(c: _Converter, el: ET._Element) -> None:
     headers = [h.strip() for h in (el.get("headers") or "").split(",") if h.strip()]
     rows: list[list[str]] = []
     for rc in el:
@@ -222,7 +222,7 @@ def _h_rd_compare(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write_block("\n".join(lines))
 
 
-def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:
     options = [o.strip() for o in (el.get("options") or "").split(",") if o.strip()]
     title = el.get("title") or ""
     if title:
@@ -239,7 +239,7 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             weight = 1.0
         scores = [s for s in crit if isinstance(s.tag, str) and s.tag.lower() == "rd-score"]
         cells: list[str] = []
-        for i, opt in enumerate(options):
+        for i, _opt in enumerate(options):
             if i < len(scores):
                 v = scores[i].get("value") or "0"
                 note = scores[i].get("note") or ""
@@ -263,20 +263,20 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write_block("\n".join(lines))
 
 
-def _h_rd_code(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_code(c: _Converter, el: ET._Element) -> None:
     lang = el.get("lang") or ""
     title = el.get("title") or ""
     body = _dedent(_element_source(el))
     _emit_fenced(c, body, lang, title)
 
 
-def _h_rd_diff(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_diff(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or ""
     body = _dedent(_element_source(el))
     _emit_fenced(c, body, "diff", title)
 
 
-def _h_rd_shell(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_shell(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or ""
     lines: list[str] = []
     for child in el:
@@ -292,7 +292,7 @@ def _h_rd_shell(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     _emit_fenced(c, "\n".join(lines), "bash", title)
 
 
-def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_math(c: _Converter, el: ET._Element) -> None:
     display = (el.get("display") or "block").lower()
     text = _dedent(_element_source(el))
     if display == "inline":
@@ -301,7 +301,7 @@ def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"$$\n{text}\n$$")
 
 
-def _h_rd_figure(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_figure(c: _Converter, el: ET._Element) -> None:
     caption = el.get("caption") or ""
     inner = c.render_block_inner(el).strip()
     if inner:
@@ -310,7 +310,7 @@ def _h_rd_figure(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"*{caption}*")
 
 
-def _h_rd_chart(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_chart(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or ""
     caption = el.get("caption") or ""
     data_attr = el.get("data") or _element_source(el)
@@ -325,7 +325,7 @@ def _h_rd_chart(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"*{caption}*")
 
 
-def _chart_table_to_markdown(table) -> str:  # noqa: ANN001 — ChartTable
+def _chart_table_to_markdown(table) -> str:
     width = len(table.headers)
     lines = [
         "| " + " | ".join(table.headers) + " |",
@@ -344,7 +344,7 @@ def _chart_table_to_markdown(table) -> str:  # noqa: ANN001 — ChartTable
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_tabs(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_tabs(c: _Converter, el: ET._Element) -> None:
     for tab in el:
         if not (isinstance(tab.tag, str) and tab.tag.lower() == "rd-tab"):
             continue
@@ -355,7 +355,7 @@ def _h_rd_tabs(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             c.write_block(inner)
 
 
-def _h_rd_timeline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_timeline(c: _Converter, el: ET._Element) -> None:
     lines = []
     for ev in el:
         if not (isinstance(ev.tag, str) and ev.tag.lower() == "rd-event"):
@@ -373,7 +373,7 @@ def _h_rd_timeline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block("\n".join(lines))
 
 
-def _h_rd_steps(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_steps(c: _Converter, el: ET._Element) -> None:
     items = []
     n = 1
     for step in el:
@@ -399,14 +399,14 @@ def _h_rd_steps(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block("\n".join(items))
 
 
-def _h_rd_detail(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_detail(c: _Converter, el: ET._Element) -> None:
     summary = el.get("summary") or "Details"
     open_attr = " open" if el.get("open") is not None else ""
     inner = c.render_block_inner(el).strip()
     c.write_block(f"<details{open_attr}>\n<summary>{summary}</summary>\n\n{inner}\n\n</details>")
 
 
-def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:
     lines = []
     for task in el:
         if not (isinstance(task.tag, str) and task.tag.lower() == "rd-task"):
@@ -427,7 +427,7 @@ def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block("\n".join(lines))
 
 
-def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:
     text = _dedent(_element_source(el))
     lang = (el.get("lang") or "").strip().lower() or "text"
     # GFM only natively renders ```mermaid; for every other lang the
@@ -441,7 +441,7 @@ def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_toc(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_toc(c: _Converter, el: ET._Element) -> None:
     chapters = [
         child
         for child in el
@@ -462,7 +462,7 @@ def _h_rd_toc(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _emit_chapter_list(
-    lines: list[str], chapters: list[ET._Element], depth: int  # noqa: SLF001
+    lines: list[str], chapters: list[ET._Element], depth: int
 ) -> None:
     indent = "  " * depth
     for ch in chapters:
@@ -485,7 +485,7 @@ def _emit_chapter_list(
             _emit_chapter_list(lines, nested, depth + 1)
 
 
-def _chapter_title_md(node: ET._Element) -> str:  # noqa: SLF001
+def _chapter_title_md(node: ET._Element) -> str:
     """Mirrors the runtime/lint chapter-title extraction: text content of the
     element with nested <rd-chapter> sub-trees removed."""
     parts: list[str] = []
@@ -496,7 +496,7 @@ def _chapter_title_md(node: ET._Element) -> str:  # noqa: SLF001
             if child.tail:
                 parts.append(child.tail)
             continue
-        parts.extend(child.itertext())
+        parts.extend(iter_text(child))
         if child.tail:
             parts.append(child.tail)
     return " ".join("".join(parts).split()).strip()
@@ -507,7 +507,7 @@ def _chapter_title_md(node: ET._Element) -> str:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_icon(c: _Converter, el: ET._Element) -> None:
     label = el.get("label") or ""
     if label:
         c.write(label)
@@ -520,7 +520,7 @@ def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_decision(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_decision(c: _Converter, el: ET._Element) -> None:
     status = el.get("status") or "proposed"
     id_ = el.get("id") or ""
     date = el.get("date") or ""
@@ -544,7 +544,7 @@ def _h_rd_decision(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(inner)
 
 
-def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:
     pros_title = el.get("pros-title") or "Pros"
     cons_title = el.get("cons-title") or "Cons"
     pros, cons = [], []
@@ -563,7 +563,7 @@ def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"#### {cons_title}\n" + "\n".join(cons))
 
 
-def _h_rd_api(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_api(c: _Converter, el: ET._Element) -> None:
     method = el.get("method") or ""
     path = el.get("path") or ""
     auth = el.get("auth") or ""
@@ -616,14 +616,14 @@ def _h_rd_api(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_references(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_references(c: _Converter, el: ET._Element) -> None:
     title = el.get("title") or "References"
     c.refs_section_title = title
     # Children rd-ref are collected globally; the references section is
     # appended in finalise(). Mark presence by ensuring at least one key.
 
 
-def _h_rd_ref(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_ref(c: _Converter, el: ET._Element) -> None:
     key = el.get("key") or ""
     if not key:
         return
@@ -638,7 +638,7 @@ def _h_rd_ref(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.refs_collected[key] = attrs
 
 
-def _h_rd_cite(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_cite(c: _Converter, el: ET._Element) -> None:
     key = el.get("key") or ""
     if not key:
         return

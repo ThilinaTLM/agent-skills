@@ -32,7 +32,7 @@ class _Run:
     omath: ET._Element | None = field(default=None, repr=False)
 
 
-def _flatten_inline(state: _State, el: ET._Element) -> str:  # noqa: SLF001
+def _flatten_inline(state: _State, el: ET._Element) -> str:
     return "".join(r.text for r in _inline_runs(state, el) if r.text)
 
 
@@ -48,7 +48,7 @@ def _inline_runs(
     hyperlink: str | None = None,
 ) -> list[_Run]:
     """Walk inline content and yield runs with cascaded formatting."""
-    from .references import _collect_ref  # noqa: PLC0415 — avoid import cycle
+    from .references import _collect_ref
 
     runs: list[_Run] = []
     if el.text:
@@ -107,7 +107,7 @@ def _inline_runs(
             state.record_dropped("rd-icon")
             skip_children = True
         elif tag == "rd-math":
-            from .math import latex_to_omath  # noqa: PLC0415 — keep import local
+            from .math import latex_to_omath
 
             source = _element_source(child).strip()
             omath = latex_to_omath(source) if source else None
@@ -226,10 +226,17 @@ def _add_hyperlink(paragraph, text: str, url: str, spec: _Run) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _split_li(li: ET._Element) -> tuple[list, list[ET._Element]]:  # noqa: SLF001
+# A single inline part is either a literal text fragment or an element to
+# walk inline. The tuple shape is preserved as-is for the small number of
+# call sites; a more idiomatic dataclass would be nicer but is out of
+# scope for the type-tightening pass.
+LiPart = tuple[str, str] | tuple[str, ET._Element]
+
+
+def _split_li(li: ET._Element) -> tuple[list[LiPart], list[ET._Element]]:
     """Return (inline_parts, nested_block_elements). `inline_parts` is a list
     of (kind, value) where kind is `text` or `element`."""
-    parts: list[tuple[str, object]] = []
+    parts: list[LiPart] = []
     if li.text:
         parts.append(("text", li.text))
     blocks: list[ET._Element] = []
@@ -251,24 +258,21 @@ def _split_li(li: ET._Element) -> tuple[list, list[ET._Element]]:  # noqa: SLF00
     return parts, blocks
 
 
-def _inline_runs_from_parts(state: _State, parts: list[tuple[str, object]]) -> list[_Run]:  # noqa: SLF001
+def _inline_runs_from_parts(state: _State, parts: list[LiPart]) -> list[_Run]:
     runs: list[_Run] = []
     for kind, val in parts:
         if kind == "text":
-            text = _inline_text(val)  # type: ignore[arg-type]
+            assert isinstance(val, str)
+            text = _inline_text(val)
             if text:
                 runs.append(_Run(text))
         else:
-            el = val  # type: ignore[assignment]
-            tag = el.tag if isinstance(el.tag, str) else ""  # type: ignore[union-attr]
-            tag = tag.lower()
-            wrapper = ET.Element("span")  # synthetic parent
-            wrapper.append(el)  # type: ignore[arg-type]
-            wrapper.remove(el)  # type: ignore[arg-type]
+            assert isinstance(val, ET._Element)
+            el = val
             # Just call _inline_runs treating the element as a one-shot tree.
             tmp = ET.Element("span")
-            tmp.append(el)  # type: ignore[arg-type]
+            tmp.append(el)
             runs.extend(_inline_runs(state, tmp))
             # _inline_runs uses tail; clear it so caller doesn't double-emit.
-            el.tail = None  # type: ignore[union-attr]
+            el.tail = None
     return runs

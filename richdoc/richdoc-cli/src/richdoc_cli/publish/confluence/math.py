@@ -17,7 +17,6 @@ from __future__ import annotations
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-
 # Mapping of Unicode code points to LaTeX command, so pdflatex doesn't
 # choke on UTF-8 math sources.
 _UNICODE_DECLS: tuple[tuple[int, str], ...] = (
@@ -112,13 +111,15 @@ def render_math_png(
         },
     )
     try:
-        with urlopen(req, timeout=timeout) as resp:  # noqa: S310 — explicit user-supplied URL
+        with urlopen(req, timeout=timeout) as resp:
             data = resp.read()
     except (URLError, TimeoutError, OSError, ValueError):
         return None
     if not data or not data.startswith(b"\x89PNG\r\n\x1a\n"):
         return None
-    return data
+    # `urlopen.read()` is typed `Any` by typeshed; we've already verified
+    # the PNG magic bytes so a bytes cast is safe.
+    return bytes(data)
 
 
 def _build_tikz_document(math_source: str) -> str:

@@ -5,8 +5,12 @@
  * and by the CLI linter at build time. The browser bundle uses
  * `src/registry.ts`, which imports the component implementations as well.
  *
- * Order here defines the order in `schema.json` and the order in the
- * generated tag reference.
+ * Each component's `.schema.ts` declares a `bundle: SchemaBundle` that
+ * lists the parent tag + every child tag in one place. This module
+ * orders the bundles into the canonical vocabulary order and flat-maps
+ * them into a single `SCHEMA_ENTRIES` list. Adding or removing a
+ * child tag now touches exactly one file (`.schema.ts` of the parent
+ * component), not three (here, `registry.ts`, and the schema file).
  */
 
 import * as api from "./components/api/api.schema.ts";
@@ -43,82 +47,75 @@ import * as timeline from "./components/timeline/timeline.schema.ts";
 import * as toc from "./components/toc/toc.schema.ts";
 import * as update from "./components/update/update.schema.ts";
 
-import type { TagSpec } from "./lib/types.ts";
+import type { SchemaBundle, TagEntry } from "./lib/types.ts";
 
-export interface SchemaEntry {
-	readonly tagName: string;
-	readonly spec: TagSpec;
-}
+/** Re-export so consumers (CLI linter, docs generators) don't need to
+ *  reach into `lib/types.ts` themselves. */
+export type { SchemaBundle, TagEntry };
 
-/** Vocabulary order — drives both schema.json order and SKILL.md tag reference.
- * Grouped: structure, information blocks, comparison & code, sequenced &
- * interactive, decoration & inline. */
-export const SCHEMA_ENTRIES: readonly SchemaEntry[] = [
+/** Public alias preserved for backwards compatibility with the previous
+ *  registry shape. */
+export type SchemaEntry = TagEntry;
+
+/** Vocabulary order — drives both `schema.json` order and the SKILL.md
+ *  tag reference. Grouping: structure → information blocks → comparison
+ *  & code → sequenced & interactive → decision & planning → reference →
+ *  diagrams / media / decoration → preview chrome. */
+export const SCHEMA_BUNDLES: readonly SchemaBundle[] = [
 	// Structure
-	{ tagName: page.tagName, spec: page.spec },
-	{ tagName: hero.tagName, spec: hero.spec },
-	{ tagName: banner.tagName, spec: banner.spec },
-	{ tagName: section.tagName, spec: section.spec },
-	{ tagName: cols.tagName, spec: cols.spec },
-	{ tagName: card.tagName, spec: card.spec },
+	page.bundle,
+	hero.bundle,
+	banner.bundle,
+	section.bundle,
+	cols.bundle,
+	card.bundle,
 
 	// Information blocks
-	{ tagName: callout.tagName, spec: callout.spec },
-	{ tagName: kv.tagName, spec: kv.spec },
-	{ tagName: kv.rowTagName, spec: kv.rowSpec },
-	{ tagName: badge.tagName, spec: badge.spec },
-	{ tagName: stat.tagName, spec: stat.spec },
-	{ tagName: progress.tagName, spec: progress.spec },
-	{ tagName: chart.tagName, spec: chart.spec },
-	{ tagName: update.tagName, spec: update.spec },
+	callout.bundle,
+	kv.bundle,
+	badge.bundle,
+	stat.bundle,
+	progress.bundle,
+	chart.bundle,
+	update.bundle,
 
 	// Comparison & code
-	{ tagName: compare.tagName, spec: compare.spec },
-	{ tagName: compare.rowCellsTagName, spec: compare.rowCellsSpec },
-	{ tagName: compare.cellTagName, spec: compare.cellSpec },
-	{ tagName: rubric.tagName, spec: rubric.spec },
-	{ tagName: rubric.criterionTagName, spec: rubric.criterionSpec },
-	{ tagName: rubric.scoreTagName, spec: rubric.scoreSpec },
-	{ tagName: code.tagName, spec: code.spec },
-	{ tagName: diff.tagName, spec: diff.spec },
-	{ tagName: shell.tagName, spec: shell.spec },
-	{ tagName: shell.promptTagName, spec: shell.promptSpec },
-	{ tagName: shell.outputTagName, spec: shell.outputSpec },
-	{ tagName: math.tagName, spec: math.spec },
+	compare.bundle,
+	rubric.bundle,
+	code.bundle,
+	diff.bundle,
+	shell.bundle,
+	math.bundle,
 
 	// Sequenced & interactive
-	{ tagName: tabs.tagName, spec: tabs.spec },
-	{ tagName: tabs.tabTagName, spec: tabs.tabSpec },
-	{ tagName: timeline.tagName, spec: timeline.spec },
-	{ tagName: timeline.eventTagName, spec: timeline.eventSpec },
-	{ tagName: steps.tagName, spec: steps.spec },
-	{ tagName: steps.stepTagName, spec: steps.stepSpec },
-	{ tagName: detail.tagName, spec: detail.spec },
-	{ tagName: checklist.tagName, spec: checklist.spec },
-	{ tagName: checklist.taskTagName, spec: checklist.taskSpec },
+	tabs.bundle,
+	timeline.bundle,
+	steps.bundle,
+	detail.bundle,
+	checklist.bundle,
 
 	// Decision & planning
-	{ tagName: decision.tagName, spec: decision.spec },
-	{ tagName: prosCons.tagName, spec: prosCons.spec },
-	{ tagName: prosCons.proTagName, spec: prosCons.proSpec },
-	{ tagName: prosCons.conTagName, spec: prosCons.conSpec },
+	decision.bundle,
+	prosCons.bundle,
 
 	// Reference
-	{ tagName: api.tagName, spec: api.spec },
-	{ tagName: api.paramTagName, spec: api.paramSpec },
-	{ tagName: api.responseTagName, spec: api.responseSpec },
-	{ tagName: references.tagName, spec: references.spec },
-	{ tagName: references.refTagName, spec: references.refSpec },
-	{ tagName: references.citeTagName, spec: references.citeSpec },
+	api.bundle,
+	references.bundle,
 
 	// Diagrams, media, decoration
-	{ tagName: diagram.tagName, spec: diagram.spec },
-	{ tagName: figure.tagName, spec: figure.spec },
-	{ tagName: toc.tagName, spec: toc.spec },
-	{ tagName: toc.chapterTagName, spec: toc.chapterSpec },
-	{ tagName: icon.tagName, spec: icon.spec },
+	diagram.bundle,
+	figure.bundle,
+	toc.bundle,
+	icon.bundle,
 
-	// Preview chrome (JS-injected, schema entry only so lint accepts it
+	// Preview chrome (JS-injected; schema entry only so lint accepts it
 	// if someone copies it into source).
-	{ tagName: prefs.tagName, spec: prefs.spec },
+	prefs.bundle,
 ];
+
+/** Flattened parent + child tags in vocabulary order, exactly the
+ *  shape `build.ts` needs to emit `assets/schema.json`. */
+export const SCHEMA_ENTRIES: readonly TagEntry[] = SCHEMA_BUNDLES.flatMap((b) => [
+	{ tagName: b.tagName, spec: b.spec },
+	...(b.childTags ?? []),
+]);

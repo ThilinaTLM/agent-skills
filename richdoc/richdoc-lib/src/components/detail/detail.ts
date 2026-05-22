@@ -21,7 +21,7 @@ class RdDetail extends HTMLElement implements Upgradeable {
 		const userSummary = this.getAttribute("summary");
 		const summaryText = userSummary || (variant === "reveal" ? "Reveal" : "Details");
 		const open = this.hasAttribute("open");
-		const details = el("details", open ? { open: true } : {});
+		const details = el("details", open ? { open: true } : {}) as HTMLDetailsElement;
 
 		// Summary structure: label on the left, an affordance glyph on the
 		// right. The glyph is a real <rd-icon> so its stroke weight, size,

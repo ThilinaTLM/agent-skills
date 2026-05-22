@@ -1,6 +1,6 @@
 {
-  "hash": "c99683358a7b",
-  "builtAt": "2026-05-22T00:03:42.651Z",
+  "hash": "eaa864f6ebf1",
+  "builtAt": "2026-05-22T10:30:24.677Z",
   "dev": false,
   "files": [
     {
@@ -13,7 +13,7 @@
     },
     {
       "path": "assets/schema.json",
-      "bytes": 33925
+      "bytes": 33921
     }
   ]
 }

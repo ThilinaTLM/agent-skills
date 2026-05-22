@@ -13,11 +13,10 @@ import lxml.html as LH
 
 from .converter import (
     _Converter,
-    _ListCtx,
     _emit_fenced,
+    _ListCtx,
     _strip_outer_blanks,
 )
-
 
 # ---------------------------------------------------------------------------
 # Inline / structural HTML
@@ -25,7 +24,7 @@ from .converter import (
 
 
 def _h_h(level: int):
-    def handler(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    def handler(c: _Converter, el: ET._Element) -> None:
         text = _strip_outer_blanks(c.render_inline(el)).strip()
         if not text:
             return
@@ -34,40 +33,40 @@ def _h_h(level: int):
     return handler
 
 
-def _h_p(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_p(c: _Converter, el: ET._Element) -> None:
     text = _strip_outer_blanks(c.render_inline(el)).strip()
     if not text:
         return
     c.write_block(text)
 
 
-def _h_br(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_br(c: _Converter, el: ET._Element) -> None:
     c.write("  \n")
 
 
-def _h_hr(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_hr(c: _Converter, el: ET._Element) -> None:
     c.write_block("---")
 
 
-def _h_strong(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_strong(c: _Converter, el: ET._Element) -> None:
     inner = c.render_inline(el).strip()
     if inner:
         c.write(f"**{inner}**")
 
 
-def _h_em(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_em(c: _Converter, el: ET._Element) -> None:
     inner = c.render_inline(el).strip()
     if inner:
         c.write(f"*{inner}*")
 
 
-def _h_s(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_s(c: _Converter, el: ET._Element) -> None:
     inner = c.render_inline(el).strip()
     if inner:
         c.write(f"~~{inner}~~")
 
 
-def _h_code_inline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_code_inline(c: _Converter, el: ET._Element) -> None:
     text = (el.text or "")
     for child in el:
         # rare; flatten
@@ -85,7 +84,7 @@ def _h_code_inline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write(f"{backticks}{pad}{text}{pad}{backticks}")
 
 
-def _h_pre(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_pre(c: _Converter, el: ET._Element) -> None:
     # If pre wraps a single <code>, treat as fenced code block; otherwise as preformatted.
     code = el.find("code")
     if code is not None and len(el) == 1:
@@ -105,7 +104,7 @@ def _h_pre(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         _emit_fenced(c, text, "")
 
 
-def _h_blockquote(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_blockquote(c: _Converter, el: ET._Element) -> None:
     inner = c.render_block_inner(el)
     if not inner.strip():
         return
@@ -134,7 +133,7 @@ def _rewrite_doc_link(href: str) -> str:
     return f"{stem}.md{query}{fragment}"
 
 
-def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_a(c: _Converter, el: ET._Element) -> None:
     href = el.get("href") or ""
     inner = c.render_inline(el).strip()
     if not inner:
@@ -145,7 +144,7 @@ def _h_a(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write(f"[{inner}]({_rewrite_doc_link(href)})")
 
 
-def _h_img(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_img(c: _Converter, el: ET._Element) -> None:
     src = el.get("src") or ""
     alt = el.get("alt") or ""
     title = el.get("title")
@@ -164,7 +163,7 @@ def _h_img(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
 
 def _h_list(kind: str):
-    def handler(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+    def handler(c: _Converter, el: ET._Element) -> None:
         depth = sum(1 for ctx in c.list_stack)
         ctx = _ListCtx(kind=kind, depth=depth)
         c.list_stack.append(ctx)
@@ -200,12 +199,12 @@ def _h_list(kind: str):
     return handler
 
 
-def _h_li(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_li(c: _Converter, el: ET._Element) -> None:
     # Handled inside the list handler — fall back to inline if encountered loose.
     c.render_children(el)
 
 
-def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_table(c: _Converter, el: ET._Element) -> None:
     rows: list[list[str]] = []
     has_header = False
     for tr in el.iter("tr"):
@@ -251,10 +250,10 @@ def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_unwrap(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_unwrap(c: _Converter, el: ET._Element) -> None:
     c.render_children(el)
 
 
-def _h_drop(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_drop(c: _Converter, el: ET._Element) -> None:
     if isinstance(el.tag, str) and el.tag.lower().startswith("rd-"):
         c.dropped.append(el.tag.lower())

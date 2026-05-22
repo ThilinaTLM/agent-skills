@@ -1,10 +1,36 @@
 /**
- * Browser registry — imports every component's implementation and exposes
- * an ordered list of `register()` functions for the entry to call.
+ * Browser registry — imports every component's implementation and walks
+ * an ordered list of `register()` functions to define the rd-* custom
+ * elements.
  *
  * This module references `HTMLElement` transitively, so it MUST NOT be
  * imported by Node/Bun-side code. For schema introspection use
  * `./schema-registry.ts` instead.
+ *
+ * ## Why is the order list here and not derived from `SCHEMA_BUNDLES`?
+ *
+ * Importing `SCHEMA_BUNDLES` would transitively pull every component's
+ * `spec` (~33 KB of schema strings) into the browser bundle even though
+ * the browser never reads them. Keeping the order local lets esbuild
+ * tree-shake the spec data out of `richdoc.js`.
+ *
+ * ## Registration order
+ *
+ * `customElements.define()` is synchronous and the browser back-fills
+ * existing instances with `connectedCallback()` the moment a tag is
+ * defined, so ordering between sibling registrations does not affect
+ * correctness — only first-paint timing. Two prior optimisations are
+ * preserved at the head of the list:
+ *
+ *   - `rd-prefs` registers before `rd-page` because `RdPage.connectedCallback`
+ *     injects a `<rd-prefs>` element; defining the prefs tag first lets
+ *     it upgrade in the same microtask.
+ *   - `rd-icon` registers before any tag whose `connectedCallback`
+ *     constructs `<rd-icon>` children (callouts, checklists, banners …).
+ *
+ * Everything else follows the canonical vocabulary order documented in
+ * `schema-registry.ts`. Adding a new component is a one-line entry here
+ * plus the `bundle` export in its `.schema.ts`.
  */
 
 import * as api from "./components/api/api.ts";
@@ -42,43 +68,52 @@ import * as toc from "./components/toc/toc.ts";
 import * as update from "./components/update/update.ts";
 
 export const REGISTRATIONS: ReadonlyArray<() => void> = [
-	// `prefs` must register before `page` because page.ts injects a
-	// <rd-prefs> element at upgrade time and we want it to upgrade
-	// immediately rather than wait for the registry walk to come back
-	// round.
+	// First-paint optimisation — see module doc-comment.
 	prefs.register,
 	page.register,
+	icon.register,
+
+	// Structure (vocabulary order from here on).
+	hero.register,
+	banner.register,
 	section.register,
 	cols.register,
 	card.register,
-	// icon must register before any tag that constructs <rd-icon> children,
-	// so those children upgrade as soon as they're inserted.
-	icon.register,
+
+	// Information blocks
 	callout.register,
-	banner.register,
-	hero.register,
 	kv.register,
 	badge.register,
+	stat.register,
+	progress.register,
+	chart.register,
+	update.register,
+
+	// Comparison & code
 	compare.register,
 	rubric.register,
 	code.register,
 	diff.register,
 	shell.register,
 	math.register,
+
+	// Sequenced & interactive
 	tabs.register,
 	timeline.register,
 	steps.register,
-	prosCons.register,
-	update.register,
-	decision.register,
-	diagram.register,
-	toc.register,
 	detail.register,
-	stat.register,
-	progress.register,
-	chart.register,
-	figure.register,
 	checklist.register,
+
+	// Decision & planning
+	decision.register,
+	prosCons.register,
+
+	// Reference
 	api.register,
 	references.register,
+
+	// Diagrams, media, decoration
+	diagram.register,
+	figure.register,
+	toc.register,
 ];

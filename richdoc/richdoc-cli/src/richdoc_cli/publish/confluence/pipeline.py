@@ -22,7 +22,6 @@ envelope's `pages` list ordered.
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -30,13 +29,14 @@ import lxml.etree as ET
 import lxml.html as LH
 
 from ...export.book import ChapterFile, discover_chapters
+from ...export.common.href import is_external_href
+from ...export.common.titles import chapter_label as _chapter_label
 from .client import (
     ConfluenceClient,
     ConfluenceConflictError,
     Page,
 )
-from .converter import PendingAttachment, TocEntry, html_to_storage, xml_attr
-
+from .converter import PendingAttachment, StorageResult, TocEntry, html_to_storage, xml_attr
 
 # ---------------------------------------------------------------------------
 # Plan / result types
@@ -223,7 +223,7 @@ def publish(plan: PublishPlan, client: ConfluenceClient) -> PublishResult:
         # Re-walk in book mode so the preview reflects the cross-page link
         # map exactly as a real publish would — placeholder URLs and all.
         bodies = []
-        for walk, outcome in zip(walks, page_outcomes):
+        for walk, outcome in zip(walks, page_outcomes, strict=True):
             preview_walk = walk
             if is_book:
                 preview_walk = _walk_chapter(
@@ -258,19 +258,21 @@ def publish(plan: PublishPlan, client: ConfluenceClient) -> PublishResult:
             dry_run_bodies=bodies,
         )
 
-    for walk, outcome in zip(walks, page_outcomes):
-        page = chapter_pages[walk.chapter.relative]
+    for initial_walk, outcome in zip(walks, page_outcomes, strict=True):
+        page = chapter_pages[initial_walk.chapter.relative]
         # Re-render the storage body with resolved cross-page links
         # whenever we're in book mode — every chapter needs cross_page_links
         # to resolve its rd-toc Contents block and any in-body chapter links.
         # In single-file mode the first pass already produced the final body.
         if is_book:
             walk = _walk_chapter(
-                chapter=walk.chapter,
+                chapter=initial_walk.chapter,
                 plan=plan,
                 cross_page_links=cross_page_links,
                 toc_entries=toc_entries,
             )
+        else:
+            walk = initial_walk
         # Upload attachments.
         existing_atts = (
             {a.title for a in client.list_attachments(page.id)} if walk.pending else set()
@@ -344,7 +346,7 @@ class _ChapterWalk:
     title: str
     body_template: str   # body with @@ATTACHMENT:..@@ tokens
     pending: list[PendingAttachment]
-    storage: object  # StorageResult
+    storage: StorageResult
 
 
 def _walk_chapter(
@@ -451,7 +453,7 @@ def _build_toc_structures(
             title = _chapter_label(ch)
             child_parent = parent_rel
             target_rel: Path | None = None
-            if href and not _is_external(href):
+            if href and not is_external_href(href):
                 target = (base_dir / href).resolve()
                 if target in rel_by_path:
                     target_rel = rel_by_path[target]
@@ -475,30 +477,6 @@ def _build_toc_structures(
     # Top-level TOC entries default to nesting under the entry chapter.
     entries = visit(toc, entry_rel)
     return parent_map, entries
-
-
-def _chapter_label(node: ET._Element) -> str:
-    """Mirror book.py's chapter-title extraction: text content of `node`
-    with nested `<rd-chapter>` sub-trees removed."""
-    parts: list[str] = []
-    if node.text:
-        parts.append(node.text)
-    for child in node:
-        if isinstance(child.tag, str) and child.tag.lower() == "rd-chapter":
-            if child.tail:
-                parts.append(child.tail)
-            continue
-        parts.extend(child.itertext())
-        if child.tail:
-            parts.append(child.tail)
-    return " ".join("".join(parts).split()).strip()
-
-
-def _is_external(href: str) -> bool:
-    s = href.strip()
-    if not s or s.startswith("#") or s.startswith("//"):
-        return True
-    return bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", s))
 
 
 # ---------------------------------------------------------------------------

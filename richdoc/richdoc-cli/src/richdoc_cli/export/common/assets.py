@@ -14,9 +14,9 @@ from __future__ import annotations
 import hashlib
 import mimetypes
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator
 from urllib.parse import unquote, urlparse
 from urllib.request import Request, urlopen
 
@@ -148,10 +148,10 @@ class AssetStore:
     def _load_remote(self, src: str) -> AssetRef | None:
         try:
             req = Request(src, headers={"User-Agent": "richdoc-export/1.0"})
-            with urlopen(req, timeout=self.timeout) as resp:  # noqa: S310 — explicit user-supplied URL
+            with urlopen(req, timeout=self.timeout) as resp:
                 data = resp.read()
                 mime = (resp.headers.get_content_type() or "").lower()
-        except Exception:  # noqa: BLE001 — network errors are non-fatal
+        except Exception:
             return None
         if not mime:
             mime = guess_mime(Path(urlparse(src).path))

@@ -8,7 +8,7 @@ from .state import _State
 
 
 def _collect_ref(state: _State, el: ET._Element) -> None:
-    from .runs import _flatten_inline  # noqa: PLC0415 — avoid import cycle
+    from .runs import _flatten_inline
 
     key = el.get("key") or ""
     if not key:
@@ -24,7 +24,7 @@ def _collect_ref(state: _State, el: ET._Element) -> None:
 
 
 def _emit_references(state: _State, *, title: str) -> None:
-    from .runs import _Run, _emit_runs  # noqa: PLC0415
+    from .runs import _emit_runs, _Run
 
     keys: list[str] = []
     seen: set[str] = set()
@@ -52,7 +52,7 @@ def _emit_references(state: _State, *, title: str) -> None:
             parts.append(attrs["date"] + ".")
         text = " ".join(parts)
         p = state.add_paragraph()
-        r = p.add_run(text)
+        p.add_run(text)
         if attrs.get("url"):
             p.add_run(" ")
             _emit_runs(p, [_Run(attrs["url"], hyperlink=attrs["url"], underline=True)])

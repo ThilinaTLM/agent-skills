@@ -1,0 +1,584 @@
+# serializer version: 1
+# name: test_lint_book_directory
+  dict({
+    'errors': 0,
+    'files': list([
+      dict({
+        'errors': 0,
+        'file': '01-species.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+        ]),
+        'warnings': 0,
+      }),
+      dict({
+        'errors': 0,
+        'file': '02-habitat.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+        ]),
+        'warnings': 0,
+      }),
+      dict({
+        'errors': 0,
+        'file': 'index.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+        ]),
+        'warnings': 0,
+      }),
+    ]),
+    'fixed': 0,
+    'ok': True,
+    'path': '.',
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_book_drift
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 4 errors, 0 warnings.',
+    'errors': 4,
+    'files': list([
+      dict({
+        'errors': 1,
+        'file': 'index.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+          dict({
+            'diff': list([
+              dict({
+                'detail': "title: 'Chapter two' → 'Chapter two (renamed!)'",
+                'kind': 'changed',
+                'path': '1',
+              }),
+            ]),
+            'line': 11,
+            'message': "<rd-toc> in './two.html' differs from this file's <rd-toc>. Every chapter in a richdoc book must point at the same chapters in the same order (relative href strings may differ across subdirectories, but they must resolve to the same files). Reconcile manually — `richdoc lint --fix` does not autofix this rule.",
+            'peer': './two.html',
+            'rule': 'book-toc-drift',
+            'severity': 'error',
+            'tag': 'rd-toc',
+          }),
+        ]),
+        'warnings': 0,
+      }),
+      dict({
+        'errors': 1,
+        'file': 'three.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+          dict({
+            'diff': list([
+              dict({
+                'detail': "title: 'Chapter two' → 'Chapter two (renamed!)'",
+                'kind': 'changed',
+                'path': '1',
+              }),
+            ]),
+            'line': 11,
+            'message': "<rd-toc> in './two.html' differs from this file's <rd-toc>. Every chapter in a richdoc book must point at the same chapters in the same order (relative href strings may differ across subdirectories, but they must resolve to the same files). Reconcile manually — `richdoc lint --fix` does not autofix this rule.",
+            'peer': './two.html',
+            'rule': 'book-toc-drift',
+            'severity': 'error',
+            'tag': 'rd-toc',
+          }),
+        ]),
+        'warnings': 0,
+      }),
+      dict({
+        'errors': 2,
+        'file': 'two.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+          dict({
+            'diff': list([
+              dict({
+                'detail': "title: 'Chapter two (renamed!)' → 'Chapter two'",
+                'kind': 'changed',
+                'path': '1',
+              }),
+            ]),
+            'line': 11,
+            'message': "<rd-toc> in './index.html' differs from this file's <rd-toc>. Every chapter in a richdoc book must point at the same chapters in the same order (relative href strings may differ across subdirectories, but they must resolve to the same files). Reconcile manually — `richdoc lint --fix` does not autofix this rule.",
+            'peer': './index.html',
+            'rule': 'book-toc-drift',
+            'severity': 'error',
+            'tag': 'rd-toc',
+          }),
+          dict({
+            'diff': list([
+              dict({
+                'detail': "title: 'Chapter two (renamed!)' → 'Chapter two'",
+                'kind': 'changed',
+                'path': '1',
+              }),
+            ]),
+            'line': 11,
+            'message': "<rd-toc> in './three.html' differs from this file's <rd-toc>. Every chapter in a richdoc book must point at the same chapters in the same order (relative href strings may differ across subdirectories, but they must resolve to the same files). Reconcile manually — `richdoc lint --fix` does not autofix this rule.",
+            'peer': './three.html',
+            'rule': 'book-toc-drift',
+            'severity': 'error',
+            'tag': 'rd-toc',
+          }),
+        ]),
+        'warnings': 0,
+      }),
+    ]),
+    'fixed': 0,
+    'ok': False,
+    'path': '.',
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_book_index
+  dict({
+    'errors': 0,
+    'file': 'index.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+    ]),
+    'ok': True,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_broken_fixtures[invalid-attr-value.html][invalid-attr-value.html]
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 1 error, 0 warnings.',
+    'errors': 1,
+    'file': 'invalid-attr-value.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+      dict({
+        'attr': 'type',
+        'line': 11,
+        'message': '<rd-callout type="spicy"> is invalid. Allowed values: info, success, warn, danger, note, tldr.',
+        'rule': 'invalid-attr-value',
+        'severity': 'error',
+        'tag': 'rd-callout',
+      }),
+    ]),
+    'ok': False,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_broken_fixtures[missing-css.html][missing-css.html]
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 1 error, 0 warnings.',
+    'errors': 1,
+    'file': 'missing-css.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+      dict({
+        'message': 'richdoc.css is not linked in <head>. Add: <link rel="stylesheet" href="./richdoc.css">',
+        'rule': 'missing-css',
+        'severity': 'error',
+      }),
+    ]),
+    'ok': False,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_broken_fixtures[missing-rd-page.html][missing-rd-page.html]
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 1 error, 0 warnings.',
+    'errors': 1,
+    'file': 'missing-rd-page.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+      dict({
+        'message': 'Document has no <rd-page>. Wrap your content in <rd-page>.',
+        'rule': 'missing-rd-page',
+        'severity': 'error',
+      }),
+    ]),
+    'ok': False,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_broken_fixtures[removed-tag.html][removed-tag.html]
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 2 errors, 0 warnings.',
+    'errors': 2,
+    'file': 'removed-tag.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+      dict({
+        'line': 11,
+        'message': '<rd-mermaid> was removed from the richdoc vocabulary — use <rd-diagram lang="mermaid">.',
+        'rule': 'removed-tag',
+        'severity': 'error',
+        'tag': 'rd-mermaid',
+      }),
+      dict({
+        'line': 12,
+        'message': '<rd-quote> was removed from the richdoc vocabulary — removed; use <blockquote> (styled automatically).',
+        'rule': 'removed-tag',
+        'severity': 'error',
+        'tag': 'rd-quote',
+      }),
+    ]),
+    'ok': False,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_broken_fixtures[self-closing.html][self-closing.html]
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 1 error, 0 warnings.',
+    'errors': 1,
+    'file': 'self-closing.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+      dict({
+        'line': 11,
+        'message': '<rd-section .../> is parsed as an opening tag with no close — following siblings become children. Write <rd-section ...></rd-section> instead.',
+        'rule': 'self-closing-custom-element',
+        'severity': 'error',
+        'tag': 'rd-section',
+      }),
+    ]),
+    'ok': False,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_broken_fixtures[unknown-tag.html][unknown-tag.html]
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 1 error, 0 warnings.',
+    'errors': 1,
+    'file': 'unknown-tag.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+      dict({
+        'line': 11,
+        'message': 'Unknown richdoc tag <rd-floof>. Allowed: rd-api, rd-badge, rd-banner, rd-callout, rd-card, rd-cell, rd-chapter, rd-chart, rd-checklist, rd-cite, rd-code, rd-cols, rd-compare, rd-con, rd-criterion, rd-decision, rd-detail, rd-diagram, rd-diff, rd-event, rd-figure, rd-hero, rd-icon, rd-kv, rd-math, rd-output, rd-page, rd-param, rd-prefs, rd-pro, rd-progress, rd-prompt, rd-pros-cons, rd-ref, rd-references, rd-response, rd-row, rd-row-cells, rd-rubric, rd-score, rd-section, rd-shell, rd-stat, rd-step, rd-steps, rd-tab, rd-tabs, rd-task, rd-timeline, rd-toc, rd-update.',
+        'rule': 'unknown-tag',
+        'severity': 'error',
+        'tag': 'rd-floof',
+      }),
+    ]),
+    'ok': False,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_fix_hero_nav_round_trip[after-fix]
+  dict({
+    'errors': 0,
+    'files': list([
+      dict({
+        'errors': 0,
+        'file': 'index.html',
+        'fixed': list([
+          dict({
+            'line': 19,
+            'removed_href': './two.html',
+            'rule': 'hero-nav-redundant',
+            'tag': 'a',
+          }),
+          dict({
+            'attr': 'meta',
+            'line': 18,
+            'removed_segments': list([
+              'Prev: nothing',
+              'Next: chapter two',
+            ]),
+            'rule': 'hero-nav-redundant',
+            'tag': 'rd-hero',
+          }),
+        ]),
+        'issues': list([
+        ]),
+        'warnings': 0,
+      }),
+      dict({
+        'errors': 0,
+        'file': 'two.html',
+        'fixed': list([
+          dict({
+            'line': 19,
+            'removed_href': './index.html',
+            'rule': 'hero-nav-redundant',
+            'tag': 'a',
+          }),
+          dict({
+            'attr': 'meta',
+            'line': 18,
+            'removed_segments': list([
+              'Prev: index',
+              'Next: nothing',
+            ]),
+            'rule': 'hero-nav-redundant',
+            'tag': 'rd-hero',
+          }),
+        ]),
+        'issues': list([
+        ]),
+        'warnings': 0,
+      }),
+    ]),
+    'fixed': 4,
+    'ok': True,
+    'path': '.',
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_fix_hero_nav_round_trip[before-fix]
+  dict({
+    'code': 'LINT_ERRORS',
+    'error': 'Lint failed: 4 errors, 0 warnings.',
+    'errors': 4,
+    'files': list([
+      dict({
+        'errors': 2,
+        'file': 'index.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+          dict({
+            'attr': 'href',
+            'line': 19,
+            'message': "<a> child of <rd-hero> is redundant with the prev/next bands injected by <rd-toc> in book mode (href='./two.html', text='Next →'). Remove this link; run `richdoc lint --fix` to strip automatically.",
+            'rule': 'hero-nav-redundant',
+            'severity': 'error',
+            'tag': 'a',
+          }),
+          dict({
+            'attr': 'meta',
+            'line': 18,
+            'message': "<rd-hero meta> contains 'Prev:/Next:/Up:' segments that duplicate the prev/next bands injected by <rd-toc>. Remove these segments; run `richdoc lint --fix` to strip automatically.",
+            'rule': 'hero-nav-redundant',
+            'severity': 'error',
+            'tag': 'rd-hero',
+          }),
+        ]),
+        'warnings': 0,
+      }),
+      dict({
+        'errors': 2,
+        'file': 'two.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+          dict({
+            'attr': 'href',
+            'line': 19,
+            'message': "<a> child of <rd-hero> is redundant with the prev/next bands injected by <rd-toc> in book mode (href='./index.html', text='← Previous'). Remove this link; run `richdoc lint --fix` to strip automatically.",
+            'rule': 'hero-nav-redundant',
+            'severity': 'error',
+            'tag': 'a',
+          }),
+          dict({
+            'attr': 'meta',
+            'line': 18,
+            'message': "<rd-hero meta> contains 'Prev:/Next:/Up:' segments that duplicate the prev/next bands injected by <rd-toc>. Remove these segments; run `richdoc lint --fix` to strip automatically.",
+            'rule': 'hero-nav-redundant',
+            'severity': 'error',
+            'tag': 'rd-hero',
+          }),
+        ]),
+        'warnings': 0,
+      }),
+    ]),
+    'fixed': 0,
+    'ok': False,
+    'path': '.',
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_fix_hero_nav_round_trip[idempotent]
+  dict({
+    'errors': 0,
+    'files': list([
+      dict({
+        'errors': 0,
+        'file': 'index.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+        ]),
+        'warnings': 0,
+      }),
+      dict({
+        'errors': 0,
+        'file': 'two.html',
+        'fixed': list([
+        ]),
+        'issues': list([
+        ]),
+        'warnings': 0,
+      }),
+    ]),
+    'fixed': 0,
+    'ok': True,
+    'path': '.',
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_fix_hero_nav_round_trip[rewritten-html]
+  dict({
+    'index.html': '''
+      <!doctype html>
+      <html lang="en">
+      <head>
+      	<meta charset="utf-8">
+      	<title>Hero nav fixable — index</title>
+      	<link rel="stylesheet" href="./richdoc.css">
+      	<script src="./richdoc.js" defer></script>
+      </head>
+      <body>
+      	<rd-page>
+      		<rd-toc title="Hero-nav fixable">
+      			<rd-chapter href="./index.html">Index</rd-chapter>
+      			<rd-chapter href="./two.html">Chapter two</rd-chapter>
+      		</rd-toc>
+      		<rd-hero title="Index page" eyebrow="HERO-NAV FIXABLE">
+      			</rd-hero>
+      		<rd-section title="Body">
+      			<p>Some content so the page isn't empty.</p>
+      		</rd-section>
+      	</rd-page>
+      </body>
+      </html>
+  
+    ''',
+    'two.html': '''
+      <!doctype html>
+      <html lang="en">
+      <head>
+      	<meta charset="utf-8">
+      	<title>Hero nav fixable — chapter two</title>
+      	<link rel="stylesheet" href="./richdoc.css">
+      	<script src="./richdoc.js" defer></script>
+      </head>
+      <body>
+      	<rd-page>
+      		<rd-toc title="Hero-nav fixable">
+      			<rd-chapter href="./index.html">Index</rd-chapter>
+      			<rd-chapter href="./two.html">Chapter two</rd-chapter>
+      		</rd-toc>
+      		<rd-hero title="Chapter two" eyebrow="HERO-NAV FIXABLE">
+      			</rd-hero>
+      		<rd-section title="Body">
+      			<p>Some content so the page isn't empty.</p>
+      		</rd-section>
+      	</rd-page>
+      </body>
+      </html>
+  
+    ''',
+  })
+# ---
+# name: test_lint_single_file_examples[data-design.html][data-design.html]
+  dict({
+    'errors': 0,
+    'file': '/home/tlm/Projects/agent-skills/richdoc/examples/data-design.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+      dict({
+        'attr': 'href',
+        'line': 16,
+        'message': '<rd-chapter href="./index.html"> points to a file that does not exist relative to this document: /home/tlm/Projects/agent-skills/richdoc/examples/index.html.',
+        'rule': 'rd-chapter-href-missing',
+        'severity': 'warn',
+        'tag': 'rd-chapter',
+      }),
+      dict({
+        'attr': 'href',
+        'line': 17,
+        'message': '<rd-chapter href="./01-functional-design.html"> points to a file that does not exist relative to this document: /home/tlm/Projects/agent-skills/richdoc/examples/01-functional-design.html.',
+        'rule': 'rd-chapter-href-missing',
+        'severity': 'warn',
+        'tag': 'rd-chapter',
+      }),
+      dict({
+        'attr': 'href',
+        'line': 19,
+        'message': '<rd-chapter href="./02-data-design.html"> points to a file that does not exist relative to this document: /home/tlm/Projects/agent-skills/richdoc/examples/02-data-design.html.',
+        'rule': 'rd-chapter-href-missing',
+        'severity': 'warn',
+        'tag': 'rd-chapter',
+      }),
+      dict({
+        'attr': 'href',
+        'line': 20,
+        'message': '<rd-chapter href="./03-projection-engine.html"> points to a file that does not exist relative to this document: /home/tlm/Projects/agent-skills/richdoc/examples/03-projection-engine.html.',
+        'rule': 'rd-chapter-href-missing',
+        'severity': 'warn',
+        'tag': 'rd-chapter',
+      }),
+      dict({
+        'attr': 'href',
+        'line': 21,
+        'message': '<rd-chapter href="./04-system-design.html"> points to a file that does not exist relative to this document: /home/tlm/Projects/agent-skills/richdoc/examples/04-system-design.html.',
+        'rule': 'rd-chapter-href-missing',
+        'severity': 'warn',
+        'tag': 'rd-chapter',
+      }),
+      dict({
+        'attr': 'href',
+        'line': 23,
+        'message': '<rd-chapter href="./05-open-questions.html"> points to a file that does not exist relative to this document: /home/tlm/Projects/agent-skills/richdoc/examples/05-open-questions.html.',
+        'rule': 'rd-chapter-href-missing',
+        'severity': 'warn',
+        'tag': 'rd-chapter',
+      }),
+    ]),
+    'ok': True,
+    'warnings': 6,
+  })
+# ---
+# name: test_lint_single_file_examples[diagram.html][diagram.html]
+  dict({
+    'errors': 0,
+    'file': '/home/tlm/Projects/agent-skills/richdoc/examples/diagram.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+    ]),
+    'ok': True,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_single_file_examples[showcase.html][showcase.html]
+  dict({
+    'errors': 0,
+    'file': '/home/tlm/Projects/agent-skills/richdoc/examples/showcase.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+    ]),
+    'ok': True,
+    'warnings': 0,
+  })
+# ---
+# name: test_lint_single_file_examples[status-onepager.html][status-onepager.html]
+  dict({
+    'errors': 0,
+    'file': '/home/tlm/Projects/agent-skills/richdoc/examples/status-onepager.html',
+    'fixed': list([
+    ]),
+    'issues': list([
+    ]),
+    'ok': True,
+    'warnings': 0,
+  })
+# ---

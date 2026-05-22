@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from functools import lru_cache
+from functools import cache, lru_cache
 from pathlib import Path
 
 from .paths import ASSETS_DIR
@@ -36,7 +36,7 @@ def file_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-@lru_cache(maxsize=None)
+@cache
 def asset_sha256(name: str) -> str:
     """SHA-256 of a shipped asset. Cached for the process lifetime."""
     return file_sha256(asset_path(name))

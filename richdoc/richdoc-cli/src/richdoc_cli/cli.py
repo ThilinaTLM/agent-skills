@@ -60,6 +60,6 @@ def entrypoint() -> NoReturn:
         json_error(exc.format_message(), code="INVALID_PARAMS")
     except SystemExit:
         raise
-    except Exception as exc:  # noqa: BLE001 — final safety net
+    except Exception as exc:
         json_error(f"Internal error: {exc}", code="INTERNAL_ERROR")
     sys.exit(0)
