@@ -36,7 +36,7 @@ Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https
 | `richdoc lint <file-or-dir> [--fix]` | Validate against the rd-* schema and book-mode authoring rules. `--fix` autofixes `hero-nav-redundant`. |
 | `richdoc components [--tag <name>]` | Print the vocabulary from the live schema. |
 | `richdoc export md\|docx <file>` | Export to markdown or DOCX. (HTML is the source format — no export needed.) See [references/export.md](references/export.md). |
-| `richdoc confluence <subcommand>` | Work with Confluence Cloud via REST. Subcommands: `spaces`, `pages`, `page-by-id`, `publish` (accepts a file or a directory; runs `richdoc lint` before publishing). See [references/publish.md](references/publish.md). |
+| `richdoc export confluence <file-or-dir>` | Build an offline Confluence storage bundle (storage XML + attachments + manifest). Runs `richdoc lint` first. The bundle is published by the separate `confluence` skill, never by `richdoc` itself. See [references/export.md](references/export.md). |
 
 Templates: `plan`, `research`, `comparison`, `onepager`, `adr`, `runbook`, `book-index`, `book-chapter`.
 
@@ -188,7 +188,7 @@ For `lang="plantuml"` / `lang="c4plantuml"`, the `theme` attribute can name any 
 
 For handbooks, runbook sets, or reference manuals that don't fit in one file: put an `<rd-toc>` with `<rd-chapter>` children in every page. The same block lives in every file; `<rd-toc>` handles active-chapter detection, prev/next nav, and the sidebar at runtime. No build step, no cross-file fetch.
 
-`richdoc lint` enforces the contract: every chapter listed in the book must carry a matching `<rd-toc>` block (rule `book-toc-drift`, no autofix), and `<rd-hero>` must not contain hand-written prev/next `<a>` links or `Prev:/Next:/Up:` segments in `meta` (rule `hero-nav-redundant`, autofixable with `richdoc lint --fix`). `richdoc confluence publish` runs lint before any network call and refuses to publish if there are errors.
+`richdoc lint` enforces the contract: every chapter listed in the book must carry a matching `<rd-toc>` block (rule `book-toc-drift`, no autofix), and `<rd-hero>` must not contain hand-written prev/next `<a>` links or `Prev:/Next:/Up:` segments in `meta` (rule `hero-nav-redundant`, autofixable with `richdoc lint --fix`). `richdoc export confluence` runs lint before producing the bundle and refuses to emit one if there are errors.
 
 See [references/multi-file-books.md](references/multi-file-books.md), [references/migrating-to-book-mode.md](references/migrating-to-book-mode.md), and `examples/book/`.
 
@@ -203,10 +203,41 @@ See [references/multi-file-books.md](references/multi-file-books.md), [reference
 - **Diagram trust**: every `<rd-diagram>` POSTs its source to the configured Kroki endpoint. Default is the public `kroki.io`. For sensitive content, set `diagram-endpoint` on `<rd-page>`.
 - **Books duplicate the chapter list** by design — re-ordering means editing every chapter file. `richdoc lint` catches stale `href`s and inconsistent `<rd-toc>` blocks across chapters (rule `book-toc-drift`).
 
+## Publishing to Confluence
+
+`richdoc` produces an **offline bundle**; the separate `confluence` skill
+publishes it. The two skills are deliberately decoupled — `richdoc`
+never opens a Confluence connection, and `confluence` never imports
+richdoc code. They communicate through the documented
+`richdoc.confluence.bundle.v1` directory format.
+
+**Agent recipe (do not deviate):**
+
+1. Build the bundle:
+   `richdoc export confluence INPUT [-o OUTPUT]`.
+2. Read the `nextStep.argv` array from the JSON envelope. It contains
+   the exact `["confluence", "publish-bundle", "<bundle-path>"]` to run
+   next. Pass it straight to your shell tool — don't reconstruct the
+   path by hand (it may contain spaces or platform-specific separators).
+3. If the publish call fails with `code: CONFIG_MISSING`, ask the user
+   to set up authentication first — see `confluence/SKILL.md` for the
+   `confluence auth init` workflow.
+
+```bash
+# 1. In this skill: build the bundle.
+richdoc export confluence docs/ -o build/confluence-docs
+
+# 2. In the confluence skill: publish it (path from nextStep.argv).
+confluence publish-bundle build/confluence-docs --profile work --parent-id 12345
+```
+
+See [references/export.md](references/export.md) for the bundle
+structure and `confluence/SKILL.md` for the publish side.
+
 ## See also
 
 - [references/elements.md](references/elements.md) — full attribute reference per tag (mirror of the schema).
-- [references/export.md](references/export.md) — markdown / DOCX export semantics.
+- [references/export.md](references/export.md) — markdown / DOCX / Confluence bundle export semantics.
 - [references/multi-file-books.md](references/multi-file-books.md) — book-mode authoring.
 - [references/diagram-langs.md](references/diagram-langs.md) — which diagram lang to pick for what.
 - [references/motion-and-themes.md](references/motion-and-themes.md) — motion vocabulary, themes, limitations.

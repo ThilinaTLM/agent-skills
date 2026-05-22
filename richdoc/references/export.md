@@ -1,11 +1,16 @@
 # richdoc — export reference
 
-The richdoc CLI ships two export formats:
+The richdoc CLI ships three export targets:
 
 - **`md`** — GitHub-flavoured Markdown.
 - **`docx`** — Word document for editing in Word / LibreOffice.
+- **`confluence`** — offline storage bundle (`richdoc.confluence.bundle.v1`)
+  consumed by the separate `confluence` skill. See the Confluence
+  section below.
 
-There is no `html` export target: richdoc files are already HTML. Open the source `.html` directly in a browser, or use `richdoc confluence publish` for Confluence (see the Confluence section below). Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these.
+There is no `html` export target: richdoc files are already HTML. Open
+the source `.html` directly in a browser. Anything else (PDF, EPUB,
+etc.) is out of scope — generate from one of these.
 
 The `md` / `docx` subcommands share a `--single` / `--multi` flag pair so the output shape is explicit:
 
@@ -70,13 +75,62 @@ Every export subcommand writes a JSON envelope to stdout (unless `-o -` is used 
 
 On failure, `{"ok": false, "code": "...", "message": "..."}`.
 
-## Confluence
+## `richdoc export confluence <file-or-dir> [-o <path>] [...]`
 
-There is no longer an `export` subcommand for Confluence. To publish a richdoc into Confluence Cloud, use the REST-API publisher — see [references/publish.md](publish.md):
+Produces an **offline storage bundle** rather than calling Confluence
+directly. This separates *authoring* (which is what richdoc does) from
+*content management* (which is what the dedicated `confluence` skill
+does). No Confluence credentials are read at this stage.
 
 ```bash
-export CONFLUENCE_SPACE_KEY=DEV
-richdoc confluence publish doc.html --parent-id 12345
+richdoc export confluence docs/                # → docs-confluence/
+richdoc export confluence docs/index.html -o build/confluence-docs
 ```
 
-It creates / updates pages in an existing space, preserves the book hierarchy in the native page tree, and renders `rd-code` / `rd-callout` / `rd-detail` as native Confluence macros (real syntax highlighting, real collapsibles) instead of the dead-end zip importer's plain-text-or-PNG fallback.
+Default output is `<stem>-confluence/` next to the input. Lint runs
+first; errors block the export (pass `--no-lint` to bypass). Diagrams
+and math render through Kroki the same way they do for `docx` —
+override with `--diagram-endpoint URL` / `--no-render-diagrams` /
+`--no-render-math`.
+
+### Bundle layout
+
+```
+build/confluence-docs/
+  manifest.json
+  pages/
+    <safe-name>.storage.xml         # XHTML + <ac:*> macros
+  attachments/
+    diag-<sha1>.png
+    math-<sha1>.png
+    image-<sha1>.<ext>
+```
+
+The storage XML contains two kinds of replacement tokens that the
+publisher resolves at publish time:
+
+- `@@ATTACHMENT:<prefix>:<digest>@@` → `<ac:image>` reference to an
+  attachment whose filename is declared in the manifest.
+- `@@RICHDOC_PAGE_URL:<page-key>@@` → absolute Confluence URL of a
+  sibling page in the same bundle. The `manifest.json` records every
+  token so the publisher can index substitutions without re-parsing.
+
+### Manifest schema
+
+Top-level `schema` is the literal string `richdoc.confluence.bundle.v1`.
+Consumers should reject anything else. Pages list `key`, `source`,
+`title`, `parentKey`, `storage` (relative path), `attachments[]`,
+`links[]`, `dropped[]`, and `missing[]`.
+
+### Publishing
+
+Use the separate `confluence` skill:
+
+```bash
+confluence publish-bundle build/confluence-docs --profile work --parent-id 12345
+```
+
+The publisher is idempotent: re-running matches pages by
+`(space, parent, title)`, re-uploads only changed attachments, and
+resolves cross-page link tokens once page IDs are known. See
+`confluence/SKILL.md`.

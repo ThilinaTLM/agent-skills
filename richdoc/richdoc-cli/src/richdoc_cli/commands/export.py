@@ -1,22 +1,26 @@
 """`richdoc export <fmt> <input>` — unified export command.
 
-Two subcommands, one consistent flag layout:
+Three subcommands:
 
-    richdoc export md   INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
-    richdoc export docx INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
+    richdoc export md         INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
+    richdoc export docx       INPUT [-o OUT] [-f] [--no-book] [--single|--multi] …
+    richdoc export confluence INPUT [-o OUT] [-f] [--no-book] [--no-lint] …
 
-- `--single`: produce one output file containing the whole book.
+- `--single`: produce one output file containing the whole book (md/docx).
 - `--multi`:  produce one output file per chapter, in a mirrored folder.
-- For a non-book input both flags collapse to the same behavior (one
-  file); the envelope reports `mode_collapsed: true` so the caller knows.
+- For a non-book input both flags collapse to the same behavior.
+
+The `confluence` target produces an offline storage bundle (storage XML
++ attachments + manifest.json). The bundle is consumed by the separate
+`confluence` skill's `publish-bundle` command — this CLI never opens a
+Confluence connection.
 
 This module is intentionally thin: it parses flags, delegates to the
 appropriate pipeline in `export.<fmt>.pipeline`, and turns the structured
 result into a JSON envelope.
 
 HTML is *not* an export target: richdoc files are already HTML. Open
-the source `.html` directly in a browser, or use `richdoc confluence
-publish` for Confluence.
+the source `.html` directly in a browser.
 """
 
 from __future__ import annotations
@@ -31,7 +35,10 @@ from ..output import json_error, json_ok
 from ._safe import safe_command
 
 
-@click.group("export", help="Export a richdoc HTML file to markdown / docx.")
+@click.group(
+    "export",
+    help="Export a richdoc HTML file to markdown / docx / Confluence bundle.",
+)
 def group() -> None:
     pass
 
@@ -272,3 +279,161 @@ def _resolve_mode(single: bool, multi: bool, *, default: ExportMode) -> ExportMo
     if multi:
         return ExportMode.MULTI
     return default
+
+
+# ---------------------------------------------------------------------------
+# confluence
+# ---------------------------------------------------------------------------
+
+
+@group.command("confluence")
+@click.argument(
+    "input_",
+    metavar="INPUT",
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, path_type=Path),
+)
+@click.option(
+    "-o", "--output", "output",
+    type=click.Path(path_type=Path),
+    help="Output bundle directory. Default: <stem>-confluence/.",
+)
+@click.option(
+    "-f", "--force", is_flag=True, help="Overwrite existing bundle directory."
+)
+@click.option(
+    "--no-book", is_flag=True,
+    help="Disable book auto-detection. Only the entry file is exported.",
+)
+@click.option(
+    "--no-render-diagrams", is_flag=True,
+    help="Skip Kroki rendering of rd-diagram; embed source as a code macro.",
+)
+@click.option(
+    "--no-render-math", is_flag=True,
+    help="Skip Kroki rendering of rd-math; emit italic source instead.",
+)
+@click.option(
+    "--diagram-endpoint", default="https://kroki.io", show_default=True,
+    help="Kroki-compatible server for diagrams and math.",
+)
+@click.option(
+    "--include-remote-images", is_flag=True,
+    help="Fetch http(s) <img> sources and pack them into the bundle.",
+)
+@click.option(
+    "--no-lint", "no_lint", is_flag=True,
+    help="Skip the pre-export `richdoc lint` pass. Use only when "
+    "intentionally debugging an export; otherwise lint must pass.",
+)
+@safe_command
+def cmd_confluence(
+    input_: Path,
+    output: Path | None,
+    force: bool,
+    no_book: bool,
+    no_render_diagrams: bool,
+    no_render_math: bool,
+    diagram_endpoint: str,
+    include_remote_images: bool,
+    no_lint: bool,
+) -> None:
+    """Export to a Confluence storage bundle (consumed by the `confluence` skill)."""
+    from ..export.confluence import (
+        ConfluenceExportPlan,
+        export_bundle,
+    )
+    from ..lint.runner import lint_path
+
+    in_path = input_.resolve()
+
+    # Resolve the entry file from a directory input, or validate a
+    # direct file input.
+    lint_target: Path
+    if in_path.is_dir():
+        candidate = in_path / "index.html"
+        if not candidate.exists():
+            json_error(
+                f"No index.html in '{in_path}'. Pass the entry .html file "
+                "explicitly.",
+                code="INVALID_PARAMS",
+            )
+        lint_target = in_path
+        entry_path = candidate
+    else:
+        if in_path.suffix.lower() not in (".html", ".htm"):
+            json_error(
+                f"Input must be a .html file or a directory (got '{in_path}').",
+                code="INVALID_PARAMS",
+            )
+        lint_target = in_path
+        entry_path = in_path
+
+    if not no_lint:
+        lint_result = lint_path(lint_target, fix=False)
+        if lint_result["errors"] > 0:
+            json_error(
+                f"Refusing to export: {lint_result['errors']} lint "
+                f"error(s) in {lint_target}. Fix and retry, or pass "
+                "--no-lint to bypass.",
+                code="LINT_ERRORS",
+                hint="Run `richdoc lint --fix <input>` for autofixable rules.",
+                lint=lint_result,
+            )
+
+    if output is None:
+        stem = in_path.name if in_path.is_dir() else entry_path.stem
+        # Drop sibling to the input (file's parent, or directory's parent).
+        base = in_path.parent
+        output = base / f"{stem}-confluence"
+
+    plan = ConfluenceExportPlan(
+        input_path=entry_path,
+        output=output,
+        no_book=no_book,
+        render_diagrams=not no_render_diagrams,
+        render_math=not no_render_math,
+        diagram_endpoint=diagram_endpoint,
+        include_remote_images=include_remote_images,
+        force=force,
+    )
+    result = export_bundle(plan)
+
+    payload: dict = {
+        "input": str(in_path),
+        "entry": str(entry_path),
+        "output": str(result.write.bundle_dir),
+        "manifest": str(result.write.manifest_path),
+        "schema": result.manifest.schema,
+        "book": result.book,
+        "pages": [
+            {
+                "key": p.key,
+                "title": p.title,
+                "parentKey": p.parent_key,
+                "storage": p.storage_path,
+                "attachments": len(p.attachments),
+                "links": len(p.links),
+            }
+            for p in result.pages
+        ],
+        "attachments": result.attachments,
+        "diagrams_rendered": result.diagrams_rendered,
+        "diagrams_failed": result.diagrams_failed,
+        "math_rendered": result.math_rendered,
+        "math_failed": result.math_failed,
+        "dropped": result.dropped,
+        "missing": result.missing,
+        "nextStep": {
+            "argv": [
+                "confluence",
+                "publish-bundle",
+                str(result.write.bundle_dir),
+            ],
+            "description": (
+                "Publish the bundle to Confluence. Run "
+                "`confluence auth status` first if the publish fails "
+                "with code CONFIG_MISSING."
+            ),
+        },
+    }
+    json_ok(**payload)

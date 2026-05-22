@@ -23,8 +23,8 @@ from typing import TYPE_CHECKING
 
 import lxml.etree as ET
 
-from ...export.common.assets import AssetStore
-from ...export.common.walker import inline_text as _inline_text
+from ..common.assets import AssetStore
+from ..common.walker import inline_text as _inline_text
 from .layout import wrap_in_layout
 from .nav import build_prev_next_nav
 from .refs import format_ref_li

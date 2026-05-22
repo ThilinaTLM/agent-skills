@@ -4,12 +4,37 @@
 
 ### Breaking changes
 
-- **Confluence commands moved to `richdoc confluence ...`.** The old
-  `richdoc publish confluence ...` group was removed. Use
-  `richdoc confluence spaces`, `richdoc confluence pages`,
-  `richdoc confluence page-by-id`, and
-  `richdoc confluence publish INPUT`. The former `push` subcommand is
-  now `publish`.
+- **Confluence publishing extracted into a separate `confluence` skill.**
+  The `richdoc confluence ...` command group is gone. Authoring stays
+  here; Confluence Cloud auth and content management live in the new
+  skill.
+
+  Replace:
+
+  ```bash
+  richdoc confluence publish docs/ --parent-id 12345
+  ```
+
+  with the two-step flow:
+
+  ```bash
+  richdoc export confluence docs/ -o build/confluence-docs
+  confluence publish-bundle build/confluence-docs --profile work --parent-id 12345
+  ```
+
+  The bundle is a documented on-disk format
+  (`richdoc.confluence.bundle.v1`) the two skills share. `richdoc` no
+  longer opens a Confluence connection or stores credentials; the new
+  `confluence` skill owns all of that (env vars and project / user
+  config files). The old `publish/confluence/` package has been
+  removed; converter modules now live in `export/confluence/`, and
+  the REST client moved into the new skill.
+
+- **`richdoc export confluence` envelope now includes `nextStep`.**
+  A structured `{argv: [...], description: "..."}` object naming the
+  exact next command. Agents should pipe `nextStep.argv` straight
+  into their shell tool rather than reconstructing the bundle path.
+  Cross-platform (no shell quoting baked in).
 
 ### Developer experience
 

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import lxml.etree as ET
 
-from ...export.common.titles import resolve_doc_title
+from ..common.titles import resolve_doc_title
 
 __all__ = ["resolve_title"]
 

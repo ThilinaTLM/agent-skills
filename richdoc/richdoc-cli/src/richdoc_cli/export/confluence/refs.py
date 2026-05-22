@@ -11,7 +11,7 @@ fully-formed ``<ol>`` body.
 
 from __future__ import annotations
 
-from ...export.common.references import RefRenderer, format_ref
+from ..common.references import RefRenderer, format_ref
 from .xml import xml_attr, xml_escape
 
 __all__ = ["format_ref_li"]
