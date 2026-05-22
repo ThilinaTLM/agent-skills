@@ -227,5 +227,3 @@ def _unparseable_payload(file_path: Path, exc: Exception) -> dict[str, Any]:
         ],
         "fixed": [],
     }
-
-

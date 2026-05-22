@@ -1,0 +1,120 @@
+# Pre-commit hooks for the richdoc skill.
+#
+# Scoped to `^richdoc/` paths so hooks only fire when richdoc files are
+# touched; other skill subtrees in this repo follow their own conventions.
+#
+# Setup (one-time per clone):
+#
+#     pip install pre-commit       # or: uv tool install pre-commit
+#     pre-commit install           # writes .git/hooks/pre-commit
+#
+# After install, the hooks run automatically on every `git commit`. Run
+# the full suite manually with `pre-commit run --all-files`.
+#
+# Each language-specific hook delegates to the project's own toolchain
+# (uv for the CLI, pnpm for the lib) so the configuration lives in one
+# place (`pyproject.toml` / `biome.json` / `tsconfig.json`) rather than
+# being duplicated here. `pass_filenames: false` because every tool
+# operates on the whole project tree, not on individual staged files.
+
+default_install_hook_types: [pre-commit]
+fail_fast: false
+
+repos:
+  # -------------------------------------------------------------------
+  # Standard hygiene — scoped to richdoc/ so we don't touch the other
+  # skill subtrees. The exclude pattern protects:
+  #   - syrupy snapshot files (`.ambr`); their formatting is
+  #     deterministic but byte-significant.
+  #   - third-party XSL (`mml2omml.xsl`, the MathML→OMML stylesheet
+  #     vendored from Microsoft); we don't reflow it.
+  #   - generated assets (`richdoc-lib/assets/`) that the build
+  #     pipeline owns.
+  # -------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^richdoc/
+        exclude: |
+          (?x)^(
+            richdoc/richdoc-cli/tests/__snapshots__/.*\.ambr|
+            richdoc/richdoc-cli/src/richdoc_cli/export/docx/mml2omml\.xsl|
+            richdoc/richdoc-lib/assets/.*
+          )$
+      - id: end-of-file-fixer
+        files: ^richdoc/
+        exclude: |
+          (?x)^(
+            richdoc/richdoc-cli/tests/__snapshots__/.*\.ambr|
+            richdoc/richdoc-cli/src/richdoc_cli/export/docx/mml2omml\.xsl|
+            richdoc/richdoc-lib/assets/.*
+          )$
+      - id: check-yaml
+        files: ^richdoc/.*\.ya?ml$
+      - id: check-toml
+        files: ^richdoc/.*\.toml$
+      - id: check-merge-conflict
+        files: ^richdoc/
+      - id: check-added-large-files
+        files: ^richdoc/
+        # Generated artefacts in `richdoc-lib/assets/` (richdoc.js,
+        # schema.json) can exceed the default cap; they're committed
+        # outputs of `pnpm build`, not source.
+        exclude: ^richdoc/richdoc-lib/assets/
+        args: ["--maxkb=512"]
+
+  # -------------------------------------------------------------------
+  # richdoc-cli — Python via uv
+  # -------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: cli-ruff
+        name: "richdoc-cli · ruff check"
+        entry: bash -c 'cd richdoc/richdoc-cli && uv run ruff check src tests'
+        language: system
+        files: ^richdoc/richdoc-cli/(src|tests)/.*\.py$
+        pass_filenames: false
+
+      - id: cli-mypy
+        name: "richdoc-cli · mypy"
+        entry: bash -c 'cd richdoc/richdoc-cli && uv run mypy src'
+        language: system
+        files: ^richdoc/richdoc-cli/src/.*\.py$
+        pass_filenames: false
+
+      - id: cli-pytest
+        name: "richdoc-cli · pytest"
+        entry: bash -c 'cd richdoc/richdoc-cli && uv run pytest -q'
+        language: system
+        # Trigger pytest when either source, tests, or fixtures move.
+        files: ^richdoc/richdoc-cli/(src|tests)/
+        pass_filenames: false
+
+  # -------------------------------------------------------------------
+  # richdoc-lib — TypeScript via pnpm
+  # -------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: lib-biome
+        name: "richdoc-lib · biome check"
+        entry: bash -c 'cd richdoc/richdoc-lib && pnpm exec biome check .'
+        language: system
+        files: ^richdoc/richdoc-lib/.*\.(ts|tsx|js|jsx|json)$
+        # biome rewrites are explicit (`pnpm lint:fix`); pre-commit only
+        # checks. Same trigger for both.
+        pass_filenames: false
+
+      - id: lib-tsc
+        name: "richdoc-lib · tsc --noEmit"
+        entry: bash -c 'cd richdoc/richdoc-lib && pnpm exec tsc --noEmit'
+        language: system
+        files: ^richdoc/richdoc-lib/(src|tests|build\.ts|vitest\.config\.ts|tsconfig\.json)
+        pass_filenames: false
+
+      - id: lib-vitest
+        name: "richdoc-lib · vitest run"
+        entry: bash -c 'cd richdoc/richdoc-lib && pnpm test'
+        language: system
+        files: ^richdoc/richdoc-lib/(src|tests)/
+        pass_filenames: false

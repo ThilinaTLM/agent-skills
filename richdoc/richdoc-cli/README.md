@@ -75,3 +75,15 @@ The snapshot suite under `tests/` makes refactors safe; pair every
 behavioural change with a deliberate `pytest --snapshot-update` and
 read the diff before committing.
 
+The repo ships a `.pre-commit-config.yaml` at the root that runs ruff,
+mypy, and pytest (plus the lib's biome / tsc / vitest) before every
+commit. Enable it once per clone:
+
+```bash
+pip install pre-commit    # or: uv tool install pre-commit
+pre-commit install        # writes .git/hooks/pre-commit
+```
+
+Run the full suite manually with `pre-commit run --all-files`. Hooks
+are scoped to `^richdoc/` paths so editing other skills in this repo
+doesn't trigger them.

@@ -16,10 +16,14 @@ and pytest config in `pyproject.toml`. Run the gates with
   semantic summary; Confluence storage XML is pretty-printed and
   local-ids stabilised before comparison. Dry-run publish tests
   patch the client to keep CI offline.
-- **GitHub Actions CI** (`.github/workflows/ci.yml`). Two parallel
-  jobs: CLI runs ruff + mypy + pytest under `uv run`, lib runs
-  biome + tsc + build (with the CLI synced so the build's sanity
-  check passes).
+- **Pre-commit hooks** (`.pre-commit-config.yaml`) replace CI as the
+  enforcement point for the gates. Local `pre-commit install` wires
+  ruff + mypy + pytest (CLI) and biome + tsc + vitest (lib) into
+  `git commit`, plus a small set of hygiene hooks (trailing
+  whitespace, EOF newlines, YAML / TOML well-formedness,
+  merge-conflict markers, large-file guard). Every hook is scoped
+  to `^richdoc/` so the other skill subtrees in this repo are
+  untouched.
 - **Lib-side tooling parity.** `richdoc-lib/package.json` gains a
   `typecheck` script and vitest as a dev dep, plus a smoke test
   for the schema registry. `pnpm test`, `pnpm typecheck`, and
