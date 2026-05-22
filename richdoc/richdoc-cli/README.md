@@ -1,6 +1,6 @@
 # richdoc-cli
 
-Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), export to markdown / docx (`export`), and publish to Confluence Cloud (`publish confluence`). HTML is the source format and is not an export target.
+Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), export to markdown / docx (`export`), and work with / publish to Confluence Cloud (`confluence`). HTML is the source format and is not an export target.
 
 - See the parent skill: [`../SKILL.md`](../SKILL.md) for the full command reference and component vocabulary.
 - Requires `uv` ([install](https://docs.astral.sh/uv/)). First call provisions the Python environment automatically.
@@ -19,8 +19,8 @@ src/richdoc_cli/
   assets.py           # framework asset filenames (init/new)
   paths.py            # canonical filesystem paths
   mimetypes_ext.py    # mime sniffer used by the export pipeline
-  commands/           # one click subcommand per file
-    new_.py init_.py update.py lint.py components.py export.py publish.py
+  commands/           # shared/simple click subcommands
+    new_.py init_.py update.py lint.py components.py export.py
   export/             # the export pipeline (md / docx)
     book.py           #   multi-file book discovery
     common/           #   format-agnostic helpers
@@ -46,8 +46,8 @@ src/richdoc_cli/
       math.py         #     LaTeX → OMML via latex2mathml + MML2OMML.xsl
       handlers_plain.py / handlers_rd.py / handler_table.py
       pipeline.py     #   single + multi orchestration
-  publish/            # remote publish targets
-    confluence/       #   Confluence Cloud REST publisher
+  publish/            # remote publishing integrations
+    confluence/       #   Confluence Cloud REST publisher + click group
       auth.py         #     flag / env / getpass credential resolution
       client.py       #     stdlib REST client (urllib + email.mime multipart)
       converter.py    #     HTML → storage-format XML state machine
@@ -58,7 +58,7 @@ src/richdoc_cli/
       pipeline.py     #     create / update pages + upload attachments
 ```
 
-The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the two formats share helpers via `export/common/`. `publish/confluence/` reuses `export/common/` (book discovery, asset store, walker helpers) but emits Confluence storage-format XML instead of one of the export formats.
+The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the two formats share helpers via `export/common/`. The `confluence` command is implemented in `publish/confluence/`, which reuses `export/common/` (book discovery, asset store, walker helpers) but emits Confluence storage-format XML instead of one of the export formats.
 
 ## Development
 

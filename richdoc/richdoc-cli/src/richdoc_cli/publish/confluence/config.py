@@ -1,4 +1,4 @@
-"""Env-var-only configuration for `richdoc publish confluence`.
+"""Env-var-only configuration for `richdoc confluence`.
 
 Four environment variables are the *only* configuration source. There are
 no flags and no interactive prompts. This module is deliberately decoupled
@@ -9,7 +9,7 @@ caller can shape the JSON envelope however it likes.
     CONFLUENCE_EMAIL       Atlassian account email
     CONFLUENCE_TOKEN       Atlassian API token (HTTP Basic password)
     CONFLUENCE_SPACE_KEY   Target space key, e.g. DEV (required for
-                           `pages` and `push` only)
+                           `pages` and `publish` only)
 """
 
 from __future__ import annotations

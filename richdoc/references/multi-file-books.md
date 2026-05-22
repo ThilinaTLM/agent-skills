@@ -25,7 +25,7 @@ The `<rd-toc>` block already in each chapter file is the source of truth for the
 
 - **The browser runtime (`richdoc.js`).** Each chapter's `<rd-toc>` is parsed once, the active chapter is matched against `location.pathname`, and prev/next bands are injected at the top and bottom of `<rd-page>`. The sidebar uses the same tree.
 - **The linter (`richdoc lint`).** Reads the file's `<rd-toc>`, walks each `<rd-chapter href>` to find linked chapters on disk, and compares each peer's `<rd-toc>` against this file's. Any chapter that doesn't match (added/removed/reordered/retitled) is reported as `book-toc-drift`. Hrefs are compared by resolved target, so `./other.html` at the book root and `../other.html` from a subdirectory are equivalent as long as they resolve to the same file.
-- **The publisher (`richdoc publish confluence push`).** Treats the entry chapter's `<rd-toc>` as the canonical tree, walks it to discover every chapter, and publishes them in TOC order. Each chapter nests under the page that backs its parent `<rd-chapter>` (or under the user-supplied `--parent-id` for the entry). Group headers (`<rd-chapter>` without `href`) become non-clickable section labels in the inline Contents block and pass their children up to the entry's parent.
+- **The publisher (`richdoc confluence publish`).** Treats the entry chapter's `<rd-toc>` as the canonical tree, walks it to discover every chapter, and publishes them in TOC order. Each chapter nests under the page that backs its parent `<rd-chapter>` (or under the user-supplied `--parent-id` for the entry). Group headers (`<rd-chapter>` without `href`) become non-clickable section labels in the inline Contents block and pass their children up to the entry's parent.
 
 A document is "in book mode" when at least one `<rd-chapter>` inside its `<rd-toc>` carries an `href` that resolves to a sibling file. Single-file docs (in-page TOCs with no hrefs) keep working as before.
 
@@ -49,11 +49,11 @@ Do **not** write attributes for any of these:
 ## Publishing a book
 
 ```bash
-richdoc publish confluence push docs/             # entry resolves to docs/index.html
-richdoc publish confluence push docs/index.html   # equivalent
+richdoc confluence publish docs/             # entry resolves to docs/index.html
+richdoc confluence publish docs/index.html   # equivalent
 ```
 
-`push` accepts a directory or the entry file. For a directory, the entry chapter resolves to `<dir>/index.html`; if `index.html` is missing the command fails with `INVALID_PARAMS` instead of guessing. Before any network call, `push` runs `richdoc lint` against the input; any error blocks the publish and is returned in the `lint.files[]` field of the error envelope. Pass `--no-lint` only when intentionally debugging a publish.
+`publish` accepts a directory or the entry file. For a directory, the entry chapter resolves to `<dir>/index.html`; if `index.html` is missing the command fails with `INVALID_PARAMS` instead of guessing. Before any network call, `publish` runs `richdoc lint` against the input; any error blocks the publish and is returned in the `lint.files[]` field of the error envelope. Pass `--no-lint` only when intentionally debugging a publish.
 
 See [references/publish.md](publish.md) for the full publish contract (page hierarchy, attachments, error codes) and [references/migrating-to-book-mode.md](migrating-to-book-mode.md) for converting an existing flat doc set to a book.
 

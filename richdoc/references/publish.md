@@ -1,4 +1,4 @@
-# `richdoc publish` — push richdoc HTML to remote systems
+# `richdoc confluence` — publish richdoc HTML to Confluence
 
 Currently the only supported target is Confluence Cloud, via the REST API. The
 publisher creates or updates pages in **an existing space** (the abandoned
@@ -16,25 +16,25 @@ export CONFLUENCE_SPACE_KEY="DEV"
 
 # 2. Browse available spaces and pick the one you want in $CONFLUENCE_SPACE_KEY.
 #    (This subcommand ignores $CONFLUENCE_SPACE_KEY — it's how you discover it.)
-richdoc publish confluence spaces
+richdoc confluence spaces
 # → {"ok":true,"spaces":[{"id":"…","key":"DEV","name":"Engineering",…}]}
 
 # 3. Browse pages in $CONFLUENCE_SPACE_KEY to pick a parent.
-richdoc publish confluence pages -q "Docs root"
+richdoc confluence pages -q "Docs root"
 
-# 4. Push the doc — a single file or a whole book.
-richdoc publish confluence push docs/data-design.html --parent-id 1234567
-richdoc publish confluence push docs/                 --parent-id 1234567
+# 4. Publish the doc — a single file or a whole book.
+richdoc confluence publish docs/data-design.html --parent-id 1234567
+richdoc confluence publish docs/                 --parent-id 1234567
 ```
 
-`push` accepts a `.html` file *or* a directory. For a directory, the entry
+`publish` accepts a `.html` file *or* a directory. For a directory, the entry
 chapter resolves to `<dir>/index.html`; missing `index.html` fails fast with
 `INVALID_PARAMS` (book mode has no convention for picking a non-index entry
-from a directory). Before any network call `push` runs `richdoc lint`
+from a directory). Before any network call `publish` runs `richdoc lint`
 against the input and refuses to publish if there are errors. Warnings
 do not block. Use `--no-lint` only to intentionally bypass the preflight.
 
-Re-running the same `push` updates the existing pages in place (matched by
+Re-running the same `publish` updates the existing pages in place (matched by
 `(space, parent, title)`), re-uploads any changed attachments under the
 same filenames, and bumps each page's version. Idempotent by design.
 
@@ -48,7 +48,7 @@ for these values and no interactive prompts.
 | `CONFLUENCE_SITE` | all subcommands | e.g. `https://acme.atlassian.net` (bare host is auto-prefixed with `https://`) |
 | `CONFLUENCE_EMAIL` | all subcommands | Atlassian account email |
 | `CONFLUENCE_TOKEN` | all subcommands | API token — generate at <https://id.atlassian.com/manage-profile/security/api-tokens> |
-| `CONFLUENCE_SPACE_KEY` | `pages`, `push` | Target space key, e.g. `DEV` (use `spaces` to discover) |
+| `CONFLUENCE_SPACE_KEY` | `pages`, `publish` | Target space key, e.g. `DEV` (use `spaces` to discover) |
 
 - Auth is HTTP Basic with `email:api_token` per Atlassian's documented model.
 - Tokens **never appear** in logs, JSON envelopes, or temp files.
@@ -65,7 +65,7 @@ for these values and no interactive prompts.
 ### `spaces`
 
 ```bash
-richdoc publish confluence spaces [-q TEXT] [--limit N]
+richdoc confluence spaces [-q TEXT] [--limit N]
 ```
 
 List spaces visible to the token. `-q` filters by key / name substring
@@ -81,7 +81,7 @@ List spaces visible to the token. `-q` filters by key / name substring
 ### `pages`
 
 ```bash
-richdoc publish confluence pages [-q TEXT] [--parent-id ID] [--limit N]
+richdoc confluence pages [-q TEXT] [--parent-id ID] [--limit N]
 ```
 
 List pages in `$CONFLUENCE_SPACE_KEY`. `-q` filters by title substring.
@@ -91,16 +91,16 @@ each page with `{id, title, parentId, spaceId, version, url}`.
 ### `page-by-id`
 
 ```bash
-richdoc publish confluence page-by-id PAGE_ID
+richdoc confluence page-by-id PAGE_ID
 ```
 
 Resolve a single page id to `{id, title, parentId, spaceId, version, url}`.
-Useful for confirming an `--parent-id` value before pushing.
+Useful for confirming an `--parent-id` value before publishing.
 
-### `push`
+### `publish`
 
 ```bash
-richdoc publish confluence push INPUT [OPTIONS]
+richdoc confluence publish INPUT [OPTIONS]
 ```
 
 Publish a richdoc HTML file or a whole book directory into
@@ -122,7 +122,7 @@ Publish a richdoc HTML file or a whole book directory into
 --no-lint                     Skip the pre-publish `richdoc lint` pass.
                               Use only when intentionally debugging a
                               publish; otherwise lint must pass before
-                              any page is pushed.
+                              any page is published.
 --dry-run                     Walk every chapter, return the storage XML +
                               attachment plan inside the JSON envelope,
                               don't touch any write endpoint.
@@ -138,7 +138,7 @@ Publish a richdoc HTML file or a whole book directory into
                               Default: "Updated via richdoc CLI".
 ```
 
-`push` runs `richdoc lint` against `INPUT` before any create / update /
+`publish` runs `richdoc lint` against `INPUT` before any create / update /
 upload call. Errors block the publish (envelope `code: LINT_ERRORS` with
 the per-file `issues[]` lists under `lint.files[]`); warnings do not.
 In book mode, the two rules most likely to fire are `book-toc-drift`
@@ -283,7 +283,7 @@ Note: editing a published page through Confluence's UI may strip the
 ## Dry-run
 
 ```bash
-richdoc publish confluence push doc.html --dry-run
+richdoc confluence publish doc.html --dry-run
 ```
 
 Walks every chapter, runs the storage-XML converter, and reports what
@@ -292,7 +292,7 @@ upload. The envelope includes a `bodies` array with the full storage XML
 preview and the attachment plan for each chapter, plus
 `"action": "planned"` on every page entry.
 
-Useful for previewing macro layout before pushing into a sensitive space.
+Useful for previewing macro layout before publishing into a sensitive space.
 
 ## Error codes
 
@@ -302,7 +302,7 @@ Useful for previewing macro layout before pushing into a sensitive space.
 | `AUTH_ERROR` | Bad credentials, or a present env var value is malformed (e.g. site URL). |
 | `PERMISSION_DENIED` | Token is valid but lacks write access to the space. |
 | `NOT_FOUND` | Space key, parent id, or `--parent-title` doesn't exist. |
-| `LINT_ERRORS` | The pre-publish `richdoc lint` pass found errors and the push refused to proceed. The envelope carries the per-file `issues[]` lists under `lint.files[]`. Fix the lint errors or pass `--no-lint` to bypass. |
+| `LINT_ERRORS` | The pre-publish `richdoc lint` pass found errors and the publish refused to proceed. The envelope carries the per-file `issues[]` lists under `lint.files[]`. Fix the lint errors or pass `--no-lint` to bypass. |
 | `VERSION_CONFLICT` | Someone else updated the page during the publish; retried once, then surfaced. |
 | `ATTACHMENT_TOO_LARGE` | Confluence's per-attachment size limit (~100 MB default). Disable diagrams or reduce image size. |
 | `AMBIGUOUS_MATCH` | `--parent-title` matched more than one page; use `--parent-id` instead. |

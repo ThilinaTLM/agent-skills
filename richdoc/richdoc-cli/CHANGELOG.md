@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- **Confluence commands moved to `richdoc confluence ...`.** The old
+  `richdoc publish confluence ...` group was removed. Use
+  `richdoc confluence spaces`, `richdoc confluence pages`,
+  `richdoc confluence page-by-id`, and
+  `richdoc confluence publish INPUT`. The former `push` subcommand is
+  now `publish`.
+
 ### Developer experience
 
 - **Test + lint baseline.** Adds a `[project.optional-dependencies]

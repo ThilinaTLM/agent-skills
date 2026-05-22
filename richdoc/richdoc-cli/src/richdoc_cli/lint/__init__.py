@@ -3,8 +3,8 @@
 Public surface:
 
 - ``lint_path(path, *, fix)`` \u2014 the programmatic entry point used by
-  the click command and by ``publish confluence push`` for its
-  pre-publish lint pass.
+  the click command and by ``confluence publish`` for its pre-publish
+  lint pass.
 - ``cmd`` \u2014 the click command itself (``richdoc lint``).
 
 Everything else lives behind underscored module-internal helpers:

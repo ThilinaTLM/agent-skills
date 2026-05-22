@@ -15,8 +15,8 @@ appropriate pipeline in `export.<fmt>.pipeline`, and turns the structured
 result into a JSON envelope.
 
 HTML is *not* an export target: richdoc files are already HTML. Open
-the source `.html` directly in a browser, or use `richdoc publish
-confluence push` for Confluence.
+the source `.html` directly in a browser, or use `richdoc confluence
+publish` for Confluence.
 """
 
 from __future__ import annotations
