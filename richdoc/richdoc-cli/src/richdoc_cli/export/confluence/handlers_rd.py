@@ -27,9 +27,9 @@ import uuid
 
 import lxml.etree as ET
 
-from ...export.common.chart_data import parse_chart
-from ...export.common.diagrams import render_to_png
-from ...export.common.walker import text_of
+from ..common.chart_data import parse_chart
+from ..common.diagrams import render_to_png
+from ..common.walker import text_of
 from .converter import (
     TocEntry,
     _Converter,
@@ -604,7 +604,7 @@ def _h_rd_stat(c: _Converter, el: ET._Element) -> None:
 
 
 def _h_rd_progress(c: _Converter, el: ET._Element) -> None:
-    from ...export.common.progress import parse_progress
+    from ..common.progress import parse_progress
 
     p = parse_progress(el.get("value"))
     label = (el.get("label") or "").strip()

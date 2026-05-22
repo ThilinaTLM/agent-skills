@@ -20,7 +20,6 @@ from .commands.lint import cmd as lint_cmd
 from .commands.new_ import cmd as new_cmd
 from .commands.update import cmd as update_cmd
 from .output import json_error
-from .publish.confluence.cli import confluence_group
 
 
 @click.group(
@@ -42,7 +41,6 @@ main.add_command(update_cmd)
 main.add_command(lint_cmd)
 main.add_command(components_cmd)
 main.add_command(export_group)
-main.add_command(confluence_group)
 
 
 def entrypoint() -> NoReturn:

@@ -1,6 +1,11 @@
 # richdoc-cli
 
-Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), export to markdown / docx (`export`), and work with / publish to Confluence Cloud (`confluence`). HTML is the source format and is not an export target.
+Agent-facing CLI for the richdoc skill: scaffold (`new`), install assets (`init`), refresh stale assets (`update`), validate (`lint`), introspect the component vocabulary (`components`), and export to markdown / docx / Confluence storage bundles (`export`). HTML is the source format and is not an export target.
+
+Confluence *publishing* has moved to the separate `confluence` skill.
+`richdoc export confluence` produces an offline bundle; `confluence publish-bundle`
+uploads it. The two skills communicate only through the documented
+`richdoc.confluence.bundle.v1` directory format.
 
 - See the parent skill: [`../SKILL.md`](../SKILL.md) for the full command reference and component vocabulary.
 - Requires `uv` ([install](https://docs.astral.sh/uv/)). First call provisions the Python environment automatically.
@@ -46,19 +51,17 @@ src/richdoc_cli/
       math.py         #     LaTeX → OMML via latex2mathml + MML2OMML.xsl
       handlers_plain.py / handlers_rd.py / handler_table.py
       pipeline.py     #   single + multi orchestration
-  publish/            # remote publishing integrations
-    confluence/       #   Confluence Cloud REST publisher + click group
-      auth.py         #     flag / env / getpass credential resolution
-      client.py       #     stdlib REST client (urllib + email.mime multipart)
-      converter.py    #     HTML → storage-format XML state machine
+    confluence/       # HTML → Confluence storage XML + bundle writer
+      converter.py    #   HTML → storage-format XML state machine
       handlers_plain.py # plain HTML → storage XML
-      handlers_rd.py  #     rd-* → storage XML + native macros
+      handlers_rd.py  #   rd-* → storage XML + native macros
       handler_table.py # the dispatch dict
-      math.py         #     Kroki TikZ → PNG for rd-math
-      pipeline.py     #     create / update pages + upload attachments
+      math.py         #   Kroki TikZ → PNG for rd-math
+      bundle.py       #   manifest dataclasses + write_bundle/read_bundle
+      pipeline.py     #   offline orchestration (no network)
 ```
 
-The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the two formats share helpers via `export/common/`. The `confluence` command is implemented in `publish/confluence/`, which reuses `export/common/` (book discovery, asset store, walker helpers) but emits Confluence storage-format XML instead of one of the export formats.
+The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the formats share helpers via `export/common/`. The `confluence` export sits alongside `md` / `docx` and emits a self-contained `richdoc.confluence.bundle.v1` bundle the separate `confluence` skill picks up.
 
 ## Development
 

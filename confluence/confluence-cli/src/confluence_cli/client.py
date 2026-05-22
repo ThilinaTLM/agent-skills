@@ -115,7 +115,7 @@ class ConfluenceClient:
     email: str
     token: str
     timeout: float = 30.0
-    user_agent: str = "richdoc-publish/1.0"
+    user_agent: str = "confluence-cli/0.1"
     _auth: str = field(init=False, default="", repr=False)
 
     def __post_init__(self) -> None:
@@ -234,6 +234,12 @@ class ConfluenceClient:
         side via the `title` query param (supported by v2 in cursor mode)
         and short-circuits on the first exact title hit under the right
         parent.
+
+        When ``parent_id`` is ``None`` the matcher accepts a page under
+        any parent. Confluence enforces unique titles per space, so this
+        is safe and makes idempotency work for pages published to the
+        space root (where Confluence auto-assigns the space's homepage
+        as the actual ``parentId``).
         """
         cursor: str | None = None
         # v2 supports a `title` query param on /spaces/{id}/pages but it's
@@ -250,7 +256,7 @@ class ConfluenceClient:
                 pg = _page_from_json(entry, default_space_id=space_id)
                 if pg.title != title:
                     continue
-                if (pg.parent_id or None) != (parent_id or None):
+                if parent_id is not None and (pg.parent_id or None) != parent_id:
                     continue
                 return pg
             cursor = _cursor_from_links(payload.get("_links", {}))

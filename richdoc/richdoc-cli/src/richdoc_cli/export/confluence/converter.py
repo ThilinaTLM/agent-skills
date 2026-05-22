@@ -41,11 +41,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ...export.common.assets import AssetStore
-from ...export.common.text import dedent as _dedent_canonical
-from ...export.common.walker import body_of, parse_html
-from ...export.common.walker import element_source as _element_source
-from ...export.common.walker import inline_text as _inline_text
+from ..common.assets import AssetStore
+from ..common.text import dedent as _dedent_canonical
+from ..common.walker import body_of, parse_html
+from ..common.walker import element_source as _element_source
+from ..common.walker import inline_text as _inline_text
 from .state import HANDLERS, _Converter
 from .titles import resolve_title
 

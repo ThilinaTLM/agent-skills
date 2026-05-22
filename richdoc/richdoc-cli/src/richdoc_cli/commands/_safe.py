@@ -9,7 +9,6 @@ Mapping:
 
   - ``FileExistsError``     -> ``FILE_EXISTS`` (with the ``--force`` hint)
   - ``SchemaLoadError``     -> ``INPUT_ERROR``
-  - ``ConfluenceError``     -> the error's own ``code`` (default ``UPSTREAM_ERROR``)
   - ``OSError``             -> ``INPUT_ERROR`` (best guess; commands that
                               need ``OUTPUT_ERROR`` route through
                               ``write_or_error`` for the write step)
@@ -25,7 +24,6 @@ from collections.abc import Callable
 from typing import ParamSpec, TypeVar
 
 from ..output import json_error
-from ..publish.confluence.client import ConfluenceError
 from ..schema import SchemaLoadError
 
 __all__ = ["safe_command", "write_or_error"]
@@ -55,8 +53,6 @@ def safe_command(fn: Callable[P, R]) -> Callable[P, R]:
             )
         except SchemaLoadError as exc:
             json_error(str(exc), code="INPUT_ERROR")
-        except ConfluenceError as exc:
-            json_error(str(exc), code=getattr(exc, "code", "UPSTREAM_ERROR"))
         except OSError as exc:
             json_error(f"I/O error: {exc}", code="INPUT_ERROR")
 
