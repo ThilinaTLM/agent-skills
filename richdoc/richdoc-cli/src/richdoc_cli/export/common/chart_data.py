@@ -44,8 +44,13 @@ def parse_chart(raw: str) -> ChartTable | None:
             data = None
         if isinstance(data, list) and data:
             if isinstance(data[0], dict):
-                headers = list(data[0].keys())
-                rows = [[str(row.get(k, "")) for k in headers] for row in data]
+                if not all(isinstance(row, dict) for row in data):
+                    return None
+                keys = list(data[0].keys())
+                headers: list[str] = [str(k) for k in keys]
+                rows: list[list[str]] = [
+                    [str(row.get(k, "")) for k in keys] for row in data
+                ]
             else:
                 headers = ["value"]
                 rows = [[str(v)] for v in data]
@@ -57,8 +62,8 @@ def parse_chart(raw: str) -> ChartTable | None:
     if "\n" in raw and "," in raw:
         line_rows = [r.split(",") for r in raw.splitlines() if r.strip()]
         if line_rows:
-            headers = [c.strip() for c in line_rows[0]]
-            rows = [[c.strip() for c in r] for r in line_rows[1:]]
+            headers: list[str] = [str(c.strip()) for c in line_rows[0]]
+            rows: list[list[str]] = [[str(c.strip()) for c in r] for r in line_rows[1:]]
             return ChartTable(headers=headers, rows=rows)
 
     # Plain numeric comma list

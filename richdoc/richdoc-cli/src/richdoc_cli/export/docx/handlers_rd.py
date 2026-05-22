@@ -727,7 +727,7 @@ def _h_rd_api(state: _State, el: ET._Element) -> None:
 def _h_rd_references(state: _State, el: ET._Element) -> None:
     # rd-references placement marker — emit collected refs here if any.
     _emit_references(state, title=el.get("title") or "References")
-    state._refs_emitted = True  # type: ignore[attr-defined]
+    state.refs_emitted = True
 
 
 def _h_rd_ref(state: _State, el: ET._Element) -> None:

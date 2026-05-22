@@ -83,8 +83,12 @@ def collect(
 
         meta_value = (hero.get("meta") or "").strip()
         if meta_value:
-            segments = [s.strip() for s in meta_value.split(META_SEPARATOR.strip())]
-            redundant = [s for s in segments if META_NAV_SEG_RE.match(s.strip())]
+            segments: list[str] = [
+                str(s.strip()) for s in meta_value.split(META_SEPARATOR.strip())
+            ]
+            redundant: list[str] = [
+                s for s in segments if META_NAV_SEG_RE.match(s.strip())
+            ]
             if redundant:
                 fix.meta_segments = redundant
                 add_issue(

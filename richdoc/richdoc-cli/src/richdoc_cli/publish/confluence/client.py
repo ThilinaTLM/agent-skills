@@ -289,6 +289,9 @@ class ConfluenceClient:
         parent_id: str | None = None,
         comment: str | None = None,
     ) -> Page:
+        version: dict[str, Any] = {
+            "number": current_version + 1,
+        }
         payload: dict[str, Any] = {
             "id": page_id,
             "status": "current",
@@ -297,12 +300,10 @@ class ConfluenceClient:
                 "representation": "storage",
                 "value": body_storage,
             },
-            "version": {
-                "number": current_version + 1,
-            },
+            "version": version,
         }
         if comment:
-            payload["version"]["message"] = comment
+            version["message"] = comment
         if parent_id:
             payload["parentId"] = parent_id
         resp = self._request(

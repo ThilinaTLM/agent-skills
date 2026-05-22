@@ -74,9 +74,9 @@ repos:
         files: ^richdoc/richdoc-cli/src/.*\.py$
         pass_filenames: false
 
-      - id: cli-mypy
-        name: "richdoc-cli · mypy"
-        entry: bash -c 'cd richdoc/richdoc-cli && uv run mypy src'
+      - id: cli-ty
+        name: "richdoc-cli · ty check"
+        entry: bash -c 'cd richdoc/richdoc-cli && uv run ty check'
         language: system
         files: ^richdoc/richdoc-cli/src/.*\.py$
         pass_filenames: false

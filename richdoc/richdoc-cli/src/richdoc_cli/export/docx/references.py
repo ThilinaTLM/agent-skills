@@ -64,6 +64,5 @@ def _emit_references(state: _State, *, title: str) -> None:
 
 def _finalise(state: _State) -> None:
     # Auto-emit references if none of the rd-references markers placed them.
-    if state.refs_collected:
-        if not getattr(state, "_refs_emitted", False):
-            _emit_references(state, title="References")
+    if state.refs_collected and not state.refs_emitted:
+        _emit_references(state, title="References")
