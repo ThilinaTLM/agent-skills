@@ -150,6 +150,40 @@ _REL_HTML = re.compile(r"^([^:/?#][^?#]*?)\.html?(#[^?]*)?(\?.*)?$")
 # touching the filesystem. The actual directory does not need to exist;
 # resolve(strict=False) is the default since Python 3.6.
 _VIRTUAL_BOOK_ROOT = Path("/__richdoc_book__")
+_TABLE_TOTAL_WIDTH = 960.0
+_TABLE_MIN_COL_WIDTH = 120.0
+
+
+def _table_text_len(xmlish: str) -> int:
+    text = re.sub(r"<[^>]+>", " ", xmlish or "")
+    text = (
+        text.replace("&nbsp;", " ")
+        .replace("&#160;", " ")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", '"')
+    )
+    return len(" ".join(text.split()))
+
+
+def _auto_colgroup(rows: list[list[str]]) -> str:
+    col_count = max((len(r) for r in rows), default=0)
+    if col_count == 0:
+        return ""
+    scores: list[float] = []
+    for i in range(col_count):
+        max_len = max((_table_text_len(r[i]) for r in rows if i < len(r)), default=1)
+        scores.append(float(max(8, max_len)))
+    min_total = _TABLE_MIN_COL_WIDTH * col_count
+    if min_total >= _TABLE_TOTAL_WIDTH:
+        widths = [_TABLE_MIN_COL_WIDTH for _ in range(col_count)]
+    else:
+        remaining = _TABLE_TOTAL_WIDTH - min_total
+        score_total = sum(scores) or 1.0
+        widths = [_TABLE_MIN_COL_WIDTH + remaining * (s / score_total) for s in scores]
+    cols = "".join(f'<col style="width: {w:.1f}px;" />' for w in widths)
+    return f"<colgroup>{cols}</colgroup>"
 
 
 def _resolve_chapter_href(c: _Converter, href: str) -> str | None:  # noqa: SLF001
@@ -248,10 +282,17 @@ def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 
     Confluence ignores `<thead>` / `<tbody>` containers but does render
     `<th>` vs `<td>` correctly. We keep the structure shallow.
+
+    The `data-layout="default"` attribute opts the table into the
+    modern Confluence editor's chrome. We also emit a content-derived
+    `<colgroup>` because Confluence otherwise tends to render content
+    tables with equal-width columns regardless of cell length.
     """
     rows_xml: list[str] = []
+    width_rows: list[list[str]] = []
     for tr in el.iter("tr"):
         cells: list[str] = []
+        width_cells: list[str] = []
         for cell in tr:
             if not isinstance(cell.tag, str):
                 continue
@@ -262,6 +303,7 @@ def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
                 # so headers actually look like headers.
                 inner = c.render_inline(cell).strip()
                 cells.append(th_bold(inner))
+                width_cells.append(inner)
             elif t == "td":
                 inner = c.render_block_inner(cell).strip()
                 if not inner:
@@ -269,14 +311,19 @@ def _h_table(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
                     # pad with a non-breaking space for visual stability.
                     inner = "&#160;"
                 cells.append(f"<td>{inner}</td>")
+                width_cells.append(inner)
             else:
                 continue
         if not cells:
             continue
         rows_xml.append(f"<tr>{''.join(cells)}</tr>")
+        width_rows.append(width_cells)
     if not rows_xml:
         return
-    c.write_block(f"<table><tbody>{''.join(rows_xml)}</tbody></table>")
+    colgroup = _auto_colgroup(width_rows)
+    c.write_block(
+        f'<table data-layout="default">{colgroup}<tbody>{"".join(rows_xml)}</tbody></table>'
+    )
 
 
 # ---------------------------------------------------------------------------

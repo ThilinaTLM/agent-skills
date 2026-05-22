@@ -58,6 +58,17 @@
 
 ### Changed
 
+- **Confluence converter: content tables get content-derived column widths.**
+  `<table>`, `<rd-compare>`, `<rd-rubric>`, and non-sparkline
+  `<rd-chart>` now emit `<table data-layout="default">` plus a generated
+  `<colgroup>` whose widths follow visible text length. That gives short
+  label columns less space and prose columns more space, matching the
+  auto-fit feel of the existing `<rd-kv>` tables. The previous bare
+  `<table>` form forced equal-width columns regardless of cell size.
+  `<rd-kv>` and `<rd-api>` keep their explicit 200px / 760px colgroup —
+  that's still the right shape for spec blocks where the key column
+  should be narrow.
+
 - **`_h_rd_hero` (Confluence converter) splits eyebrow/lede/meta into
   separate paragraphs.** The previous renderer joined all three into
   a single `<p><em>eyebrow · lede · meta</em></p>` blob, which made

@@ -237,7 +237,7 @@ page opens cleanly in the new editor with **no "legacy content" warnings**.
 | `rd-figure` | inner image + `<p><em>caption</em></p>` |
 | `rd-kv` (inline) | modern `<table data-layout="default">` with explicit `<colgroup>` (200px key column) and `<th><p><strong>K</strong></p></th>` rows; value rendered as inline content in a single `<p>` inside `<td>` |
 | `rd-kv` (stacked) | same table shape but with block content (lists, paragraphs, code) rendered directly inside the value `<td>` |
-| `rd-compare`, `rd-rubric`, `rd-chart` (non-sparkline) | native `<table>` with a bold header row (`<th><p><strong>…</strong></p></th>`) |
+| `rd-compare`, `rd-rubric`, `rd-chart` (non-sparkline) | native `<table data-layout="default">` with a bold header row and a content-derived `<colgroup>` so prose columns get more width than short label columns |
 | `rd-api` | one modern `<table data-layout="default">` per endpoint, rd-kv-shaped (bold key column, 200px / 760px colgroup). Rows are emitted only when present: **Endpoint** (method as native Status macro + `<code>path</code>`; GET=Green, POST=Blue, PUT/PATCH=Yellow, DELETE=Red, HEAD/OPTIONS=Grey), **Description** (`title`), **Auth** (`auth`), **Path params** / **Query params** / **Headers** / **Body** (each as `<ul>` of params grouped by `in`), **Responses** (status as Green/Yellow/Red lozenge by HTTP class). |
 | `rd-stat` | modern **Panel** (`panel-type="note"`) with bold value + meta line — panels arranged in `rd-cols` look like dashboard tiles |
 | `rd-progress`, `rd-update` | `<p>` with bold value + meta |

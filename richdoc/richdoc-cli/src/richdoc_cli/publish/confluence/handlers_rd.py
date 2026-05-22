@@ -143,6 +143,54 @@ _HERO_META_NAV_SEG_RE = re.compile(
 )
 _HERO_META_SEPARATOR = " \u00b7 "
 
+# Confluence's default table content width is effectively around 960px.
+# Column widths are ratios more than absolute pixels (Confluence may scale
+# them to the available content area), so these values primarily prevent
+# equal-width columns when one column is short labels and another is prose.
+_TABLE_TOTAL_WIDTH = 960.0
+_TABLE_MIN_COL_WIDTH = 120.0
+
+
+def _table_text_len(xmlish: str) -> int:
+    """Approximate visible text length for content-derived table widths."""
+    text = re.sub(r"<[^>]+>", " ", xmlish or "")
+    text = (
+        text.replace("&nbsp;", " ")
+        .replace("&#160;", " ")
+        .replace("&amp;", "&")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&quot;", '"')
+    )
+    return len(" ".join(text.split()))
+
+
+def _auto_colgroup(rows: list[list[str]]) -> str:
+    """Build a Confluence `<colgroup>` whose ratios follow content length.
+
+    Bare `<table data-layout="default">` still tends to render equal-width
+    columns in Confluence Cloud. Supplying widths is the only reliable way
+    to get a narrow label column and a wide prose column; unlike rd-kv/rd-api
+    this helper derives those widths from cell content instead of hard-coding
+    a key/value split.
+    """
+    col_count = max((len(r) for r in rows), default=0)
+    if col_count == 0:
+        return ""
+    scores: list[float] = []
+    for i in range(col_count):
+        max_len = max((_table_text_len(r[i]) for r in rows if i < len(r)), default=1)
+        scores.append(float(max(8, max_len)))
+    min_total = _TABLE_MIN_COL_WIDTH * col_count
+    if min_total >= _TABLE_TOTAL_WIDTH:
+        widths = [_TABLE_MIN_COL_WIDTH for _ in range(col_count)]
+    else:
+        remaining = _TABLE_TOTAL_WIDTH - min_total
+        score_total = sum(scores) or 1.0
+        widths = [_TABLE_MIN_COL_WIDTH + remaining * (s / score_total) for s in scores]
+    cols = "".join(f'<col style="width: {w:.1f}px;" />' for w in widths)
+    return f"<colgroup>{cols}</colgroup>"
+
 
 def _normalize_chapter_href(href: str) -> str:
     s = (href or "").strip()
@@ -625,8 +673,9 @@ def _h_rd_compare(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         + "".join(th_bold(cell) for cell in header_cells)
         + "</tr></thead>"
     )
+    colgroup = _auto_colgroup([header_cells, *rows])
     c.write_block(
-        f"<table>{head_xml}<tbody>{''.join(body_rows)}</tbody></table>"
+        f'<table data-layout="default">{colgroup}{head_xml}<tbody>{"".join(body_rows)}</tbody></table>'
     )
 
 
@@ -679,8 +728,9 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         + "".join(f"<td><strong>{xml_escape(f'{t:g}')}</strong></td>" for t in totals)
         + "</tr>"
     )
+    colgroup = _auto_colgroup([options, *rows, ["Total", *[f"{t:g}" for t in totals]]])
     c.write_block(
-        f"<table>{head_xml}<tbody>{body_xml}{totals_xml}</tbody></table>"
+        f'<table data-layout="default">{colgroup}{head_xml}<tbody>{body_xml}{totals_xml}</tbody></table>'
     )
 
 
@@ -788,8 +838,9 @@ def _h_rd_chart(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
                 + "".join(f"<td>{xml_escape(v)}</td>" for v in padded)
                 + "</tr>"
             )
+        colgroup = _auto_colgroup([list(table.headers), *table.rows])
         c.write_block(
-            f"<table>{header_xml}<tbody>{''.join(body_rows)}</tbody></table>"
+            f'<table data-layout="default">{colgroup}{header_xml}<tbody>{"".join(body_rows)}</tbody></table>'
         )
     elif data_attr.strip():
         emit_code_macro(c, data_attr, lang="text", title=None)
