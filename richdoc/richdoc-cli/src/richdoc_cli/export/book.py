@@ -2,13 +2,18 @@
 
 A richdoc book is a set of HTML files linked via a shared `<rd-toc>` block
 whose `<rd-chapter>` children carry `href` attributes. Each chapter file
-contains the same TOC verbatim (see SKILL.md "Multi-file documentation").
+contains the same TOC verbatim (see references/multi-file-books.md).
 
 `discover_chapters(entry)` parses the entry file, walks its TOC tree, and
 returns a list of `ChapterFile` objects in TOC document order — entry first
 (if present in the TOC), then every other chapter resolved relative to the
 entry directory. Absolute hrefs are skipped. Missing files are reported via
 the `missing` field; the caller decides how to surface them.
+
+The helpers `find_book_toc`, `chapter_title`, `toc_signature`, and
+`linked_chapter_paths` are exposed for use by `richdoc lint` (and any
+future tooling) so the same definition of "a book" applies to the
+publisher, the linter, and the runtime.
 """
 
 from __future__ import annotations
@@ -20,6 +25,33 @@ from urllib.parse import urlparse
 
 import lxml.etree as ET
 import lxml.html as LH
+
+
+@dataclass(frozen=True)
+class TocSignatureEntry:
+    """One node in a normalised <rd-toc> signature, used to compare TOC
+    blocks across chapter files for equality.
+
+    `href` is the raw attribute value (or None for group headers), not a
+    resolved path — two TOCs with `./foo.html` vs `foo.html` are
+    intentionally different, mirroring the runtime contract ("the same
+    block lives in every file, verbatim").
+    """
+
+    href: str | None
+    title: str
+    children: tuple["TocSignatureEntry", ...]
+
+
+@dataclass(frozen=True)
+class TocSignature:
+    """Normalised representation of a chapter file's <rd-toc> block."""
+
+    title: str  # the rd-toc[title] attribute, whitespace-collapsed
+    entries: tuple[TocSignatureEntry, ...]
+
+    def is_empty(self) -> bool:
+        return not self.entries
 
 
 @dataclass(frozen=True)
@@ -51,7 +83,7 @@ def discover_chapters(entry: Path) -> BookDiscovery:
     parser = LH.HTMLParser(recover=True)
     root = LH.document_fromstring(source, parser=parser)
 
-    toc = _find_book_toc(root)
+    toc = find_book_toc(root)
     base_dir = entry.parent
 
     if toc is None:
@@ -74,7 +106,7 @@ def discover_chapters(entry: Path) -> BookDiscovery:
     for href, title in entries:
         if href is None:
             continue  # group header
-        if _is_external_href(href):
+        if is_external_href(href):
             continue
         target = (base_dir / href).resolve()
         if target in seen:
@@ -115,7 +147,7 @@ def discover_chapters(entry: Path) -> BookDiscovery:
 # ---------------------------------------------------------------------------
 
 
-def _find_book_toc(root: ET._Element) -> ET._Element | None:  # noqa: SLF001
+def find_book_toc(root: ET._Element) -> ET._Element | None:  # noqa: SLF001
     """Find an rd-toc element whose direct children contain at least one
     rd-chapter with an href. Returns None for single-file docs."""
     for toc in root.iter("rd-toc"):
@@ -139,7 +171,7 @@ def _walk_chapters(
             if child.tag.lower() != "rd-chapter":
                 continue
             href = child.get("href")
-            title = _chapter_title(child)
+            title = chapter_title(child)
             out.append((href, title))
             walk(child)
 
@@ -147,7 +179,7 @@ def _walk_chapters(
     return out
 
 
-def _chapter_title(node: ET._Element) -> str:  # noqa: SLF001
+def chapter_title(node: ET._Element) -> str:  # noqa: SLF001
     """Mirror the renderer/lint chapter-title extraction: text content of
     the element with nested <rd-chapter> sub-trees removed."""
     parts: list[str] = []
@@ -162,6 +194,59 @@ def _chapter_title(node: ET._Element) -> str:  # noqa: SLF001
         if child.tail:
             parts.append(child.tail)
     return " ".join("".join(parts).split()).strip()
+
+
+def toc_signature(toc: ET._Element) -> TocSignature:  # noqa: SLF001
+    """Reduce an <rd-toc> element to its comparable signature.
+
+    Two `<rd-toc>` blocks are considered identical iff their signatures
+    compare equal. Compare against the entry file's signature to detect
+    drift across chapter files (the `book-toc-drift` lint rule).
+    """
+
+    def walk(node: ET._Element) -> tuple[TocSignatureEntry, ...]:
+        out: list[TocSignatureEntry] = []
+        for child in node:
+            if not isinstance(child.tag, str):
+                continue
+            if child.tag.lower() != "rd-chapter":
+                continue
+            href = child.get("href")
+            href_norm = href.strip() if href is not None else None
+            out.append(
+                TocSignatureEntry(
+                    href=href_norm,
+                    title=chapter_title(child),
+                    children=walk(child),
+                )
+            )
+        return tuple(out)
+
+    title_attr = (toc.get("title") or "").strip()
+    title_norm = " ".join(title_attr.split())
+    return TocSignature(title=title_norm, entries=walk(toc))
+
+
+def linked_chapter_paths(
+    file_path: Path, sig: TocSignature
+) -> list[tuple[Path, str]]:
+    """Resolve every relative file-targeting `<rd-chapter href>` in `sig`
+    against `file_path.parent`. Returns `(resolved_path, raw_href)` tuples
+    in TOC document order. Skips external URLs, fragment-only hrefs, and
+    group headers (href is None).
+    """
+    base_dir = file_path.parent
+    out: list[tuple[Path, str]] = []
+
+    def walk(entries: tuple[TocSignatureEntry, ...]) -> None:
+        for entry in entries:
+            if entry.href is not None and not is_external_href(entry.href):
+                target = (base_dir / entry.href).resolve()
+                out.append((target, entry.href))
+            walk(entry.children)
+
+    walk(sig.entries)
+    return out
 
 
 def _doc_title(root: ET._Element) -> str | None:  # noqa: SLF001
@@ -181,7 +266,7 @@ def _doc_title(root: ET._Element) -> str | None:  # noqa: SLF001
     return None
 
 
-def _is_external_href(href: str) -> bool:
+def is_external_href(href: str) -> bool:
     s = (href or "").strip()
     if not s:
         return True

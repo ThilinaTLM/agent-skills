@@ -22,9 +22,17 @@ richdoc publish confluence spaces
 # 3. Browse pages in $CONFLUENCE_SPACE_KEY to pick a parent.
 richdoc publish confluence pages -q "Docs root"
 
-# 4. Push the doc.
+# 4. Push the doc — a single file or a whole book.
 richdoc publish confluence push docs/data-design.html --parent-id 1234567
+richdoc publish confluence push docs/                 --parent-id 1234567
 ```
+
+`push` accepts a `.html` file *or* a directory. For a directory, the entry
+chapter resolves to `<dir>/index.html`; missing `index.html` fails fast with
+`INVALID_PARAMS` (book mode has no convention for picking a non-index entry
+from a directory). Before any network call `push` runs `richdoc lint`
+against the input and refuses to publish if there are errors. Warnings
+do not block. Use `--no-lint` only to intentionally bypass the preflight.
 
 Re-running the same `push` updates the existing pages in place (matched by
 `(space, parent, title)`), re-uploads any changed attachments under the
@@ -95,8 +103,13 @@ Useful for confirming an `--parent-id` value before pushing.
 richdoc publish confluence push INPUT [OPTIONS]
 ```
 
-Publish a richdoc HTML file (single document or whole book) into
-`$CONFLUENCE_SPACE_KEY`.
+Publish a richdoc HTML file or a whole book directory into
+`$CONFLUENCE_SPACE_KEY`. `INPUT` may be either:
+
+- a `.html` file — published as a single page or as a book if the file's
+  `<rd-toc>` lists at least one other chapter on disk;
+- a directory — the entry chapter is `<dir>/index.html` (missing
+  `index.html` is a hard error).
 
 ```
 --parent-id ID                Parent page id; new pages land under it.
@@ -106,6 +119,10 @@ Publish a richdoc HTML file (single document or whole book) into
                               titles come from the rd-toc chapter labels).
 --title-prefix TEXT           Prepended to every page title (e.g. "[richdoc] ").
 --no-book                     Single-file mode — ignore rd-toc.
+--no-lint                     Skip the pre-publish `richdoc lint` pass.
+                              Use only when intentionally debugging a
+                              publish; otherwise lint must pass before
+                              any page is pushed.
 --dry-run                     Walk every chapter, return the storage XML +
                               attachment plan inside the JSON envelope,
                               don't touch any write endpoint.
@@ -120,6 +137,14 @@ Publish a richdoc HTML file (single document or whole book) into
 --comment TEXT                Version comment on each updated page.
                               Default: "Updated via richdoc CLI".
 ```
+
+`push` runs `richdoc lint` against `INPUT` before any create / update /
+upload call. Errors block the publish (envelope `code: LINT_ERRORS` with
+the per-file `issues[]` lists under `lint.files[]`); warnings do not.
+In book mode, the two rules most likely to fire are `book-toc-drift`
+(inter-file `<rd-toc>` mismatch — no autofix; reconcile manually) and
+`hero-nav-redundant` (legacy `<a>` nav in `<rd-hero>` — fix with
+`richdoc lint --fix <input>`). See `references/multi-file-books.md`.
 
 The success envelope is:
 
@@ -150,7 +175,12 @@ The success envelope is:
 
 ## Book hierarchy
 
-For a book (entry file linked via `<rd-toc>`):
+A book is detected when the entry file's `<rd-toc>` has at least one
+`<rd-chapter href>` resolving to a sibling file on disk. The entry's
+`<rd-toc>` is the canonical chapter tree; every chapter file must carry
+a matching `<rd-toc>` block (enforced by lint via `book-toc-drift`).
+Without that signal the publisher falls back to single-file mode, even
+if the input is a directory.
 
 Any `<a href="./other.html">`-style reference inside a chapter body is
 rewritten to the resolved Confluence URL regardless of `./` or `../`
@@ -167,6 +197,13 @@ last chapters get only the side they have a neighbour for; the empty
 side renders a placeholder so the two-column layout stays balanced.
 Single-file mode emits no nav.
 
+In book mode the publisher also **drops legacy nav children of
+`<rd-hero>`** (`<a>` whose href matches a book chapter, or whose text
+matches the prev/next/up/index pattern) and scrubs `Prev:/Next:/Up:`
+segments out of the hero's `meta` attribute. Both the lint rule
+`hero-nav-redundant` and the renderer guard exist so older docs render
+cleanly without re-authoring — dropped children show up as `rd-hero/a`
+entries in the publish envelope's `dropped[]` list.
 
 - The **entry chapter** is published under `--parent-id` (or the space root).
 - Every other chapter nests under either:
@@ -186,7 +223,7 @@ page opens cleanly in the new editor with **no "legacy content" warnings**.
 | Component | Confluence rendering |
 |---|---|
 | `rd-page` | unwrapped; children rendered as page-body peers |
-| `rd-hero` | `<h1>` + meta paragraph (eyebrow · lede · meta) + peer-level body children |
+| `rd-hero` | Four separate blocks: `<p><strong>eyebrow</strong></p>` + `<h1>title</h1>` + `<p><em>lede</em></p>` + `<p><em>meta</em></p>` + peer-level body children. In book mode the `meta` is scrubbed of `Prev:/Next:/Up:` segments and any `<a>` body children matching a book chapter (or the legacy nav text pattern) are dropped — the auto-injected prev/next bands cover that navigation. |
 | `rd-section` | `<h2>` + peer-level body children (so nested `rd-cols` can emit page-level layout sections) |
 | `rd-card` | modern **Panel** (`<ac:adf-node type="panel">`); accent maps to `panel-type` (`default → note`, `info → info`, `success → success`, `warn → warning`, `danger → error`); title becomes a bold first paragraph inside the panel |
 | `rd-cols` | native **layout sections** (`<ac:layout-section ac:type="two_equal\|three_equal">`) at the page-body top level. `n=4 → 2+2`, `n=5 → 3+2`, larger n chunked by 3. Nested inside a panel / expand / detail the columns linearise (layout sections can't nest inside macros). |
@@ -265,6 +302,7 @@ Useful for previewing macro layout before pushing into a sensitive space.
 | `AUTH_ERROR` | Bad credentials, or a present env var value is malformed (e.g. site URL). |
 | `PERMISSION_DENIED` | Token is valid but lacks write access to the space. |
 | `NOT_FOUND` | Space key, parent id, or `--parent-title` doesn't exist. |
+| `LINT_ERRORS` | The pre-publish `richdoc lint` pass found errors and the push refused to proceed. The envelope carries the per-file `issues[]` lists under `lint.files[]`. Fix the lint errors or pass `--no-lint` to bypass. |
 | `VERSION_CONFLICT` | Someone else updated the page during the publish; retried once, then surfaced. |
 | `ATTACHMENT_TOO_LARGE` | Confluence's per-attachment size limit (~100 MB default). Disable diagrams or reduce image size. |
 | `AMBIGUOUS_MATCH` | `--parent-title` matched more than one page; use `--parent-id` instead. |

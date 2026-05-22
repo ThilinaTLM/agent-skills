@@ -4,6 +4,99 @@
 
 ### Added
 
+- **`book-toc-drift` lint rule.** When a file's `<rd-toc>` lists other
+  chapters on disk, each linked file must carry a matching `<rd-toc>`
+  block. Mismatched, missing, added, or reordered chapters surface as
+  an error with a structured per-entry `diff[]` (each item gives an
+  index path through the chapter tree plus a short detail). Hrefs are
+  compared by resolved filesystem target, so `./other.html` from the
+  book root and `../other.html` from a subdirectory are equivalent.
+  Drift is **not autofixed** — the agent reconciles the canonical
+  block manually.
+
+- **`hero-nav-redundant` lint rule + `--fix` autofix.** When book mode
+  is active and `<rd-hero>` contains hand-written prev/next links, the
+  rule fires once per offending element. The detection is:
+
+  - Any `<a>` child whose `href` resolves to another book chapter, or
+    whose text matches `prev|previous|next|up|home|index|←|↑|→|↓`.
+  - Any `Prev:/Previous:/Next:/Up:` segment in the hero's `meta`
+    attribute.
+
+  `richdoc lint --fix` strips the matched children and segments in
+  place, recording each fix in the envelope's `fixed[]` array. The
+  Digital Pod feedback case (11 chapters, 38 redundant nav items)
+  fixes in one command.
+
+- **`richdoc lint <dir>`.** The `lint` command now accepts a directory;
+  every `*.html` file inside is linted and the results aggregated into
+  a `files[]` array with the same per-file shape as the single-file
+  envelope. Per-file `errors[]` / `warnings[]` are summed at the top
+  level. Used by the publisher's pre-publish lint and by
+  `richdoc lint --fix <dir>` for batch cleanup.
+
+- **Pre-publish lint in `richdoc publish confluence push`.** `push`
+  now runs `richdoc lint` against the input (file or directory) before
+  any create / update / upload call. Errors block with the new
+  `LINT_ERRORS` envelope code; warnings do not. Pass `--no-lint` to
+  bypass when intentionally debugging a publish.
+
+- **`richdoc publish confluence push` accepts a directory.** Resolves
+  the entry chapter as `<dir>/index.html`. Missing `index.html` fails
+  fast with `INVALID_PARAMS` — book mode has no syntactic difference
+  between an entry chapter and any other chapter, so the CLI refuses
+  to guess. The complete migration of a flat doc set to a published
+  book is now:
+
+  ```bash
+  richdoc lint docs/ --fix              # strip legacy hero nav
+  richdoc publish confluence push docs/ # auto-lint, then publish
+  ```
+
+- **`references/migrating-to-book-mode.md`.** Five-step walkthrough
+  for converting an existing flat HTML doc set into a richdoc book.
+
+### Changed
+
+- **`_h_rd_hero` (Confluence converter) splits eyebrow/lede/meta into
+  separate paragraphs.** The previous renderer joined all three into
+  a single `<p><em>eyebrow · lede · meta</em></p>` blob, which made
+  long lede + meta combinations unreadable. The new output is four
+  blocks: `<p><strong>eyebrow</strong></p>` + `<h1>title</h1>` +
+  `<p><em>lede</em></p>` + `<p><em>meta</em></p>`, mirroring the
+  HTML view's hero structure.
+
+- **Renderer guards drop legacy `<rd-hero>` nav in book mode.** Both
+  `hero.ts` (HTML view) and the Confluence converter silently filter
+  `<a>` children whose href resolves to a book chapter, or whose text
+  matches the legacy nav pattern. The Confluence converter also
+  scrubs `Prev:/Next:/Up:` segments out of the hero's `meta` attribute
+  and records dropped children as `rd-hero/a` entries in the publish
+  envelope's `dropped[]`. The lint rule `hero-nav-redundant` catches
+  the same patterns at authoring time; the renderer guards exist so
+  pre-existing docs render cleanly without re-authoring.
+
+- **`export/book.py` exports book-mode helpers.** `find_book_toc`,
+  `chapter_title`, `toc_signature`, `linked_chapter_paths`, and
+  `is_external_href` were promoted from private to public so lint and
+  any future tooling share one definition of "a book." `TocSignature`
+  / `TocSignatureEntry` dataclasses are new — immutable, equality-
+  comparable normalisations of an `<rd-toc>` tree.
+
+### Documentation
+
+- **`SKILL.md`** — updated the `lint` and `publish confluence` rows in
+  the CLI table; expanded the Books section to mention the new lint
+  rules and the auto-lint preflight on push.
+- **`references/multi-file-books.md`** — new "How book discovery
+  works" section walks through the runtime + lint + publish contract.
+  Authoring rules updated for the two new lint rules. Cross-link to
+  the migration guide.
+- **`references/publish.md`** — documents the directory form of
+  `push`, the pre-publish lint pass, the new `--no-lint` flag, the
+  `LINT_ERRORS` error code, the new hero rendering, and the book-mode
+  hero-nav drop behaviour (visible as `rd-hero/a` in `dropped[]`).
+
 - **Prev/next chapter nav at the bottom of every book chapter** in
   `richdoc publish confluence`. Each chapter body now ends with a
   single-row `two_equal` layout-section: `← <prev>` + a yellow

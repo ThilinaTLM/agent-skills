@@ -128,24 +128,104 @@ def _h_rd_page(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.render_children(el)
 
 
+# Hero-children that duplicate the auto-injected prev/next bands in book
+# mode. Matched on anchor text (legacy glyph + word pattern) or on href
+# resolution against the book's chapter tree.
+_HERO_NAV_TEXT_RE = re.compile(
+    r"^\s*(?:[\u2190\u2191\u2192\u2193]|prev(?:ious)?|next|up|home|index)\b",
+    re.IGNORECASE,
+)
+
+# Segments inside <rd-hero meta="…"> that duplicate the prev/next bands.
+_HERO_META_NAV_SEG_RE = re.compile(
+    r"^\s*(prev(?:ious)?|next|up)\s*:",
+    re.IGNORECASE,
+)
+_HERO_META_SEPARATOR = " \u00b7 "
+
+
+def _normalize_chapter_href(href: str) -> str:
+    s = (href or "").strip()
+    if s.startswith("./"):
+        s = s[2:]
+    return s
+
+
+def _book_chapter_hrefs(c: _Converter) -> set[str]:  # noqa: SLF001
+    """All chapter hrefs in the book (normalised), as a fast lookup set.
+
+    Returns an empty set in single-file mode (no `toc_entries`).
+    """
+    out: set[str] = set()
+    if not c.toc_entries:
+        return out
+
+    def walk(entries) -> None:
+        for entry in entries:
+            if entry.href:
+                out.add(_normalize_chapter_href(entry.href))
+            walk(entry.children)
+
+    walk(c.toc_entries)
+    return out
+
+
+def _scrub_hero_meta(meta: str) -> str:
+    """Drop `Prev:/Next:/Up:` segments from a hero meta string. Joins
+    surviving segments with ` · ` (the richdoc convention).
+    """
+    if not meta:
+        return meta
+    segments = [s.strip() for s in meta.split(_HERO_META_SEPARATOR.strip())]
+    kept = [s for s in segments if s and not _HERO_META_NAV_SEG_RE.match(s)]
+    return _HERO_META_SEPARATOR.join(kept).strip()
+
+
 def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    """rd-hero → <h1> + meta paragraphs. Body children are rendered as
-    peer-level chunks so any rd-cols inside the hero can bubble up to
-    the page-body top level (where Confluence requires layout-sections
-    to live).
+    """rd-hero → eyebrow paragraph + <h1> + lede + meta, each in its own
+    block. Body children are rendered as peer-level chunks so any
+    rd-cols inside the hero can bubble up to the page-body top level.
+
+    In book mode (the converter has a populated `toc_entries`), any
+    `<a>` children that match the legacy prev/next-nav pattern are
+    dropped (recorded as `rd-hero/a` in `dropped[]`) and the meta
+    attribute is scrubbed of `Prev:/Next:/Up:` segments — the auto-
+    injected prev/next bands at the top and bottom of every chapter
+    already provide that navigation. Single-file mode leaves children
+    and meta untouched.
     """
     title = (el.get("title") or "").strip()
     eyebrow = (el.get("eyebrow") or "").strip()
     lede = (el.get("lede") or "").strip()
     meta = (el.get("meta") or "").strip()
+
+    is_book = bool(c.toc_entries)
+    book_hrefs = _book_chapter_hrefs(c) if is_book else set()
+    if is_book:
+        meta = _scrub_hero_meta(meta)
+
+    if eyebrow:
+        c.write_block(f"<p><strong>{xml_escape(eyebrow)}</strong></p>")
     if title:
         c.write_block(f"<h1>{xml_escape(title)}</h1>")
-    bits = [b for b in (eyebrow, lede, meta) if b]
-    if bits:
-        c.write_block(
-            "<p><em>" + xml_escape(" · ".join(bits)) + "</em></p>"
-        )
-    c.render_children(el)
+    if lede:
+        c.write_block(f"<p><em>{xml_escape(lede)}</em></p>")
+    if meta:
+        c.write_block(f"<p><em>{xml_escape(meta)}</em></p>")
+
+    # Render children, dropping legacy nav anchors in book mode.
+    for child in el:
+        if not isinstance(child.tag, str):
+            continue
+        if is_book and child.tag.lower() == "a":
+            href = (child.get("href") or "").strip()
+            text = " ".join("".join(child.itertext()).split())
+            href_matches = bool(href) and _normalize_chapter_href(href) in book_hrefs
+            text_matches = bool(text) and _HERO_NAV_TEXT_RE.search(text) is not None
+            if href_matches or text_matches:
+                c.dropped.append("rd-hero/a")
+                continue
+        c.render(child)
 
 
 def _h_rd_section(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001

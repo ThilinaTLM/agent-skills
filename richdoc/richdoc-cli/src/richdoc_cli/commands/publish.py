@@ -23,6 +23,7 @@ from pathlib import Path
 
 import click
 
+from ..commands.lint import lint_path
 from ..output import json_error, json_ok
 from ..publish.confluence import (
     Config,
@@ -34,6 +35,7 @@ from ..publish.confluence import (
     resolve_config,
 )
 from ..publish.confluence.config import AUTH_VARS, PUBLISH_VARS
+from ..schema import SchemaLoadError
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +229,7 @@ def cmd_page_by_id(page_id: str) -> None:
 @click.argument(
     "input_",
     metavar="INPUT",
-    type=click.Path(dir_okay=False, exists=True, path_type=Path),
+    type=click.Path(exists=True, file_okay=True, dir_okay=True, path_type=Path),
 )
 @click.option(
     "--parent-id", "parent_id", type=str, default=None,
@@ -281,6 +283,12 @@ def cmd_page_by_id(page_id: str) -> None:
     default="Updated via richdoc CLI", show_default=True,
     help="Version comment recorded on each updated page.",
 )
+@click.option(
+    "--no-lint", "no_lint", is_flag=True,
+    help="Skip the pre-publish `richdoc lint` pass. Use only when "
+    "intentionally debugging a publish; otherwise lint must pass before "
+    "any page is pushed.",
+)
 def cmd_push(
     input_: Path,
     parent_id: str | None,
@@ -295,14 +303,62 @@ def cmd_push(
     diagram_endpoint: str,
     include_remote_images: bool,
     update_comment: str,
+    no_lint: bool,
 ) -> None:
-    """Publish a richdoc HTML document (single file or whole book) to Confluence."""
+    """Publish a richdoc HTML document (single file or whole book) to Confluence.
+
+    INPUT may be a `.html` file or a directory. For a directory, the
+    entry chapter resolves to `<dir>/index.html`; missing `index.html`
+    is a fail-fast error — there is no syntactic difference between a
+    book entry and any other chapter, so we don't guess.
+
+    By default `push` runs `richdoc lint` against INPUT before any
+    network call and refuses to publish if there are any errors. Pass
+    `--no-lint` to skip the preflight.
+    """
     in_path = input_.resolve()
-    if in_path.suffix.lower() not in (".html", ".htm"):
-        json_error(
-            f"Input must be a .html file (got '{in_path}').",
-            code="INVALID_PARAMS",
-        )
+
+    # Resolve the entry file from a directory input, or validate a
+    # direct file input.
+    lint_target: Path
+    entry_path: Path
+    if in_path.is_dir():
+        candidate = in_path / "index.html"
+        if not candidate.exists():
+            json_error(
+                f"No index.html in '{in_path}'. Pass the entry .html file "
+                "explicitly (book mode has no convention for picking a "
+                "non-index entry from a directory).",
+                code="INVALID_PARAMS",
+            )
+        lint_target = in_path
+        entry_path = candidate
+    else:
+        if in_path.suffix.lower() not in (".html", ".htm"):
+            json_error(
+                f"Input must be a .html file or a directory (got '{in_path}').",
+                code="INVALID_PARAMS",
+            )
+        lint_target = in_path
+        entry_path = in_path
+
+    # Pre-publish lint. Errors block; warnings do not.
+    if not no_lint:
+        try:
+            lint_result = lint_path(lint_target, fix=False)
+        except SchemaLoadError as exc:
+            json_error(str(exc), code="INPUT_ERROR")
+        except OSError as exc:
+            json_error(f"Could not read input for lint: {exc}", code="INPUT_ERROR")
+        if lint_result["errors"] > 0:
+            json_error(
+                f"Refusing to publish: {lint_result['errors']} lint "
+                f"error(s) in {lint_target}. Fix and retry, or pass "
+                "--no-lint to bypass.",
+                code="LINT_ERRORS",
+                hint="Run `richdoc lint --fix <input>` for autofixable rules.",
+                lint=lint_result,
+            )
 
     config = _load_config(PUBLISH_VARS)
     client = _make_client(config)
@@ -338,7 +394,7 @@ def cmd_push(
             _handle_confluence_error(exc)
 
     plan = PublishPlan(
-        input_path=in_path,
+        input_path=entry_path,
         space_key=space_key,
         parent_id=parent_id,
         title_override=title_override,
@@ -362,6 +418,7 @@ def cmd_push(
 
     payload: dict = {
         "input": str(in_path),
+        "entry": str(entry_path),
         "site": result.site,
         "space": {
             "id": result.space_id,

@@ -69,9 +69,7 @@ async function encodeForKroki(source: string): Promise<string | null> {
 	const CS = (globalThis as { CompressionStream?: typeof CompressionStream }).CompressionStream;
 	if (!CS) return null;
 	const enc = new TextEncoder().encode(source);
-	const stream = new Response(
-		new Blob([enc as BlobPart]).stream().pipeThrough(new CS("deflate")),
-	);
+	const stream = new Response(new Blob([enc as BlobPart]).stream().pipeThrough(new CS("deflate")));
 	const buf = new Uint8Array(await stream.arrayBuffer());
 	// Standard base64 → URL-safe (RFC 4648 §5). Padding is preserved
 	// because Kroki accepts both padded and unpadded variants and some
