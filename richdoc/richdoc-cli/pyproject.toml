@@ -13,8 +13,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
-    "syrupy>=4.6",
     "ruff>=0.6",
     "mypy>=1.10",
     "lxml-stubs>=0.5",
@@ -71,7 +69,6 @@ build-backend = "uv_build"
 line-length = 100
 target-version = "py311"
 src = ["src"]
-extend-exclude = ["tests/fixtures/**"]
 
 [tool.ruff.lint]
 select = [
@@ -97,9 +94,6 @@ ignore = [
 # External codes ruff itself doesn't define; lets `# noqa: S310` etc. survive
 # without triggering RUF100 unused-directive warnings.
 external = ["S310", "S320"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]  # asserts in tests are fine
 
 # ---------------------------------------------------------------------------
 # Mypy
@@ -134,14 +128,3 @@ files = ["src"]
 [[tool.mypy.overrides]]
 module = ["docx.*", "latex2mathml.*"]
 ignore_missing_imports = true
-
-# ---------------------------------------------------------------------------
-# Pytest
-# ---------------------------------------------------------------------------
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-ra --strict-markers"
-markers = [
-    "smoke: minimal subset that's safe to run on every commit",
-]

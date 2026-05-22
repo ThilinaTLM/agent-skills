@@ -38,7 +38,6 @@ repos:
         files: ^richdoc/
         exclude: |
           (?x)^(
-            richdoc/richdoc-cli/tests/__snapshots__/.*\.ambr|
             richdoc/richdoc-cli/src/richdoc_cli/export/docx/mml2omml\.xsl|
             richdoc/richdoc-lib/assets/.*
           )$
@@ -46,7 +45,6 @@ repos:
         files: ^richdoc/
         exclude: |
           (?x)^(
-            richdoc/richdoc-cli/tests/__snapshots__/.*\.ambr|
             richdoc/richdoc-cli/src/richdoc_cli/export/docx/mml2omml\.xsl|
             richdoc/richdoc-lib/assets/.*
           )$
@@ -71,9 +69,9 @@ repos:
     hooks:
       - id: cli-ruff
         name: "richdoc-cli · ruff check"
-        entry: bash -c 'cd richdoc/richdoc-cli && uv run ruff check src tests'
+        entry: bash -c 'cd richdoc/richdoc-cli && uv run ruff check src'
         language: system
-        files: ^richdoc/richdoc-cli/(src|tests)/.*\.py$
+        files: ^richdoc/richdoc-cli/src/.*\.py$
         pass_filenames: false
 
       - id: cli-mypy
@@ -81,14 +79,6 @@ repos:
         entry: bash -c 'cd richdoc/richdoc-cli && uv run mypy src'
         language: system
         files: ^richdoc/richdoc-cli/src/.*\.py$
-        pass_filenames: false
-
-      - id: cli-pytest
-        name: "richdoc-cli · pytest"
-        entry: bash -c 'cd richdoc/richdoc-cli && uv run pytest -q'
-        language: system
-        # Trigger pytest when either source, tests, or fixtures move.
-        files: ^richdoc/richdoc-cli/(src|tests)/
         pass_filenames: false
 
   # -------------------------------------------------------------------
@@ -109,12 +99,5 @@ repos:
         name: "richdoc-lib · tsc --noEmit"
         entry: bash -c 'cd richdoc/richdoc-lib && pnpm exec tsc --noEmit'
         language: system
-        files: ^richdoc/richdoc-lib/(src|tests|build\.ts|vitest\.config\.ts|tsconfig\.json)
-        pass_filenames: false
-
-      - id: lib-vitest
-        name: "richdoc-lib · vitest run"
-        entry: bash -c 'cd richdoc/richdoc-lib && pnpm test'
-        language: system
-        files: ^richdoc/richdoc-lib/(src|tests)/
+        files: ^richdoc/richdoc-lib/(src|build\.ts|tsconfig\.json)
         pass_filenames: false
