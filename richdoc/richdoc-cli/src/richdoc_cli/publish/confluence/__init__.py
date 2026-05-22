@@ -1,6 +1,6 @@
 """Confluence Cloud publishing pipeline.
 
-Public surface used by the CLI command layer (`commands/publish.py`):
+Public surface used by the Confluence CLI command group:
 
 - `Config`, `ConfigError`, `resolve_config`  — env-var configuration (config.py)
 - `ConfluenceClient`, `ConfluenceError`      — REST client (client.py)

@@ -1,20 +1,19 @@
-"""Click subcommands for `richdoc publish confluence …`.
+"""Click subcommands for `richdoc confluence …`.
 
 Lives next to the rest of the Confluence integration so changes to the
-publisher don't have to round-trip through `commands/publish.py`. The
-top-level `richdoc publish` group in `commands/publish.py` mounts
-`confluence_group` from this module.
+publisher don't have to round-trip through the generic command modules.
+The top-level CLI mounts `confluence_group` directly.
 
 Subcommands:
 
-    richdoc publish confluence spaces      [--query …]
-    richdoc publish confluence pages       [--query …] [--parent-id …]
-    richdoc publish confluence page-by-id  PAGE_ID
-    richdoc publish confluence push        INPUT [--parent-id …]
+    richdoc confluence spaces      [--query …]
+    richdoc confluence pages       [--query …] [--parent-id …]
+    richdoc confluence page-by-id  PAGE_ID
+    richdoc confluence publish     INPUT [--parent-id …]
 
 Credentials come from four environment variables: `CONFLUENCE_SITE`,
 `CONFLUENCE_EMAIL`, `CONFLUENCE_TOKEN`, and `CONFLUENCE_SPACE_KEY`
-(`SPACE_KEY` is required for `pages` and `push` only). Missing vars
+(`SPACE_KEY` is required for `pages` and `publish` only). Missing vars
 exit with `code: CONFIG_MISSING` so the calling agent can prompt the
 user to export them.
 """
@@ -49,7 +48,7 @@ from .config import AUTH_VARS, PUBLISH_VARS
 
 @click.group(
     "confluence",
-    help="Publish to Confluence Cloud via the REST API.",
+    help="Work with Confluence Cloud spaces/pages and publish richdocs via REST.",
 )
 def confluence_group() -> None:
     pass
@@ -207,11 +206,11 @@ def cmd_page_by_id(page_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# push
+# publish
 # ---------------------------------------------------------------------------
 
 
-@confluence_group.command("push")
+@confluence_group.command("publish")
 @click.argument(
     "input_",
     metavar="INPUT",
@@ -239,7 +238,7 @@ def cmd_page_by_id(page_id: str) -> None:
 )
 @click.option(
     "--no-book", "no_book", is_flag=True,
-    help="Disable book auto-detection — push only the entry file.",
+    help="Disable book auto-detection — publish only the entry file.",
 )
 @click.option(
     "--dry-run", "dry_run", is_flag=True,
@@ -273,10 +272,10 @@ def cmd_page_by_id(page_id: str) -> None:
     "--no-lint", "no_lint", is_flag=True,
     help="Skip the pre-publish `richdoc lint` pass. Use only when "
     "intentionally debugging a publish; otherwise lint must pass before "
-    "any page is pushed.",
+    "any page is published.",
 )
 @safe_command
-def cmd_push(
+def cmd_publish(
     input_: Path,
     parent_id: str | None,
     parent_title: str | None,
@@ -299,7 +298,7 @@ def cmd_push(
     is a fail-fast error — there is no syntactic difference between a
     book entry and any other chapter, so we don't guess.
 
-    By default `push` runs `richdoc lint` against INPUT before any
+    By default `publish` runs `richdoc lint` against INPUT before any
     network call and refuses to publish if there are any errors. Pass
     `--no-lint` to skip the preflight.
     """

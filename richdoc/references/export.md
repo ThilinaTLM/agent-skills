@@ -5,7 +5,7 @@ The richdoc CLI ships two export formats:
 - **`md`** — GitHub-flavoured Markdown.
 - **`docx`** — Word document for editing in Word / LibreOffice.
 
-There is no `html` export target: richdoc files are already HTML. Open the source `.html` directly in a browser, or use `richdoc publish confluence push` for Confluence (see the Confluence section below). Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these.
+There is no `html` export target: richdoc files are already HTML. Open the source `.html` directly in a browser, or use `richdoc confluence publish` for Confluence (see the Confluence section below). Anything else (PDF, EPUB, etc.) is out of scope — generate from one of these.
 
 The `md` / `docx` subcommands share a `--single` / `--multi` flag pair so the output shape is explicit:
 
@@ -72,11 +72,11 @@ On failure, `{"ok": false, "code": "...", "message": "..."}`.
 
 ## Confluence
 
-There is no longer an `export` subcommand for Confluence. To push a richdoc into Confluence Cloud, use the REST-API publisher — see [references/publish.md](publish.md):
+There is no longer an `export` subcommand for Confluence. To publish a richdoc into Confluence Cloud, use the REST-API publisher — see [references/publish.md](publish.md):
 
 ```bash
 export CONFLUENCE_SPACE_KEY=DEV
-richdoc publish confluence push doc.html --parent-id 12345
+richdoc confluence publish doc.html --parent-id 12345
 ```
 
 It creates / updates pages in an existing space, preserves the book hierarchy in the native page tree, and renders `rd-code` / `rd-callout` / `rd-detail` as native Confluence macros (real syntax highlighting, real collapsibles) instead of the dead-end zip importer's plain-text-or-PNG fallback.

@@ -36,7 +36,7 @@ Path: `./richdoc-cli/richdoc` (relative to this SKILL.md). Requires [`uv`](https
 | `richdoc lint <file-or-dir> [--fix]` | Validate against the rd-* schema and book-mode authoring rules. `--fix` autofixes `hero-nav-redundant`. |
 | `richdoc components [--tag <name>]` | Print the vocabulary from the live schema. |
 | `richdoc export md\|docx <file>` | Export to markdown or DOCX. (HTML is the source format — no export needed.) See [references/export.md](references/export.md). |
-| `richdoc publish confluence <subcommand>` | Publish to Confluence Cloud via REST. Subcommands: `spaces`, `pages`, `page-by-id`, `push` (accepts a file or a directory; runs `richdoc lint` before pushing). See [references/publish.md](references/publish.md). |
+| `richdoc confluence <subcommand>` | Work with Confluence Cloud via REST. Subcommands: `spaces`, `pages`, `page-by-id`, `publish` (accepts a file or a directory; runs `richdoc lint` before publishing). See [references/publish.md](references/publish.md). |
 
 Templates: `plan`, `research`, `comparison`, `onepager`, `adr`, `runbook`, `book-index`, `book-chapter`.
 
@@ -188,7 +188,7 @@ For `lang="plantuml"` / `lang="c4plantuml"`, the `theme` attribute can name any 
 
 For handbooks, runbook sets, or reference manuals that don't fit in one file: put an `<rd-toc>` with `<rd-chapter>` children in every page. The same block lives in every file; `<rd-toc>` handles active-chapter detection, prev/next nav, and the sidebar at runtime. No build step, no cross-file fetch.
 
-`richdoc lint` enforces the contract: every chapter listed in the book must carry a matching `<rd-toc>` block (rule `book-toc-drift`, no autofix), and `<rd-hero>` must not contain hand-written prev/next `<a>` links or `Prev:/Next:/Up:` segments in `meta` (rule `hero-nav-redundant`, autofixable with `richdoc lint --fix`). `richdoc publish confluence push` runs lint before any network call and refuses to publish if there are errors.
+`richdoc lint` enforces the contract: every chapter listed in the book must carry a matching `<rd-toc>` block (rule `book-toc-drift`, no autofix), and `<rd-hero>` must not contain hand-written prev/next `<a>` links or `Prev:/Next:/Up:` segments in `meta` (rule `hero-nav-redundant`, autofixable with `richdoc lint --fix`). `richdoc confluence publish` runs lint before any network call and refuses to publish if there are errors.
 
 See [references/multi-file-books.md](references/multi-file-books.md), [references/migrating-to-book-mode.md](references/migrating-to-book-mode.md), and `examples/book/`.
 

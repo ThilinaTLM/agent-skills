@@ -117,12 +117,12 @@ makes no changes.
 
 ```bash
 richdoc lint docs/                           # expect zero errors
-richdoc publish confluence push docs/ \
+richdoc confluence publish docs/ \
     --parent-id 65934 \
     --title-prefix "[Handbook] "
 ```
 
-`push` accepts the directory directly. It runs `richdoc lint` before
+`publish` accepts the directory directly. It runs `richdoc lint` before
 any network call and refuses to publish on lint errors, so the explicit
 lint step in the line above is redundant once you trust the workflow.
 
@@ -148,7 +148,7 @@ Once a book is set up:
   shared `<rd-toc>` block (or, with discipline, an edit to the entry's
   block followed by a paste into every other chapter — lint will tell
   you when you've missed one).
-- `richdoc publish confluence push docs/` is the only command needed
+- `richdoc confluence publish docs/` is the only command needed
   for the full book; chapter pages nest correctly under the entry,
   cross-file links rewrite to Confluence URLs, prev/next bands are
   injected at the top and bottom of every page.

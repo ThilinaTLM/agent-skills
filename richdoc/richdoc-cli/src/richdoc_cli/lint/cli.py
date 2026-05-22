@@ -2,7 +2,7 @@
 
 The heavy lifting lives in ``runner.lint_path``; this module exists so
 the click wiring isn't entangled with the rule-application code (which
-is also imported in-process by ``publish confluence push``'s
+is also imported in-process by ``confluence publish``'s
 pre-publish lint pass).
 """
 
