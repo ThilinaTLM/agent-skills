@@ -66,18 +66,13 @@ Install dev tooling and run the gates locally:
 
 ```bash
 uv sync --extra dev
-uv run ruff check src tests   # lint
-uv run mypy src               # type-check
-uv run pytest                 # tests + snapshots (see tests/README.md)
+uv run ruff check src     # lint
+uv run mypy src           # type-check
 ```
 
-The snapshot suite under `tests/` makes refactors safe; pair every
-behavioural change with a deliberate `pytest --snapshot-update` and
-read the diff before committing.
-
-The repo ships a `.pre-commit-config.yaml` at the root that runs ruff,
-mypy, and pytest (plus the lib's biome / tsc / vitest) before every
-commit. Enable it once per clone:
+The repo ships a `.pre-commit-config.yaml` at the root that runs ruff
+and mypy (plus the lib's biome / tsc) before every commit. Enable it
+once per clone:
 
 ```bash
 pip install pre-commit    # or: uv tool install pre-commit
