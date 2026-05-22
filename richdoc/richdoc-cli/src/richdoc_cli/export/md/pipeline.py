@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ..book import BookDiscovery, discover_chapters
+from ..book import discover_chapters
 from ..common.assets import AssetStore
 from ..common.modes import ExportMode, OutputPlan, plan_outputs
 from .combiner import combine_chapters_to_markdown
@@ -224,7 +224,7 @@ def _materialise_assets(store: AssetStore, dest_dir: Path, result: MdExportResul
 def _book_title(entry: Path, chapters) -> str:
     """Best-effort book title for the combined-md H1."""
     # Try the entry's rd-toc title first.
-    import lxml.html as LH  # noqa: PLC0415
+    import lxml.html as LH
 
     try:
         root = LH.document_fromstring(entry.read_text(encoding="utf-8"))

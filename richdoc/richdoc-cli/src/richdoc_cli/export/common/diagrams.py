@@ -56,7 +56,7 @@ def render_to_png(
         },
     )
     try:
-        with urlopen(req, timeout=timeout) as resp:  # noqa: S310 — explicit user-supplied URL
+        with urlopen(req, timeout=timeout) as resp:
             data = resp.read()
     except (URLError, TimeoutError, OSError, ValueError):
         return None
@@ -65,4 +65,6 @@ def render_to_png(
     # Sanity check: PNG files start with the magic header.
     if not data.startswith(b"\x89PNG\r\n\x1a\n"):
         return None
-    return data
+    # `urlopen.read()` is typed `Any` by typeshed; the magic-bytes check
+    # above guarantees a bytes value.
+    return bytes(data)

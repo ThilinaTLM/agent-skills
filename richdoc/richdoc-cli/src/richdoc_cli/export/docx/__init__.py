@@ -88,4 +88,4 @@ def _serialise(state: _State) -> DocxResult:
     )
 
 
-__all__ = ["html_to_docx", "chapters_to_docx", "DocxResult"]
+__all__ = ["DocxResult", "chapters_to_docx", "html_to_docx"]

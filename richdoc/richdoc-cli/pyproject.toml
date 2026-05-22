@@ -11,9 +11,137 @@ dependencies = [
     "python-docx>=1.1",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "syrupy>=4.6",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "lxml-stubs>=0.5",
+]
+
 [project.scripts]
 richdoc = "richdoc_cli.cli:entrypoint"
 
 [build-system]
 requires = ["uv_build>=0.11.12,<0.12.0"]
 build-backend = "uv_build"
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
+#
+# Selection rationale:
+#   E/F/W   pyflakes + pycodestyle baseline
+#   I       isort (import order — we already follow it informally)
+#   B       flake8-bugbear (correctness)
+#   UP      pyupgrade (we're py311+)
+#   SIM     simplify (low-friction readability)
+#   C4      comprehensions
+#   PIE/PLE/PLW  pylint subsets we actually want
+#   RUF     ruff-specific lints
+#
+# Selection philosophy: keep rule families that catch real bugs (E/F/W/B/PLE),
+# keep modernisation that's safe to auto-fix (I/UP/C4), keep ruff-specific
+# correctness, and stay out of the way of stylistic disagreements. SIM and PIE
+# are intentionally dropped — contextlib.suppress vs try/except, single-arg
+# startswith vs tuple, and ternary-vs-block are author preference, not bugs.
+#
+# Project-wide code ignores:
+#   E501    line length — formatter manages it; not worth fighting prose.
+#   SLF001  cross-module underscore imports — already pervasive and
+#           planned away in the Phase 7 refactor. Re-enable then.
+#   PLC0415 "import outside top level" — lazy imports are intentional
+#           in several pipelines to break cycles or defer heavy deps.
+#   BLE001  blind except — `cli.py`'s top-level trap is the safety net
+#           by design; tests keep blind excepts out of hot paths.
+#   S310    We do call urlopen on user-supplied URLs intentionally;
+#           inline `# noqa: S310` markers document the audit trail.
+#           S320 (lxml-XXE) was removed from ruff but inline noqa lines
+#           are kept via the `external` list below.
+#   UP042   `class ExportMode(str, Enum)` is fine and switching to
+#           StrEnum shifts repr / formatting behaviour subtly.
+#   PLW0108 Lambdas as default args / value-only callbacks are clearer
+#           than nested defs.
+#   RUF001  Strings containing `×` / `—` / `→` etc. are intentional;
+#           they go into user-facing output.
+#   RUF005  `list + list` is readable; the unpacking suggestion is style.
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src"]
+extend-exclude = ["tests/fixtures/**"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",
+    "I",
+    "B",
+    "UP",
+    "C4",
+    "PLE", "PLW",
+    "RUF",
+]
+ignore = [
+    "E501",
+    "SLF001",
+    "PLC0415",
+    "BLE001",
+    "S310",
+    "UP042",
+    "PLW0108",
+    "RUF001",
+    "RUF005",
+]
+# External codes ruff itself doesn't define; lets `# noqa: S310` etc. survive
+# without triggering RUF100 unused-directive warnings.
+external = ["S310", "S320"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]  # asserts in tests are fine
+
+# ---------------------------------------------------------------------------
+# Mypy
+# ---------------------------------------------------------------------------
+#
+# `strict = true` flips on the bulk of mypy's checks; the knobs below
+# acknowledge the deliberate Any seams in this codebase:
+#
+#   - JSON envelopes are `dict[str, Any]` because the shape varies per
+#     command. Tightening this needs a per-command TypedDict hierarchy
+#     that's worth a separate plan.
+#   - lxml-stubs leaves Element attribute access broadly typed; the
+#     same follow-up plan will introduce typed lxml wrappers.
+#   - Private helpers without return annotations are common in this
+#     codebase. `disallow_untyped_defs` is off in Phase 1 — we keep the
+#     stricter `disallow_untyped_calls` so untyped helpers can't pollute
+#     typed callers.
+#
+# A follow-up plan tightens these. Don't try in Phase 1.
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_any_explicit = false
+disallow_any_generics = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+files = ["src"]
+
+[[tool.mypy.overrides]]
+module = ["docx.*", "latex2mathml.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "smoke: minimal subset that's safe to run on every commit",
+]

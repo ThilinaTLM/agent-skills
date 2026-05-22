@@ -20,8 +20,31 @@ export interface TagSpec {
 	enums?: Readonly<Record<string, readonly string[]>>;
 }
 
-export interface ComponentModule {
+/** One tag in the vocabulary, paired with its spec. Used for parent
+ * tags, their declarative children, and anywhere the rd-* vocabulary
+ * is iterated as data (schema-registry, `richdoc components`). */
+export interface TagEntry {
 	readonly tagName: string;
 	readonly spec: TagSpec;
+}
+
+/** Each component's `.schema.ts` exports a `bundle: SchemaBundle`
+ * declaring the parent tag and (when applicable) its child tags in
+ * one place. `schema-registry.ts` flat-maps every bundle into a
+ * single ordered list of `TagEntry`s.
+ *
+ * Child tags don't carry their own `register()` because the parent's
+ * `register()` (in the matching `.ts` file) handles every custom
+ * element definition for the bundle. */
+export interface SchemaBundle {
+	readonly tagName: string;
+	readonly spec: TagSpec;
+	readonly childTags?: readonly TagEntry[];
+}
+
+/** A registerable component: parent schema + the `register()` call
+ * that defines every custom element it needs (parent + children).
+ * Currently only consumed inside the runtime `registry.ts`. */
+export interface ComponentModule extends TagEntry {
 	register(): void;
 }

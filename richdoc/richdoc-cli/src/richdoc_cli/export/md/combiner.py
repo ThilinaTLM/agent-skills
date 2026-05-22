@@ -158,7 +158,9 @@ def _strip_rd_toc(html: str) -> str:
             removed = True
     if not removed:
         return html
-    return LH.tostring(root, encoding="unicode", method="html")
+    # `LH.tostring(encoding="unicode")` returns str at runtime but is typed
+    # as `Any` by lxml-stubs.
+    return str(LH.tostring(root, encoding="unicode", method="html"))
 
 
 def _anchor(title: str) -> str:

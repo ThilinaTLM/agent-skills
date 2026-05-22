@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import lxml.etree as ET
 from docx.oxml.ns import qn
 
+from ..common.walker import text_of
 from .runs import (
     _emit_runs,
     _inline_runs,
@@ -44,7 +45,7 @@ def _h_ol(state: _State, el: ET._Element) -> None:
     _emit_list(state, el, kind="ol")
 
 
-def _emit_list(state: _State, el: ET._Element, *, kind: str) -> None:  # noqa: SLF001
+def _emit_list(state: _State, el: ET._Element, *, kind: str) -> None:
     depth = sum(1 for k, _ in state.list_stack if k in ("ul", "ol"))
     state.list_stack.append((kind, depth))
     style_for_level = {
@@ -85,7 +86,7 @@ def _h_blockquote(state: _State, el: ET._Element) -> None:
 
 def _h_pre(state: _State, el: ET._Element) -> None:
     # <pre><code>…</code></pre> is the common shape.
-    text = "".join(el.itertext())
+    text = text_of(el)
     _emit_code(state, _dedent(text), lang=None)
 
 

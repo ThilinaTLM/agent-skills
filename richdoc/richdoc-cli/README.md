@@ -60,3 +60,18 @@ src/richdoc_cli/
 
 The `export` package was carved out of two monolithic files (`markdown.py`, `docx_export.py`) so each handler module is small enough to read end-to-end and so the two formats share helpers via `export/common/`. `publish/confluence/` reuses `export/common/` (book discovery, asset store, walker helpers) but emits Confluence storage-format XML instead of one of the export formats.
 
+## Development
+
+Install dev tooling and run the gates locally:
+
+```bash
+uv sync --extra dev
+uv run ruff check src tests   # lint
+uv run mypy src               # type-check
+uv run pytest                 # tests + snapshots (see tests/README.md)
+```
+
+The snapshot suite under `tests/` makes refactors safe; pair every
+behavioural change with a deliberate `pytest --snapshot-update` and
+read the diff before committing.
+

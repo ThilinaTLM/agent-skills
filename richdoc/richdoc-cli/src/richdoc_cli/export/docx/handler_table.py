@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import lxml.etree as ET
 
@@ -10,7 +10,6 @@ from . import handlers_plain as p
 from . import handlers_rd as r
 from .state import _State
 from .walker import render_children
-
 
 BLOCK_HANDLERS: dict[str, Callable[[_State, ET._Element], None]] = {
     # plain HTML

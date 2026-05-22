@@ -6,15 +6,16 @@ import lxml.etree as ET
 from docx.oxml.ns import qn
 from docx.table import _Cell
 
+from ..common.walker import text_of
 from .state import _State
 
 
-def _parse_html_table(el: ET._Element) -> tuple[list[str], list[list[str]]]:  # noqa: SLF001
+def _parse_html_table(el: ET._Element) -> tuple[list[str], list[list[str]]]:
     headers: list[str] = []
     rows: list[list[str]] = []
     for tr in el.iter("tr"):
         cells = [c for c in tr if isinstance(c.tag, str) and c.tag.lower() in ("th", "td")]
-        texts = [" ".join("".join(c.itertext()).split()).strip() for c in cells]
+        texts = [" ".join(text_of(c).split()).strip() for c in cells]
         if cells and all(isinstance(c.tag, str) and c.tag.lower() == "th" for c in cells) and not headers:
             headers = texts
         else:

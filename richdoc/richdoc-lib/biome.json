@@ -1,7 +1,7 @@
 {
 	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
 	"files": {
-		"include": ["src/**/*.ts", "build.ts"],
+		"include": ["src/**/*.ts", "tests/**/*.ts", "build.ts", "vitest.config.ts"],
 		"ignore": ["node_modules", "assets", "examples", "templates", "src/**/*.generated.ts"]
 	},
 	"formatter": {

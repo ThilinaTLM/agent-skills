@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 
 import click
 
 from ..assets import ASSET_FILES, asset_path, assets_exist
 from ..output import json_error, json_ok
+from ._safe import safe_command, write_or_error
 
 
 @click.command("init")
@@ -20,6 +22,7 @@ from ..output import json_error, json_ok
     type=click.Path(file_okay=False, path_type=Path),
 )
 @click.option("-f", "--force", is_flag=True, help="Overwrite existing assets in target.")
+@safe_command
 def cmd(dir_: Path, force: bool) -> None:
     """Copy richdoc.css and richdoc.js into a directory."""
     if not assets_exist():
@@ -30,13 +33,13 @@ def cmd(dir_: Path, force: bool) -> None:
         )
 
     target_dir = dir_.resolve()
-    try:
-        target_dir.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        json_error(
-            f"Could not create target directory: {exc}",
-            code="OUTPUT_ERROR",
-        )
+    write_or_error(lambda: target_dir.mkdir(parents=True, exist_ok=True))
+
+    def _copy_one(dest: Path, name: str) -> Callable[[], None]:
+        def _action() -> None:
+            shutil.copyfile(asset_path(name), dest)
+
+        return _action
 
     written: list[str] = []
     skipped: list[str] = []
@@ -45,14 +48,8 @@ def cmd(dir_: Path, force: bool) -> None:
         if dest.exists() and not force:
             skipped.append(name)
             continue
-        try:
-            shutil.copyfile(asset_path(name), dest)
-            written.append(name)
-        except OSError as exc:
-            json_error(
-                f"Could not write {name}: {exc}",
-                code="OUTPUT_ERROR",
-            )
+        write_or_error(_copy_one(dest, name))
+        written.append(name)
 
     hint = (
         "Some files already existed and were left alone. Re-run with --force to overwrite."

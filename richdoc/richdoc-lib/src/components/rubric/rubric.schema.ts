@@ -1,5 +1,4 @@
-import type { TagSpec } from "../../lib/types.ts";
-
+import type { SchemaBundle, TagSpec } from "../../lib/types.ts";
 export const tagName = "rd-rubric";
 export const spec: TagSpec = {
 	required: ["options"],
@@ -21,4 +20,16 @@ export const scoreSpec: TagSpec = {
 	optional: ["note"],
 	allowedParents: ["rd-criterion"],
 	customChildren: "any",
+};
+
+// Registry bundle consumed by `schema-registry.ts`. Lists the parent
+// tag and every child tag in one declarative record so adding or
+// removing a child only touches this file.
+export const bundle: SchemaBundle = {
+	tagName,
+	spec,
+	childTags: [
+		{ tagName: criterionTagName, spec: criterionSpec },
+		{ tagName: scoreTagName, spec: scoreSpec },
+	],
 };

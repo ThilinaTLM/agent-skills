@@ -29,6 +29,7 @@ import lxml.etree as ET
 
 from ...export.common.chart_data import parse_chart
 from ...export.common.diagrams import render_to_png
+from ...export.common.walker import text_of
 from .converter import (
     TocEntry,
     _Converter,
@@ -40,7 +41,6 @@ from .converter import (
 )
 from .handlers_plain import emit_code_macro
 from .math import render_math_png
-
 
 # Map richdoc callout/banner types onto modern Panel `panel-type` values.
 _PANEL_TYPE_CALLOUT = {
@@ -124,7 +124,7 @@ _BADGE_COLOUR = {
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_page(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_page(c: _Converter, el: ET._Element) -> None:
     c.render_children(el)
 
 
@@ -199,7 +199,7 @@ def _normalize_chapter_href(href: str) -> str:
     return s
 
 
-def _book_chapter_hrefs(c: _Converter) -> set[str]:  # noqa: SLF001
+def _book_chapter_hrefs(c: _Converter) -> set[str]:
     """All chapter hrefs in the book (normalised), as a fast lookup set.
 
     Returns an empty set in single-file mode (no `toc_entries`).
@@ -229,7 +229,7 @@ def _scrub_hero_meta(meta: str) -> str:
     return _HERO_META_SEPARATOR.join(kept).strip()
 
 
-def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_hero(c: _Converter, el: ET._Element) -> None:
     """rd-hero → eyebrow paragraph + <h1> + lede + meta, each in its own
     block. Body children are rendered as peer-level chunks so any
     rd-cols inside the hero can bubble up to the page-body top level.
@@ -267,7 +267,7 @@ def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             continue
         if is_book and child.tag.lower() == "a":
             href = (child.get("href") or "").strip()
-            text = " ".join("".join(child.itertext()).split())
+            text = " ".join(text_of(child).split())
             href_matches = bool(href) and _normalize_chapter_href(href) in book_hrefs
             text_matches = bool(text) and _HERO_NAV_TEXT_RE.search(text) is not None
             if href_matches or text_matches:
@@ -276,7 +276,7 @@ def _h_rd_hero(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.render(child)
 
 
-def _h_rd_section(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_section(c: _Converter, el: ET._Element) -> None:
     """rd-section → <h2> + peer-level body children.
 
     Renders children as peers (not inside a wrapped sub-buffer) so any
@@ -289,7 +289,7 @@ def _h_rd_section(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.render_children(el)
 
 
-def _h_rd_card(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_card(c: _Converter, el: ET._Element) -> None:
     """rd-card → modern Panel with the card's accent mapped to a
     `panel-type`. Title becomes a bold first paragraph inside the panel
     body so it visually stands out without resorting to a heading.
@@ -303,7 +303,7 @@ def _h_rd_card(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     _emit_panel(c, panel_type=panel_type, title=title or None, body=body)
 
 
-def _h_rd_cols(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_cols(c: _Converter, el: ET._Element) -> None:
     """rd-cols → native `<ac:layout-section>` at page-body top level.
 
     Confluence's modern editor renders layout-sections as full-width
@@ -316,10 +316,10 @@ def _h_rd_cols(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     for child in el:
         if not isinstance(child.tag, str):
             continue
-        sub = c._spawn_sub()  # noqa: SLF001
+        sub = c._spawn_sub()
         sub.render(child)
         rendered = "".join(sub.chunks).strip()
-        c._merge_counters(sub)  # noqa: SLF001
+        c._merge_counters(sub)
         if rendered:
             columns.append(rendered)
     if not columns:
@@ -428,7 +428,7 @@ def _emit_panel(
     )
 
 
-def _h_rd_banner(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_banner(c: _Converter, el: ET._Element) -> None:
     type_ = (el.get("type") or "info").lower()
     panel_type = _PANEL_TYPE_CALLOUT.get(type_, "info")
     attr_message = (el.get("message") or "").strip()
@@ -442,7 +442,7 @@ def _h_rd_banner(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     _emit_panel(c, panel_type=panel_type, title=None, body=body)
 
 
-def _h_rd_callout(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_callout(c: _Converter, el: ET._Element) -> None:
     type_ = (el.get("type") or "info").lower()
     title = (el.get("title") or "").strip()
     if not title and type_ == "tldr":
@@ -459,7 +459,7 @@ def _h_rd_callout(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_kv(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_kv(c: _Converter, el: ET._Element) -> None:
     """Render rd-kv as a modern Confluence table with a narrow, bold key
     column.
 
@@ -511,12 +511,12 @@ def _h_rd_kv(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     )
 
 
-def _h_rd_row(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_row(c: _Converter, el: ET._Element) -> None:
     # Handled inside rd-kv. Loose row → render its children inline.
     c.render_children(el)
 
 
-def _h_rd_badge(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_badge(c: _Converter, el: ET._Element) -> None:
     """rd-badge → native Status macro (coloured lozenge).
 
     Renders inline so badges nest naturally inside rd-kv `<td>` cells,
@@ -566,7 +566,7 @@ def _strip_inline_html(text: str) -> str:
     return _INLINE_HTML_RE.sub("", text).strip()
 
 
-def _h_rd_stat(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_stat(c: _Converter, el: ET._Element) -> None:
     """rd-stat → modern Panel (neutral `note` type) styled as a stat tile.
 
     Inside the panel we emit the value as a bold paragraph and the label
@@ -603,8 +603,8 @@ def _h_rd_stat(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             c.dropped.append(child.tag.lower())
 
 
-def _h_rd_progress(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
-    from ...export.common.progress import parse_progress  # noqa: PLC0415
+def _h_rd_progress(c: _Converter, el: ET._Element) -> None:
+    from ...export.common.progress import parse_progress
 
     p = parse_progress(el.get("value"))
     label = (el.get("label") or "").strip()
@@ -616,7 +616,7 @@ def _h_rd_progress(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write_block(f"<p>{head}</p>")
 
 
-def _h_rd_update(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_update(c: _Converter, el: ET._Element) -> None:
     date = (el.get("date") or "").strip()
     kind = (el.get("kind") or "").strip()
     author = (el.get("author") or "").strip()
@@ -641,7 +641,7 @@ def _h_rd_update(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_compare(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_compare(c: _Converter, el: ET._Element) -> None:
     headers = [h.strip() for h in (el.get("headers") or "").split(",") if h.strip()]
     rows: list[list[str]] = []
     for rc in el:
@@ -679,7 +679,7 @@ def _h_rd_compare(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     )
 
 
-def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:
     options = [o.strip() for o in (el.get("options") or "").split(",") if o.strip()]
     title = (el.get("title") or "").strip()
     if title:
@@ -734,20 +734,20 @@ def _h_rd_rubric(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     )
 
 
-def _h_rd_code(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_code(c: _Converter, el: ET._Element) -> None:
     lang = (el.get("lang") or "").strip()
     title = (el.get("title") or "").strip() or None
     body = _element_source(el)
     emit_code_macro(c, body, lang=lang, title=title)
 
 
-def _h_rd_diff(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_diff(c: _Converter, el: ET._Element) -> None:
     title = (el.get("title") or "").strip() or None
     body = _element_source(el)
     emit_code_macro(c, body, lang="diff", title=title)
 
 
-def _h_rd_shell(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_shell(c: _Converter, el: ET._Element) -> None:
     title = (el.get("title") or "").strip() or None
     lines: list[str] = []
     for child in el:
@@ -763,7 +763,7 @@ def _h_rd_shell(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     emit_code_macro(c, "\n".join(lines), lang="bash", title=title)
 
 
-def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_math(c: _Converter, el: ET._Element) -> None:
     display = (el.get("display") or "block").lower()
     is_inline = display == "inline"
     source = dedent(_element_source(el))
@@ -800,7 +800,7 @@ def _h_rd_math(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     _emit_source_expand(c, source, lang="latex", summary="Show LaTeX source")
 
 
-def _h_rd_figure(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_figure(c: _Converter, el: ET._Element) -> None:
     caption = (el.get("caption") or "").strip()
     inner = c.render_block_inner_wrapped(el)
     if inner:
@@ -809,7 +809,7 @@ def _h_rd_figure(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"<p><em>{xml_escape(caption)}</em></p>")
 
 
-def _h_rd_chart(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_chart(c: _Converter, el: ET._Element) -> None:
     """rd-chart → native table when parseable, or a code block fallback.
 
     Sparkline variants would clutter the page with raw data; we drop them.
@@ -853,7 +853,7 @@ def _h_rd_chart(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_tabs(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_tabs(c: _Converter, el: ET._Element) -> None:
     for tab in el:
         if not (isinstance(tab.tag, str) and tab.tag.lower() == "rd-tab"):
             continue
@@ -864,7 +864,7 @@ def _h_rd_tabs(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
             c.write_block(inner)
 
 
-def _h_rd_timeline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_timeline(c: _Converter, el: ET._Element) -> None:
     items: list[str] = []
     for ev in el:
         if not (isinstance(ev.tag, str) and ev.tag.lower() == "rd-event"):
@@ -885,7 +885,7 @@ def _h_rd_timeline(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"<ul>{''.join(items)}</ul>")
 
 
-def _h_rd_steps(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_steps(c: _Converter, el: ET._Element) -> None:
     items: list[str] = []
     for step in el:
         if not (isinstance(step.tag, str) and step.tag.lower() == "rd-step"):
@@ -907,7 +907,7 @@ def _h_rd_steps(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"<ol>{''.join(items)}</ol>")
 
 
-def _h_rd_detail(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_detail(c: _Converter, el: ET._Element) -> None:
     """rd-detail → native `expand` macro. Collapsibility preserved!"""
     summary = (el.get("summary") or "Details").strip()
     body = c.render_block_inner_wrapped(el)
@@ -923,7 +923,7 @@ def _h_rd_detail(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     )
 
 
-def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:
     """Confluence has a native `task-list` element. We use it so checkboxes
     are interactive in the published page."""
     tasks: list[str] = []
@@ -955,7 +955,7 @@ def _h_rd_checklist(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block("<ac:task-list>" + "".join(tasks) + "</ac:task-list>")
 
 
-def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_diagram(c: _Converter, el: ET._Element) -> None:
     source = dedent(_element_source(el))
     lang = (el.get("lang") or "mermaid").strip().lower()
     if not source.strip():
@@ -993,9 +993,9 @@ def _emit_source_expand(
     """
     if not source.strip():
         return
-    sub = c._spawn_sub()  # noqa: SLF001
+    sub = c._spawn_sub()
     emit_code_macro(sub, source, lang=lang, title=None)
-    c._merge_counters(sub)  # noqa: SLF001
+    c._merge_counters(sub)
     body = "".join(sub.chunks)
     c.write_block(
         '<ac:structured-macro ac:name="expand">'
@@ -1012,7 +1012,7 @@ def _emit_source_expand(
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_toc(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_toc(c: _Converter, el: ET._Element) -> None:
     """Render rd-toc as an inline "Contents" block of cross-page links.
 
     The pipeline builds the TocEntry tree from the entry chapter's
@@ -1034,7 +1034,7 @@ def _h_rd_toc(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     c.write_block(body)
 
 
-def _render_toc_tree(c: _Converter, entries: list[TocEntry]) -> str:  # noqa: SLF001
+def _render_toc_tree(c: _Converter, entries: list[TocEntry]) -> str:
     items: list[str] = []
     for e in entries:
         label = xml_escape(e.title or "Untitled")
@@ -1058,7 +1058,7 @@ def _render_toc_tree(c: _Converter, entries: list[TocEntry]) -> str:  # noqa: SL
     return f"<ul>{''.join(items)}</ul>" if items else ""
 
 
-def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_icon(c: _Converter, el: ET._Element) -> None:
     label = (el.get("label") or "").strip()
     if label:
         c.write_text(label)
@@ -1071,7 +1071,7 @@ def _h_rd_icon(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_decision(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_decision(c: _Converter, el: ET._Element) -> None:
     """Render rd-decision as a modern Decision element (`/decision`).
 
     The decision-list contains a single decision-item whose inline
@@ -1118,7 +1118,7 @@ def _h_rd_decision(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(inner)
 
 
-def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:
     """Render rd-pros-cons as a two-column `<ac:layout-section>` (or
     linearised when nested in an isolated body).
     """
@@ -1154,7 +1154,7 @@ def _h_rd_pros_cons(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     _emit_layout_section(c, columns, ac_type=_layout_type(len(columns)))
 
 
-def _h_rd_api(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_api(c: _Converter, el: ET._Element) -> None:
     """rd-api → one rd-kv-shaped table per endpoint.
 
     Rows (omitted when their source data is empty):
@@ -1245,7 +1245,7 @@ def _h_rd_api(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     )
 
 
-def _render_param_line(c: _Converter, p: ET._Element) -> str:  # noqa: SLF001
+def _render_param_line(c: _Converter, p: ET._Element) -> str:
     """Render one `<rd-param>` as a single inline list-item body.
 
     Format: ``<code>name</code> <code>type</code> <em>required</em>
@@ -1269,7 +1269,7 @@ def _render_param_line(c: _Converter, p: ET._Element) -> str:  # noqa: SLF001
     return line
 
 
-def _render_response_line(c: _Converter, r: ET._Element) -> str:  # noqa: SLF001
+def _render_response_line(c: _Converter, r: ET._Element) -> str:
     """Render one `<rd-response>` as a single inline list-item body.
 
     Format: ``{status status-macro} <code>type</code> — description``.
@@ -1294,7 +1294,7 @@ def _render_response_line(c: _Converter, r: ET._Element) -> str:  # noqa: SLF001
 # ---------------------------------------------------------------------------
 
 
-def _h_rd_references(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_references(c: _Converter, el: ET._Element) -> None:
     """An explicit rd-references block sets the section title and renders
     its rd-ref children inline. Refs scattered elsewhere in the document
     are still picked up by `_h_rd_ref` and merged into the same
@@ -1312,13 +1312,13 @@ def _h_rd_references(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
         c.write_block(f"<h2>{xml_escape(title)}</h2>")
 
 
-def _h_rd_ref(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_ref(c: _Converter, el: ET._Element) -> None:
     """Collect a bibliography entry. The actual rendering happens in
     `finalise()` so cite order drives the numbering."""
     _collect_ref(c, el)
 
 
-def _collect_ref(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _collect_ref(c: _Converter, el: ET._Element) -> None:
     key = (el.get("key") or "").strip()
     if not key:
         return
@@ -1333,7 +1333,7 @@ def _collect_ref(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
     }
 
 
-def _h_rd_cite(c: _Converter, el: ET._Element) -> None:  # noqa: SLF001
+def _h_rd_cite(c: _Converter, el: ET._Element) -> None:
     """Emit a numbered citation marker. Numbering follows cite-order: the
     first key encountered is `[1]`, the second is `[2]`, etc. The
     bibliography below renumbers identically."""

@@ -18,13 +18,30 @@ publisher, the linter, and the runtime.
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from urllib.parse import urlparse
 
 import lxml.etree as ET
 import lxml.html as LH
+
+from .common.href import is_external_href
+from .common.titles import chapter_label as _chapter_label_canonical
+from .common.titles import resolve_doc_title as _resolve_doc_title_canonical
+
+# Re-export so existing `from .book import is_external_href` callers
+# keep working without touching their import path.
+__all__ = [
+    "BookDiscovery",
+    "ChapterFile",
+    "TocSignature",
+    "TocSignatureEntry",
+    "chapter_title",
+    "discover_chapters",
+    "find_book_toc",
+    "is_external_href",
+    "linked_chapter_paths",
+    "toc_signature",
+]
 
 
 @dataclass(frozen=True)
@@ -40,7 +57,7 @@ class TocSignatureEntry:
 
     href: str | None
     title: str
-    children: tuple["TocSignatureEntry", ...]
+    children: tuple[TocSignatureEntry, ...]
 
 
 @dataclass(frozen=True)
@@ -147,7 +164,7 @@ def discover_chapters(entry: Path) -> BookDiscovery:
 # ---------------------------------------------------------------------------
 
 
-def find_book_toc(root: ET._Element) -> ET._Element | None:  # noqa: SLF001
+def find_book_toc(root: ET._Element) -> ET._Element | None:
     """Find an rd-toc element whose direct children contain at least one
     rd-chapter with an href. Returns None for single-file docs."""
     for toc in root.iter("rd-toc"):
@@ -179,24 +196,17 @@ def _walk_chapters(
     return out
 
 
-def chapter_title(node: ET._Element) -> str:  # noqa: SLF001
-    """Mirror the renderer/lint chapter-title extraction: text content of
-    the element with nested <rd-chapter> sub-trees removed."""
-    parts: list[str] = []
-    if node.text:
-        parts.append(node.text)
-    for child in node:
-        if isinstance(child.tag, str) and child.tag.lower() == "rd-chapter":
-            if child.tail:
-                parts.append(child.tail)
-            continue
-        parts.extend(child.itertext())
-        if child.tail:
-            parts.append(child.tail)
-    return " ".join("".join(parts).split()).strip()
+def chapter_title(node: ET._Element) -> str:
+    """Visible text of one ``<rd-chapter>``, nested sub-trees stripped.
+
+    Thin wrapper around the canonical implementation in
+    ``export.common.titles.chapter_label``; kept here so existing
+    callers (lint, publisher) don't have to change import paths.
+    """
+    return _chapter_label_canonical(node)
 
 
-def toc_signature(toc: ET._Element) -> TocSignature:  # noqa: SLF001
+def toc_signature(toc: ET._Element) -> TocSignature:
     """Reduce an <rd-toc> element to its comparable signature.
 
     Two `<rd-toc>` blocks are considered identical iff their signatures
@@ -249,30 +259,9 @@ def linked_chapter_paths(
     return out
 
 
-def _doc_title(root: ET._Element) -> str | None:  # noqa: SLF001
-    hero = next(iter(root.iter("rd-hero")), None)
-    if hero is not None:
-        t = hero.get("title")
-        if t and t.strip():
-            return t.strip()
-    h1 = next(iter(root.iter("h1")), None)
-    if h1 is not None:
-        text = " ".join("".join(h1.itertext()).split()).strip()
-        if text:
-            return text
-    title_el = next(iter(root.iter("title")), None)
-    if title_el is not None and title_el.text and title_el.text.strip():
-        return title_el.text.strip()
-    return None
-
-
-def is_external_href(href: str) -> bool:
-    s = (href or "").strip()
-    if not s:
-        return True
-    if s.startswith("#"):
-        return True
-    return bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", s)) or s.startswith("//")
+def _doc_title(root: ET._Element) -> str | None:
+    """Legacy alias for ``export.common.titles.resolve_doc_title``."""
+    return _resolve_doc_title_canonical(root)
 
 
 def _safe_relative(target: Path, base_dir: Path) -> Path:

@@ -8,10 +8,9 @@ re-organise either side without churning the dispatch.
 
 from __future__ import annotations
 
-from .converter import HANDLERS
 from . import handlers_plain as p
 from . import handlers_rd as r
-
+from .converter import HANDLERS
 
 HANDLERS.update({
     # plain HTML

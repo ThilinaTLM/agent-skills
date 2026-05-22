@@ -23,11 +23,10 @@ import json
 import mimetypes
 import uuid
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
-
 
 # ---------------------------------------------------------------------------
 # Data types
@@ -120,7 +119,7 @@ class ConfluenceClient:
     _auth: str = field(init=False, default="", repr=False)
 
     def __post_init__(self) -> None:
-        creds = f"{self.email}:{self.token}".encode("utf-8")
+        creds = f"{self.email}:{self.token}".encode()
         self._auth = "Basic " + base64.b64encode(creds).decode("ascii")
 
     # ---- public URLs (relative; no token) --------------------------------
@@ -418,7 +417,7 @@ class ConfluenceClient:
 
         req = Request(url, data=data, method=method, headers=headers)
         try:
-            with urlopen(req, timeout=self.timeout) as resp:  # noqa: S310 — REST endpoint
+            with urlopen(req, timeout=self.timeout) as resp:
                 raw = resp.read()
         except HTTPError as exc:
             raise _classify_http_error(exc) from None
@@ -430,7 +429,7 @@ class ConfluenceClient:
         if not raw:
             return {}
         try:
-            return json.loads(raw.decode("utf-8"))
+            return cast("dict[str, Any]", json.loads(raw.decode("utf-8")))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise ConfluenceUpstreamError(
                 f"Confluence returned non-JSON body: {exc}"
@@ -489,7 +488,7 @@ def _classify_http_error(exc: HTTPError) -> ConfluenceError:
     try:
         body_bytes = exc.read()
         body = body_bytes.decode("utf-8", errors="replace")[:600]
-    except Exception:  # noqa: BLE001 — best-effort body capture
+    except Exception:
         pass
     # Extract the Atlassian error message when present.
     msg_summary = _extract_error_message(body) or f"HTTP {status}"
@@ -580,7 +579,7 @@ def _build_multipart(
     buf.write(f"--{boundary}".encode("ascii") + crlf)
     buf.write(
         f'Content-Disposition: form-data; name="file"; filename="{safe_name}"'
-        .encode("utf-8") + crlf
+        .encode() + crlf
     )
     buf.write(f"Content-Type: {mime}".encode("ascii") + crlf + crlf)
     buf.write(data + crlf)

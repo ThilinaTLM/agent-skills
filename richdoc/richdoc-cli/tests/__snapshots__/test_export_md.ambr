@@ -1,0 +1,2874 @@
+# serializer version: 1
+# name: test_export_md_book_multi[assets]
+  list([
+  ])
+# ---
+# name: test_export_md_book_multi[chapters]
+  dict({
+    '01-species.md': '''
+      **Otter Field Guide**
+      
+      - [Overview](./index.md)
+      - [Species](./01-species.md)
+      - [Habitat & range](./02-habitat.md)
+      - **Field practice**
+        - [Observation](./ops/observation.md)
+        - [Safety](./ops/safety.md)
+      
+      # Species
+      
+      *Chapter 1 · Identification keys for the thirteen extant otter species, grouped by genus and habitat preference.*
+      
+      > [!IMPORTANT] TL;DR
+      > Otters fall into seven genera. *Lutra*, *Lontra*, and *Aonyx* account for most freshwater encounters; *Enhydra* (sea otter) is the only fully marine species.
+      
+      ## River otters
+      
+      The dominant freshwater lineage, found across Eurasia and the Americas. Slender bodies, prominent whiskers, partial webbing.
+      
+      - **Lutra lutra:** Eurasian otter — Europe, North Africa, much of Asia.
+      - **Lontra canadensis:** North American river otter — Canada, US, northern Mexico.
+      - **Lontra longicaudis:** Neotropical river otter — Central and South America.
+      
+      ## Giant and clawless otters
+      
+      Larger, often more social species with regional ranges.
+      
+      - **Pteronura brasiliensis:** Giant otter — Amazon basin; up to 1.7 m long.
+      - **Aonyx capensis:** African clawless otter — sub-Saharan Africa.
+      
+      ## Sea otter
+      
+      The marine outlier. Diurnal, raft-forming, tool-using. *Enhydra lutris* spans the North Pacific rim.
+      
+  
+    ''',
+    '02-habitat.md': '''
+      **Otter Field Guide**
+      
+      - [Overview](./index.md)
+      - [Species](./01-species.md)
+      - [Habitat & range](./02-habitat.md)
+      - **Field practice**
+        - [Observation](./ops/observation.md)
+        - [Safety](./ops/safety.md)
+      
+      # Habitat & range
+      
+      *Chapter 2 · What otters need from a watercourse, and where to expect them on each continent.*
+      
+      > [!IMPORTANT] TL;DR
+      > Otters need clean water, abundant prey (fish, crustaceans, molluscs), and dense bankside cover for holts. Pollution and habitat fragmentation are the principal threats.
+      
+      ## Freshwater requirements
+      
+      Most species are tightly tied to clean rivers, lakes, and wetlands. Indicator-species status: an otter population implies a functioning aquatic ecosystem.
+      
+      - [ ] Clean water with low heavy-metal load
+      - [ ] Dense bankside vegetation for holts
+      - [ ] Year-round fish biomass
+      - [ ] Connectivity between waterbodies
+      
+      ## Marine habitat
+      
+      Sea otters favour kelp-forest coastlines with shallow rocky reefs and urchin populations. They rarely come ashore.
+      
+      ## Continental ranges
+      
+      Otters occupy every continent except Australia and Antarctica. Densest populations remain in the Amazon, Congo basin, and Pacific Northwest.
+      
+  
+    ''',
+    'index.md': '''
+      **Otter Field Guide**
+      
+      - [Overview](./index.md)
+      - [Species](./01-species.md)
+      - [Habitat & range](./02-habitat.md)
+      - **Field practice**
+        - [Observation](./ops/observation.md)
+        - [Safety](./ops/safety.md)
+      
+      # Otter Field Guide
+      
+      *Field guide · v0.1 · A pocket reference for identifying, observing, and reporting otters in the wild. · Draft · 2026-05-16*
+      
+      > [!IMPORTANT] TL;DR
+      > Thirteen extant otter species. Coastal, riverine, and lacustrine habitats on every continent except Australia and Antarctica. Most are crepuscular; sea otters are the diurnal exception.
+      
+      ## How to use this guide
+      
+      Start with **Species** for identification by morphology and range. **Habitat & range** covers terrain and watershed selection. **Field practice** bundles the operational chapters — observation protocol and safety considerations.
+      
+      The sidebar lists every chapter; the active one is highlighted, and this page's own headings are expanded inline beneath it.
+      
+      ## Quick stats
+      
+      **13** — Extant species
+      
+      **6** — Continents
+      
+      **1.0–1.7m** — Adult body length
+      
+  
+    ''',
+    'ops/observation.md': '''
+      **Otter Field Guide**
+      
+      - [Overview](../index.md)
+      - [Species](../01-species.md)
+      - [Habitat & range](../02-habitat.md)
+      - **Field practice**
+        - [Observation](./observation.md)
+        - [Safety](./safety.md)
+      
+      # Observation
+      
+      *Field practice · A short protocol for spotting and recording otter activity without disturbing the animals.*
+      
+      > [!IMPORTANT] TL;DR
+      > Stay downwind, downstream, and silent. Otters are wary of humans and will abandon a holt that feels exposed. Use a 10× monocular and start from a screened position at dawn or dusk.
+      
+      ## Protocol
+      
+      1. **Choose a screened vantage**
+         Reedbed, hide, or a dense alder thicket — anything that breaks your silhouette and absorbs sound.
+      2. **Wait silently**
+         Allow at least 20 minutes for ambient wildlife to forget you are there.
+      3. **Record bare-eye, sketch on paper**
+         Phones glow. Sketch in pencil; transcribe later.
+      
+      ## What to record
+      
+      - [ ] Time, weather, water height
+      - [ ] Activity (foraging, grooming, transit)
+      - [ ] Direction of travel and last known position
+      - [ ] Any vocalisations
+      
+  
+    ''',
+    'ops/safety.md': '''
+      **Otter Field Guide**
+      
+      - [Overview](../index.md)
+      - [Species](../01-species.md)
+      - [Habitat & range](../02-habitat.md)
+      - **Field practice**
+        - [Observation](./observation.md)
+        - [Safety](./safety.md)
+      
+      # Safety
+      
+      *Field practice · Brief notes on staying safe around wild otters and the waterbodies they inhabit.*
+      
+      > [!WARNING]
+      > Otters bite, and giant otters in particular will defend a den aggressively. Never approach a holt. If an animal is on shore between you and the water, retreat — never block its escape route.
+      
+      ## Personal safety
+      
+      - [ ] Keep at least 15 metres of distance
+      - [ ] Never feed or attempt to handle
+      - [ ] Carry a whistle for emergency signalling
+      - [ ] Watch the bank for current and slip hazards
+      
+      ## Animal welfare
+      
+      Disturbance is a measurable stressor. Limit each session to 90 minutes and rotate vantage points across visits so the same family group is not repeatedly observed.
+      
+  
+    ''',
+  })
+# ---
+# name: test_export_md_book_multi[envelope]
+  dict({
+    'assets': 0,
+    'book': True,
+    'chapters': list([
+      'index.md',
+      '01-species.md',
+      '02-habitat.md',
+      'ops/observation.md',
+      'ops/safety.md',
+    ]),
+    'dropped': list([
+    ]),
+    'input': 'index.html',
+    'missing': list([
+    ]),
+    'mode': 'multi',
+    'ok': True,
+    'output': 'book-md',
+  })
+# ---
+# name: test_export_md_book_single[combined]
+  '''
+  # Otter Field Guide
+  
+  ## Contents
+  
+  - [Overview](#overview)
+  - [Species](#species)
+  - [Habitat & range](#habitat-range)
+  - [Observation](#observation)
+  - [Safety](#safety)
+  
+  ## Otter Field Guide
+  
+  *Field guide · v0.1 · A pocket reference for identifying, observing, and reporting otters in the wild. · Draft · 2026-05-16*
+  
+  > [!IMPORTANT] TL;DR
+  > Thirteen extant otter species. Coastal, riverine, and lacustrine habitats on every continent except Australia and Antarctica. Most are crepuscular; sea otters are the diurnal exception.
+  
+  ### How to use this guide
+  
+  Start with **Species** for identification by morphology and range. **Habitat & range** covers terrain and watershed selection. **Field practice** bundles the operational chapters — observation protocol and safety considerations.
+  
+  The sidebar lists every chapter; the active one is highlighted, and this page's own headings are expanded inline beneath it.
+  
+  ### Quick stats
+  
+  **13** — Extant species
+  
+  **6** — Continents
+  
+  **1.0–1.7m** — Adult body length
+  
+  ---
+  
+  ## Species
+  
+  *Chapter 1 · Identification keys for the thirteen extant otter species, grouped by genus and habitat preference.*
+  
+  > [!IMPORTANT] TL;DR
+  > Otters fall into seven genera. *Lutra*, *Lontra*, and *Aonyx* account for most freshwater encounters; *Enhydra* (sea otter) is the only fully marine species.
+  
+  ### River otters
+  
+  The dominant freshwater lineage, found across Eurasia and the Americas. Slender bodies, prominent whiskers, partial webbing.
+  
+  - **Lutra lutra:** Eurasian otter — Europe, North Africa, much of Asia.
+  - **Lontra canadensis:** North American river otter — Canada, US, northern Mexico.
+  - **Lontra longicaudis:** Neotropical river otter — Central and South America.
+  
+  ### Giant and clawless otters
+  
+  Larger, often more social species with regional ranges.
+  
+  - **Pteronura brasiliensis:** Giant otter — Amazon basin; up to 1.7 m long.
+  - **Aonyx capensis:** African clawless otter — sub-Saharan Africa.
+  
+  ### Sea otter
+  
+  The marine outlier. Diurnal, raft-forming, tool-using. *Enhydra lutris* spans the North Pacific rim.
+  
+  ---
+  
+  ## Habitat & range
+  
+  *Chapter 2 · What otters need from a watercourse, and where to expect them on each continent.*
+  
+  > [!IMPORTANT] TL;DR
+  > Otters need clean water, abundant prey (fish, crustaceans, molluscs), and dense bankside cover for holts. Pollution and habitat fragmentation are the principal threats.
+  
+  ### Freshwater requirements
+  
+  Most species are tightly tied to clean rivers, lakes, and wetlands. Indicator-species status: an otter population implies a functioning aquatic ecosystem.
+  
+  - [ ] Clean water with low heavy-metal load
+  - [ ] Dense bankside vegetation for holts
+  - [ ] Year-round fish biomass
+  - [ ] Connectivity between waterbodies
+  
+  ### Marine habitat
+  
+  Sea otters favour kelp-forest coastlines with shallow rocky reefs and urchin populations. They rarely come ashore.
+  
+  ### Continental ranges
+  
+  Otters occupy every continent except Australia and Antarctica. Densest populations remain in the Amazon, Congo basin, and Pacific Northwest.
+  
+  ---
+  
+  ## Observation
+  
+  *Field practice · A short protocol for spotting and recording otter activity without disturbing the animals.*
+  
+  > [!IMPORTANT] TL;DR
+  > Stay downwind, downstream, and silent. Otters are wary of humans and will abandon a holt that feels exposed. Use a 10× monocular and start from a screened position at dawn or dusk.
+  
+  ### Protocol
+  
+  1. **Choose a screened vantage**
+     Reedbed, hide, or a dense alder thicket — anything that breaks your silhouette and absorbs sound.
+  2. **Wait silently**
+     Allow at least 20 minutes for ambient wildlife to forget you are there.
+  3. **Record bare-eye, sketch on paper**
+     Phones glow. Sketch in pencil; transcribe later.
+  
+  ### What to record
+  
+  - [ ] Time, weather, water height
+  - [ ] Activity (foraging, grooming, transit)
+  - [ ] Direction of travel and last known position
+  - [ ] Any vocalisations
+  
+  ---
+  
+  ## Safety
+  
+  *Field practice · Brief notes on staying safe around wild otters and the waterbodies they inhabit.*
+  
+  > [!WARNING]
+  > Otters bite, and giant otters in particular will defend a den aggressively. Never approach a holt. If an animal is on shore between you and the water, retreat — never block its escape route.
+  
+  ### Personal safety
+  
+  - [ ] Keep at least 15 metres of distance
+  - [ ] Never feed or attempt to handle
+  - [ ] Carry a whistle for emergency signalling
+  - [ ] Watch the bank for current and slip hazards
+  
+  ### Animal welfare
+  
+  Disturbance is a measurable stressor. Limit each session to 90 minutes and rotate vantage points across visits so the same family group is not repeatedly observed.
+  
+  '''
+# ---
+# name: test_export_md_book_single[envelope]
+  dict({
+    'assets': 0,
+    'book': True,
+    'chapters': list([
+      'book.md',
+    ]),
+    'dropped': list([
+    ]),
+    'input': 'index.html',
+    'missing': list([
+    ]),
+    'mode': 'single',
+    'ok': True,
+    'output': 'book.md',
+  })
+# ---
+# name: test_export_md_single_file[data-design.html][data-design.html-envelope]
+  dict({
+    'assets': 0,
+    'book': True,
+    'chapters': list([
+      'out.md',
+    ]),
+    'dropped': list([
+    ]),
+    'input': 'data-design.html',
+    'missing': list([
+    ]),
+    'mode': 'single',
+    'ok': True,
+    'output': 'out.md',
+  })
+# ---
+# name: test_export_md_single_file[data-design.html][data-design.html-md]
+  '''
+  > [!NOTE]
+  > **DRAFT** — draft
+  
+  **Item Conversion**
+  
+  - [Overview](./index.md)
+  - [Functional design](./01-functional-design.md)
+  - **Technical design**
+    - [Data design](./02-data-design.md)
+    - [Projection engine](./03-projection-engine.md)
+    - [System design](./04-system-design.md)
+  - [Open questions](./05-open-questions.md)
+  
+  # Schemas, tables, and migrations
+  
+  *02 · Data design · The persistence shape of conversions: two new tables in app_data for user state, one new table in item_relationships for projection inputs, one new column on an existing IRP table. master_data is never modified — effective case counts are derived in the service layer. · Draft · 2026-05-19*
+  
+  > [!IMPORTANT] TL;DR
+  > A conversion is persisted as **two rows** (FROM side + TO side) that share a `conversion_id` UUID. Both rows carry signed integer `delta_cases` equal in absolute value. New enum `item_conversion_role`. New tables `app_data.unsaved_item_conversions` (per-user, versioned) and `app_data.saved_item_conversions` (per-timeframe), plus a `latest_unsaved_item_conversions` view mirroring the existing pattern. New table `item_relationships.supc_projected_opco_metrics` holds per-opco projected metrics for TO items missing from master. New nullable column `cross_purchase_ratio` on `item_relationships.item_pair_relationships`. All in one Liquibase changelog: `020-item-conversion-tables.xml`.
+  
+  ## Existing schema we touch
+  
+  The conversion design slots between three existing schemas without modifying any of them. This section quotes just enough of the live schema (verified on `main`) to make the new design self-contained.
+  
+  ### master_data.items
+  
+  **PK**: `(timeframe_id, itm_nbr)`
+  
+  Per-timeframe item registry. Items reference four choice-group types via UUID FKs (strict, relaxed, strict_presentation, relaxed_presentation). Conversion never writes here.
+  
+  *From `001-master-schema.xml` + `015-choice-groups-restructuring.xml`.*
+  
+  ### master_data.opco_items
+  
+  **PK**: `(timeframe_id, opco_itm_id)` · FK `itm_nbr → items`
+  
+  Per-opco realisation of an item with metrics: `cases, net_sales, gross_prft, gross_prft_vlcty` (all `DOUBLE PRECISION`). The FROM side of every conversion must exist here for the user's opco; **per-case metrics derived from this row are the primary projection input**.
+  
+  ### app_data.unsaved_changes
+  
+  **PK**: `(timeframe_id, opco_itm_id, username, version)`
+  
+  Per-user, versioned record of `ADDED` / `DELETED` / `NONE` against an opco_itm_id. References to `master_data.opco_items` are **logical only — no DB FK**. We follow that convention in the new tables.
+  
+  ### app_data.saved_changes
+  
+  **PK**: `(timeframe_id, opco_itm_id)`
+  
+  Per-timeframe "current saved state" — no user dimension. Save flow promotes the latest unsaved row into here.
+  
+  <details>
+  <summary>Show the existing latest_unsaved_changes view definition</summary>
+  
+  Mirror-pattern source for the new `latest_unsaved_item_conversions` view. From `007-new-tables.xml`:
+  
+  ```sql
+  // app_data.latest_unsaved_changes
+  WITH latest_unsaved_changes AS (
+      SELECT DISTINCT ON (unsaved_changes.timeframe_id,
+                          unsaved_changes.opco_itm_id,
+                          unsaved_changes.username)
+          unsaved_changes.timeframe_id,
+          unsaved_changes.opco_itm_id,
+          unsaved_changes.username,
+          unsaved_changes.user_action,
+          unsaved_changes.action_id,
+          unsaved_changes.created_at,
+          unsaved_changes.updated_at
+      FROM app_data.unsaved_changes
+      ORDER BY unsaved_changes.timeframe_id,
+               unsaved_changes.opco_itm_id,
+               unsaved_changes.username,
+               unsaved_changes.version DESC
+  )
+  SELECT uc.*
+    FROM latest_unsaved_changes uc
+    LEFT JOIN app_data.saved_changes sc
+      ON sc.timeframe_id = uc.timeframe_id
+     AND sc.opco_itm_id = uc.opco_itm_id
+   WHERE COALESCE(sc.user_action, 'NONE'::opco_item_action) IS DISTINCT FROM uc.user_action;
+  ```
+  
+  Two tricks worth absorbing: `DISTINCT ON … ORDER BY version DESC` for "latest per key", and `IS DISTINCT FROM` in the WHERE clause to drop rows whose unsaved value already matches the saved state (i.e. the user has effectively reverted their change). The new view reuses both.
+  
+  </details>
+  
+  > [!NOTE] Naming conventions (verified on main)
+  > - Primary keys: `pk_<table>`
+  > - Foreign keys: `fk_<base_table>_<referenced_table>`
+  > - Indexes: `idx_<table>_<columns>`
+  > - Unique constraints: `uq_<table>_<columns>`
+  > - Check constraints: `ck_<table>_<short_predicate>`
+  > - Liquibase changelogs: `NNN-feature-name.xml`, three-digit zero-padded sequence. Next slot: `020-item-conversion-tables.xml`.
+  > - Enum types live in their owning schema (per the convention established by `016-relocate-enum-types-to-owning-schemas.xml`).
+  
+  ## Mental model
+  
+  Every conversion is conceptually *one action* performed by *one user* on *one opco* within *one timeframe*. It involves *exactly two items*: a FROM whose effective case count goes down and a TO whose effective case count goes up, in matching absolute magnitudes.
+  
+  Two reasonable ways to persist that:
+  
+  #### Two-row model (chosen)
+  - Effective-cases computation is a clean `SUM(delta_cases) GROUP BY opco_itm_id` — no UNION over from/to columns.
+  - Mirrors the existing `unsaved_changes` shape (one row per `opco_itm_id`), so the rest of the codebase (queries, materialised views, agent SQL) extends naturally.
+  - The TO-side row tolerates a NULL `opco_itm_id` cleanly when the TO item isn't in master_data — only the TO row has the nullable column, the FROM row keeps its NOT NULL.
+  - Indexes on `opco_itm_id` support "what conversions affect this opco-item" queries directly.
+  
+  #### One-row model (rejected)
+  - A single conversion is two physical rows — need to remember to fetch both sides via `conversion_id` when displaying or editing.
+  - Constraint to keep both sides in sync (matching `|delta_cases|`, opposite signs) lives at the application layer, not the DB.
+  
+  Decision: **two-row**. The two cons are real but cheap to manage in the API layer (single transaction inserts both rows); the pros compound across every consumer of the data.
+  
+  Each row carries:
+  
+  - A **`conversion_id`** (UUID) shared by the FROM and TO rows. This is the single identifier the UI and API use to refer to "this conversion".
+  - A **`role`** enum (`FROM` or `TO`) for which side of the pair the row represents.
+  - The **`supc`** (always populated — canonical identifier even when `opco_itm_id` is NULL).
+  - The **`opco_itm_id`** (NOT NULL on the FROM side; nullable on the TO side for items not in master_data).
+  - The **`delta_cases`** — signed integer; negative on FROM, positive on TO; equal absolute magnitude across the two rows.
+  - Audit snapshots — **`sa_type`** (IRP relationship type used at conversion time) and **`cross_purchase_ratio`** (the advisory value shown to the user at conversion time, NULL if not populated by the Redshift job yet).
+  
+  > [!NOTE] What 'cross_purchase_ratio on the conversion record' is for
+  > The conversion record carries a *snapshot* of the ratio at the moment the conversion was made. The live ratio lives on `item_relationships.item_pair_relationships` and is refreshed by the (future) Redshift job. Snapshotting on the conversion lets us answer questions like "how often do users override the system's suggestion?" and "what did the data say at the time the merchandiser decided?" — purely audit / analytics, not for math.
+  
+  ## Schema overview — entity-relationship diagram
+  
+  The full picture, including the existing tables we read from but never write to. New tables and columns are highlighted with the `<<new>>` stereotype.
+  
+  ```plantuml
+  @startuml
+  !theme plain
+  hide circle
+  skinparam linetype ortho
+  skinparam roundCorner 8
+  
+  ' ========== existing: master_data ==========
+  package "master_data" as md {
+    entity "items" as items {
+      * timeframe_id : INT <<PK>>
+      * itm_nbr : VARCHAR(50) <<PK>>
+      --
+      hierarchy_id : INT
+      relaxed_choice_group_id : UUID
+      relaxed_presentation_choice_group_id : UUID
+      itm_desc : TEXT
+      sysco_brnd_ind : VARCHAR(1)
+    }
+  
+    entity "opco_items" as opco_items {
+      * timeframe_id : INT <<PK,FK>>
+      * opco_itm_id : BIGINT <<PK>>
+      --
+      itm_nbr : VARCHAR(50) <<FK>>
+      opco_id : VARCHAR(50)
+      cases : DOUBLE PRECISION
+      net_sales : DOUBLE PRECISION
+      gross_prft : DOUBLE PRECISION
+      gross_prft_vlcty : DOUBLE PRECISION
+      rec_type : rec_type
+    }
+  }
+  
+  ' ========== existing: app_data ==========
+  package "app_data" as ad {
+    entity "unsaved_changes" as uc {
+      * timeframe_id : INT <<PK,FK>>
+      * opco_itm_id : BIGINT <<PK>>
+      * username : VARCHAR(50) <<PK,FK>>
+      * version : INT <<PK>>
+      --
+      user_action : opco_item_action
+      action_id : VARCHAR(36)
+      created_at / updated_at
+    }
+  
+    entity "saved_changes" as sc {
+      * timeframe_id : INT <<PK,FK>>
+      * opco_itm_id : BIGINT <<PK>>
+      --
+      user_action : opco_item_action
+    }
+  
+    entity "timeframes" as tf {
+      * id : INT <<PK>>
+    }
+  
+    entity "users" as users {
+      * username : VARCHAR(50) <<PK>>
+    }
+  
+    ' ========== NEW ==========
+    entity "unsaved_item_conversions" as uic <<new>> #LightYellow {
+      * conversion_id : UUID <<PK>>
+      * role : item_conversion_role <<PK>>
+      * version : INT <<PK>>
+      --
+      * timeframe_id : INT <<FK>>
+      * username : VARCHAR(50) <<FK>>
+      * opco_id : VARCHAR(50)
+      * supc : VARCHAR(50)
+      opco_itm_id : BIGINT  /' nullable for TO '/
+      * delta_cases : INT  /' signed '/
+      sa_type : VARCHAR(10)
+      cross_purchase_ratio : NUMERIC(5,4)
+      created_at / updated_at
+    }
+  
+    entity "saved_item_conversions" as sic <<new>> #LightYellow {
+      * conversion_id : UUID <<PK>>
+      * role : item_conversion_role <<PK>>
+      --
+      * timeframe_id : INT <<FK>>
+      * opco_id : VARCHAR(50)
+      * supc : VARCHAR(50)
+      opco_itm_id : BIGINT
+      * delta_cases : INT
+      sa_type : VARCHAR(10)
+      cross_purchase_ratio : NUMERIC(5,4)
+    }
+  }
+  
+  ' ========== existing+new: item_relationships ==========
+  package "item_relationships" as ir {
+    entity "supc_store" as ss {
+      * supc : VARCHAR(20) <<PK>>
+      --
+      bc_name / ig_name / ag_name
+      item_description
+      sysco_brand_indicator
+      prioritized_nb_indicator
+      avg_gpv
+    }
+  
+    entity "item_pair_relationships" as ipr {
+      * id : BIGSERIAL <<PK>>
+      --
+      * from_supc : VARCHAR(20)
+      * to_supc : VARCHAR(20)
+      sa_type : VARCHAR(10)
+      cross_purchase_ratio : NUMERIC(5,4) <<new>>
+    }
+  
+    entity "supc_projected_opco_metrics" as spm <<new>> #LightYellow {
+      * supc : VARCHAR(20) <<PK>>
+      * opco_id : VARCHAR(50) <<PK,NULL-distinct>>
+      --
+      projected_per_case_gp : NUMERIC
+      projected_per_case_net_sales : NUMERIC
+      projected_gross_prft_vlcty : NUMERIC
+      projection_source : projection_source
+      last_refreshed_at : TIMESTAMP
+    }
+  }
+  
+  ' relationships
+  items ||--o{ opco_items
+  tf ||--o{ uc
+  tf ||--o{ sc
+  users ||--o{ uc
+  tf ||--o{ uic
+  users ||--o{ uic
+  tf ||--o{ sic
+  
+  ' logical (no DB FK)
+  opco_items }o..o{ uc : "opco_itm_id (logical)"
+  opco_items }o..o{ sc : "opco_itm_id (logical)"
+  opco_items }o..o{ uic : "opco_itm_id (logical, nullable on TO)"
+  opco_items }o..o{ sic : "opco_itm_id (logical, nullable on TO)"
+  
+  uic ||--o| sic : "promoted on save\n(conversion_id)"
+  
+  ss }o..o{ uic : "supc (logical)"
+  ss }o..o{ sic : "supc (logical)"
+  ss ||--o{ ipr : "supc"
+  ss ||--o{ spm : "supc"
+  
+  @enduml
+  ```
+  
+  Two important shapes to read off the diagram:
+  
+  - **Logical-only references from `app_data` to `master_data` / `item_relationships`** (dotted lines). No DB-level FKs cross schema; this matches the existing `unsaved_changes` / `saved_changes` convention and keeps app_data decoupled from master ETL reloads.
+  - **The promotion line** from `unsaved_item_conversions` to `saved_item_conversions` via `conversion_id` — same shape as `unsaved_changes → saved_changes`, but keyed by conversion instead of opco_itm_id (since conversions are additive, not last-write-wins).
+  
+  ## New enum types
+  
+  ```sql
+  // app_data — item_conversion_role
+  CREATE TYPE app_data.item_conversion_role AS ENUM (
+      'FROM',
+      'TO'
+  );
+  ```
+  
+  ```sql
+  // item_relationships — projection_source
+  CREATE TYPE item_relationships.projection_source AS ENUM (
+      'opco_observed',           -- T1, this opco's actual opco_items row
+      'cross_opco_harmonic_mean',-- T1, other opcos' rows, harmonic mean
+      'hierarchy_average',       -- T2, BC/IG/AG average across opco_items
+      'network_average',         -- T3, hierarchy average computed once globally
+      'none'                     -- no projection possible (no hierarchy data)
+  );
+  ```
+  
+  Both follow the convention established by `016-relocate-enum-types-to-owning-schemas.xml` — enums live in the schema that owns them. Each `CREATE TYPE` is wrapped in a Liquibase `preConditions` block that checks `pg_type`, matching the pattern used for `opco_item_action`.
+  
+  ## app_data.unsaved_item_conversions
+  
+  ```sql
+  // DDL — unsaved_item_conversions
+  CREATE TABLE app_data.unsaved_item_conversions (
+      conversion_id          UUID         NOT NULL,
+      role                   app_data.item_conversion_role NOT NULL,
+      version                INTEGER      NOT NULL DEFAULT 1,
+      timeframe_id           INTEGER      NOT NULL,
+      username               VARCHAR(50)  NOT NULL,
+      opco_id                VARCHAR(50)  NOT NULL,
+      supc                   VARCHAR(50)  NOT NULL,
+      opco_itm_id            BIGINT,
+      delta_cases            INTEGER      NOT NULL,
+      sa_type                VARCHAR(10),
+      cross_purchase_ratio   NUMERIC(5,4),
+      created_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  
+      CONSTRAINT pk_unsaved_item_conversions
+          PRIMARY KEY (conversion_id, role, version),
+  
+      CONSTRAINT fk_unsaved_item_conversions_timeframe
+          FOREIGN KEY (timeframe_id)
+          REFERENCES app_data.timeframes(id)
+          ON DELETE CASCADE,
+  
+      CONSTRAINT fk_unsaved_item_conversions_user
+          FOREIGN KEY (username)
+          REFERENCES app_data.users(username)
+          ON DELETE CASCADE,
+  
+      CONSTRAINT ck_unsaved_item_conversions_sign
+          CHECK (
+              (role = 'FROM' AND delta_cases < 0) OR
+              (role = 'TO'   AND delta_cases > 0)
+          ),
+  
+      CONSTRAINT ck_unsaved_item_conversions_from_has_id
+          CHECK (role = 'TO' OR opco_itm_id IS NOT NULL),
+  
+      CONSTRAINT ck_unsaved_item_conversions_ratio
+          CHECK (cross_purchase_ratio IS NULL OR
+                 (cross_purchase_ratio >= 0 AND cross_purchase_ratio <= 1))
+  );
+  
+  CREATE INDEX idx_unsaved_item_conversions_user_timeframe
+      ON app_data.unsaved_item_conversions (username, timeframe_id);
+  
+  CREATE INDEX idx_unsaved_item_conversions_opco_itm
+      ON app_data.unsaved_item_conversions (opco_itm_id)
+      WHERE opco_itm_id IS NOT NULL;
+  
+  CREATE INDEX idx_unsaved_item_conversions_supc_opco
+      ON app_data.unsaved_item_conversions (supc, opco_id);
+  ```
+  
+  **Column notes**
+  
+  - **conversion_id:** **UUID generated by the API on conversion create.** Identical on both FROM and TO rows of the same conversion. Survives the unsaved → saved promotion.
+  - **role:** Enum `FROM` or `TO`. Each conversion has exactly one row of each role per (conversion_id, version).
+  - **version:** Starts at 1. The user editing a conversion appends a new pair of rows with `version + 1`; old versions are retained for audit. The `latest_unsaved_item_conversions` view exposes only the highest version.
+  - **timeframe_id:** FK to `app_data.timeframes`. The conversion is tied to a timeframe because per-case metrics, choice groups, and the user's simulation context are all timeframe-scoped.
+  - **username:** FK to `app_data.users`. Unsaved state is per-user.
+  - **opco_id:** No FK to `master_data.opcos` — consistent with how the existing schema handles opco references in app_data (string keys, logical reference).
+  - **supc:** Canonical SUPC string. **Always populated**, even when `opco_itm_id` is NULL (TO items missing from master_data). The supc value identifies the item universally; the opco_itm_id is just a master_data-side resolution.
+  - **opco_itm_id:** Nullable. **Must be NOT NULL on FROM rows** (you can only move volume that exists in `opco_items`), enforced by `ck_..._from_has_id`. NULL on TO rows when the TO item isn't stocked by the opco — projections come from `supc_projected_opco_metrics` instead.
+  - **delta_cases:** Signed integer. `ck_..._sign` enforces FROM < 0 and TO > 0. Equal absolute magnitude across the two rows of a single conversion is application-enforced (single INSERT statement / transaction).
+  - **sa_type:** Audit snapshot of which IRP relationship type the user picked (`C`, `I`, `SA1`). Nullable for cases where the conversion was free-text-entered without an IRP candidate (open question — see [open questions](./05-open-questions.md)).
+  - **cross_purchase_ratio:** Audit snapshot of what the live ratio said at conversion time. `NUMERIC(5,4)` for [0.0000, 1.0000] with bps precision. NULL when no ratio exists yet (v1 default, until Redshift job is wired up).
+  
+  > [!NOTE] Why composite PK and no surrogate id
+  > The natural identity of a row is `(conversion_id, role, version)`. Both `unsaved_changes` (composite PK) and `unsaved_simulations` (surrogate id) patterns exist in app_data; composite suits conversions better because the components have meaning and queries frequently filter by `(conversion_id, version)`.
+  
+  <details open>
+  <summary>Worked-example rows for the canonical 950 × 10% case</summary>
+  
+  Alice converts 95 cases of SUPC `0010165` (FROM) to SUPC `0013060` (TO) in opco `042`, timeframe `12`. Initial creation produces one INSERT of two rows:
+  
+  ```sql
+  // Initial conversion (version 1)
+  INSERT INTO app_data.unsaved_item_conversions (
+      conversion_id, role, version,
+      timeframe_id, username, opco_id,
+      supc,      opco_itm_id, delta_cases,
+      sa_type, cross_purchase_ratio
+  ) VALUES
+  ('c1a-...', 'FROM', 1,
+   12, 'alice', '042',
+   '0010165',  554321,      -95,
+   'C', 0.3500),
+  ('c1a-...', 'TO',   1,
+   12, 'alice', '042',
+   '0013060',  554322,       95,
+   'C', 0.3500);
+  ```
+  
+  Alice then changes her mind and bumps it to 120 cases. A second INSERT writes `version = 2`:
+  
+  ```sql
+  // Edit (version 2)
+  INSERT INTO app_data.unsaved_item_conversions (...)
+  VALUES
+  ('c1a-...', 'FROM', 2, ..., -120, 'C', 0.3500),
+  ('c1a-...', 'TO',   2, ..., +120, 'C', 0.3500);
+  ```
+  
+  Version 1 is retained for audit. The `latest_unsaved_item_conversions` view returns only version 2.
+  
+  If Alice removes the conversion before saving, both versions are hard-deleted (no tombstone needed — saved state is empty, so the absence of the rows is the absence of the conversion). If Alice has already saved and wants to undo, she creates a *new* conversion in the opposite direction (different `conversion_id`) — see [Q2 in open questions](./05-open-questions.md).
+  
+  </details>
+  
+  ## app_data.saved_item_conversions
+  
+  ```sql
+  // DDL — saved_item_conversions
+  CREATE TABLE app_data.saved_item_conversions (
+      conversion_id          UUID         NOT NULL,
+      role                   app_data.item_conversion_role NOT NULL,
+      timeframe_id           INTEGER      NOT NULL,
+      opco_id                VARCHAR(50)  NOT NULL,
+      supc                   VARCHAR(50)  NOT NULL,
+      opco_itm_id            BIGINT,
+      delta_cases            INTEGER      NOT NULL,
+      sa_type                VARCHAR(10),
+      cross_purchase_ratio   NUMERIC(5,4),
+      created_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at             TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  
+      CONSTRAINT pk_saved_item_conversions
+          PRIMARY KEY (conversion_id, role),
+  
+      CONSTRAINT fk_saved_item_conversions_timeframe
+          FOREIGN KEY (timeframe_id)
+          REFERENCES app_data.timeframes(id)
+          ON DELETE CASCADE,
+  
+      CONSTRAINT ck_saved_item_conversions_sign
+          CHECK (
+              (role = 'FROM' AND delta_cases < 0) OR
+              (role = 'TO'   AND delta_cases > 0)
+          ),
+  
+      CONSTRAINT ck_saved_item_conversions_from_has_id
+          CHECK (role = 'TO' OR opco_itm_id IS NOT NULL),
+  
+      CONSTRAINT ck_saved_item_conversions_ratio
+          CHECK (cross_purchase_ratio IS NULL OR
+                 (cross_purchase_ratio >= 0 AND cross_purchase_ratio <= 1))
+  );
+  
+  CREATE INDEX idx_saved_item_conversions_timeframe
+      ON app_data.saved_item_conversions (timeframe_id);
+  
+  CREATE INDEX idx_saved_item_conversions_opco_itm
+      ON app_data.saved_item_conversions (opco_itm_id)
+      WHERE opco_itm_id IS NOT NULL;
+  
+  CREATE INDEX idx_saved_item_conversions_supc_opco
+      ON app_data.saved_item_conversions (supc, opco_id);
+  ```
+  
+  Differences from the unsaved table:
+  
+  - **No `username` column.** Saved state is per-timeframe, not per-user — the same convention as `saved_changes`.
+  - **No `version` column.** Saved conversions are immutable; editing a saved conversion isn't a thing in v1 (see Q2 in [open questions](./05-open-questions.md)). Audit history of how the conversion was edited *before* saving stays in the unsaved table — though we do not currently retain that history past the save (it's deleted along with the unsaved rows).
+  - **No FK to `users`.** Removing a user does not roll back their saved conversions; they're part of the timeframe's collective state.
+  
+  > [!NOTE] Should saved unsaved-history survive the save?
+  > Reasonable case for adding a `saved_item_conversions_history` table mirroring the existing `saved_changes_history` pattern (from `004-history-table-additions.xml`). Deferred to [open questions](./05-open-questions.md) — depends on whether anyone actually needs "show me every edit Alice made to this conversion before she saved it".
+  
+  ## app_data.latest_unsaved_item_conversions (view)
+  
+  Mirrors the existing `latest_unsaved_changes` pattern: latest version per (conversion_id, role, username) plus a filter that drops rows whose contents already match the saved state.
+  
+  ```sql
+  // View — latest_unsaved_item_conversions
+  CREATE OR REPLACE VIEW app_data.latest_unsaved_item_conversions AS
+  WITH latest AS (
+      SELECT DISTINCT ON (uic.conversion_id, uic.role, uic.username)
+          uic.conversion_id,
+          uic.role,
+          uic.username,
+          uic.version,
+          uic.timeframe_id,
+          uic.opco_id,
+          uic.supc,
+          uic.opco_itm_id,
+          uic.delta_cases,
+          uic.sa_type,
+          uic.cross_purchase_ratio,
+          uic.created_at,
+          uic.updated_at
+        FROM app_data.unsaved_item_conversions uic
+       ORDER BY uic.conversion_id,
+                uic.role,
+                uic.username,
+                uic.version DESC
+  )
+  SELECT l.*
+    FROM latest l
+    LEFT JOIN app_data.saved_item_conversions sic
+      ON sic.conversion_id = l.conversion_id
+     AND sic.role          = l.role
+   WHERE COALESCE(sic.delta_cases, 0)        IS DISTINCT FROM l.delta_cases
+      OR COALESCE(sic.supc, '')              IS DISTINCT FROM l.supc
+      OR COALESCE(sic.opco_itm_id, -1)       IS DISTINCT FROM COALESCE(l.opco_itm_id, -1);
+  ```
+  
+  The filter logic differs in spirit from `latest_unsaved_changes` (which compares enum values) — here we drop rows when the unsaved record's "shape" (delta, target SUPC, target opco_itm_id) already matches what's saved. In practice the saved-conversion pattern is "new conversions are always new `conversion_id`s", so the view's filter is mainly a guard against re-saving an already-saved conversion that has had no further unsaved edits.
+  
+  > [!NOTE]
+  > The Java side maps this view to an immutable read-only entity (mirroring `LatestUnsavedChange.java`). Repositories use it for "what does Alice's pending state look like" reads, and the save flow uses it to discover which rows to promote.
+  
+  ## item_relationships.supc_projected_opco_metrics (new)
+  
+  Holds per-opco projected per-case metrics for SUPCs that appear in IRP pairs but are missing from `master_data.opco_items` for the user's opco. Populated by the daily item-rel ETL (algorithm details in [projection engine](./03-projection-engine.md)). The conversion projection layer reads this when computing impact for a TO row whose `opco_itm_id` is NULL.
+  
+  ```sql
+  // DDL — supc_projected_opco_metrics
+  CREATE TABLE item_relationships.supc_projected_opco_metrics (
+      supc                          VARCHAR(20) NOT NULL,
+      opco_id                       VARCHAR(50),
+      projected_per_case_gp         NUMERIC(12,4),
+      projected_per_case_net_sales  NUMERIC(12,4),
+      projected_gross_prft_vlcty    NUMERIC(12,4),
+      projection_source             item_relationships.projection_source NOT NULL,
+      last_refreshed_at             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  
+      CONSTRAINT pk_supc_projected_opco_metrics
+          PRIMARY KEY (supc, COALESCE(opco_id, '')),
+  );
+  
+  CREATE INDEX idx_supc_projected_opco_metrics_supc
+      ON item_relationships.supc_projected_opco_metrics (supc);
+  ```
+  
+  > [!WARNING] A note on the COALESCE'd primary key
+  > Standard SQL doesn't allow expressions in `PRIMARY KEY`; PostgreSQL does support `UNIQUE INDEX` on expressions but not PK. Practical alternatives:
+  >
+  > - **(a)** Use a non-NULL sentinel like `opco_id = ''` for network-level rows; PK is `(supc, opco_id)`.
+  > - **(b)** Use the PG-15+ `NULLS NOT DISTINCT` clause: `UNIQUE NULLS NOT DISTINCT (supc, opco_id)` as a unique constraint (not PK).
+  >
+  > v1 chooses **(a)** — empty string for network-level rows. It's portable and reads cleanly. The doc'd PK above is illustrative; the real migration uses `opco_id VARCHAR(50) NOT NULL DEFAULT ''` with a normal composite PK.
+  
+  **Column notes**
+  
+  - **supc:** SUPC string. Always populated. Soft reference to `supc_store.supc`.
+  - **opco_id:** Empty string for network-level (T3) rows, otherwise the opco identifier. The application layer maps `''` ↔ `NULL` at read time so the rest of the codebase sees a clean nullable.
+  - **projected_per_case_gp / projected_per_case_net_sales:** Projected per-case GP and net sales. Same unit as `opco_items.gross_prft / cases` etc.
+  - **projected_gross_prft_vlcty:** Projected weekly GPV — used for parity with the existing `opco_items.gross_prft_vlcty` field (and downstream consumers that may need it).
+  - **projection_source:** Enum identifying which tier produced the projection. Drives the UI's confidence badge.
+  - **last_refreshed_at:** When the daily ETL last computed this row. Helps surface stale projections after a master-data refresh (see Q4 in open questions).
+  
+  ## item_relationships.item_pair_relationships — modified
+  
+  The PoC already created this table (per `chandimas-work/` notes) with columns `id, from_supc, to_supc, sa_type, sa_lot_number, sa_lot_string`. v1 adds one nullable column:
+  
+  ```sql
+  // ALTER — add cross_purchase_ratio
+  ALTER TABLE item_relationships.item_pair_relationships
+      ADD COLUMN cross_purchase_ratio NUMERIC(5,4),
+      ADD CONSTRAINT ck_item_pair_relationships_ratio
+          CHECK (cross_purchase_ratio IS NULL OR
+                 (cross_purchase_ratio >= 0 AND cross_purchase_ratio <= 1));
+  ```
+  
+  Populated by a future Redshift job (out of v1 scope — see Q5 in [open questions](./05-open-questions.md)). v1 ships with the column present and NULL; the UI falls back to "—" everywhere it would show the ratio.
+  
+  ## Effective cases — derived in the service layer
+  
+  The UI needs "what's the effective case count of this opco_itm_id in this opco for this user right now?" — a number that respects both the master_data baseline and the pending deltas from unsaved/saved conversions and unsaved/saved adds/deletes.
+  
+  > [!NOTE] Decision: compute in the service layer, not as a SQL view
+  > A natural design instinct is a SQL view `effective_opco_items`. We rejected it for v1 because:
+  >
+  > - PostgreSQL views can't take parameters; "for this user" would force a parameterised function instead, complicating querying.
+  > - The math is trivial — `opco_items.cases + Σ(deltas)` — and the inputs are already fetched for other reasons (the UI loads pending changes for the panel anyway).
+  > - Keeping it in the service layer lets us add policy (e.g. "what if user X is reviewing user Y's saved state?") without DDL changes.
+  
+  The formula, for opco_itm_id `X` in opco `O` for user `U` in timeframe `T`:
+  
+  $$
+  \text{effective\_cases}(X, O, U, T) = \underbrace{C_\text{master}}_{\text{opco\_items.cases}} + \underbrace{\Delta_\text{saved}^{X}}_{\text{Σ saved conversions for X}} + \underbrace{\Delta_\text{unsaved}^{X,U}}_{\text{Σ latest-unsaved conversions for X, user U}}
+  $$
+  
+  Where each Σ is over `delta_cases` from `saved_item_conversions` and `latest_unsaved_item_conversions` respectively, joined on `opco_itm_id = X`. ADDED/DELETED contributions from `unsaved_changes`/`saved_changes` only affect whether the item is "in the assortment" (count-based), not its case figure, so they don't enter this formula.
+  
+  <details>
+  <summary>SQL snippet — fetching pending deltas for a user's simulation window</summary>
+  
+  ```sql
+  // Per-(opco_itm_id) net delta for one (user, timeframe)
+  SELECT oi.opco_itm_id,
+         oi.cases::INT                                              AS master_cases,
+         COALESCE(SUM(sic.delta_cases), 0)                          AS saved_delta,
+         COALESCE(SUM(luic.delta_cases), 0)                         AS unsaved_delta,
+         oi.cases::INT
+           + COALESCE(SUM(sic.delta_cases), 0)
+           + COALESCE(SUM(luic.delta_cases), 0)                     AS effective_cases
+    FROM master_data.opco_items oi
+    LEFT JOIN app_data.saved_item_conversions sic
+      ON sic.opco_itm_id = oi.opco_itm_id
+     AND sic.timeframe_id = oi.timeframe_id
+    LEFT JOIN app_data.latest_unsaved_item_conversions luic
+      ON luic.opco_itm_id = oi.opco_itm_id
+     AND luic.timeframe_id = oi.timeframe_id
+     AND luic.username = :username
+   WHERE oi.timeframe_id = :timeframe_id
+     AND oi.opco_itm_id  = ANY(:opco_itm_ids)
+   GROUP BY oi.opco_itm_id, oi.cases;
+  ```
+  
+  </details>
+  
+  ## Conversion lifecycle (state diagram)
+  
+  ```plantuml
+  @startuml
+  !theme plain
+  skinparam state {
+    BackgroundColor #FAFAFA
+    BorderColor #888
+    FontName Helvetica
+  }
+  
+  [*] --> Drafting : user opens Convert,\npicks FROM + TO + slider
+  
+  state "Unsaved · v1" as v1 #PaleTurquoise {
+    Drafting : delta_cases stored\n(both FROM and TO rows)
+  }
+  
+  state "Unsaved · v2..vN" as vN #PaleTurquoise {
+  }
+  
+  v1 --> vN : user edits\n(new version row pair)
+  vN --> vN : further edits
+  
+  v1 --> Removed : user removes\n(hard-delete rows)
+  vN --> Removed : user removes
+  Removed --> [*]
+  
+  state "Saved" as saved #LightGreen {
+    saved : single row pair\nin saved_item_conversions\n(no version, no username)
+  }
+  
+  v1   --> saved : save flow:\ninsert into saved,\ndelete from unsaved
+  vN   --> saved : save flow uses latest version
+  
+  saved --> Reversed : user wants undo\nafter save
+  Reversed : NEW conversion_id\nin opposite direction\n(FROM/TO swapped,\ndelta_cases sign flipped)
+  Reversed --> [*]
+  
+  note right of saved
+    Saved conversions are immutable.
+    Multiple users' saved conversions
+    coexist in the timeframe — deltas
+    accumulate additively.
+  end note
+  
+  note right of vN
+    Old versions retained in
+    unsaved_item_conversions
+    until save or remove.
+    latest_unsaved view returns
+    only the highest version.
+  end note
+  
+  @enduml
+  ```
+  
+  Notes on each transition:
+  
+  - **v1 creation** is two INSERTs in one transaction — one FROM row, one TO row, same `conversion_id`.
+  - **Edit (vN)** is two more INSERTs with `version = MAX(version) + 1`. Old version rows stay put.
+  - **Remove (pre-save)** hard-deletes every row matching `(conversion_id)` across all versions. No tombstone needed because there's nothing in saved to revert against.
+  - **Save** inserts the latest-version pair into `saved_item_conversions` (in one transaction) and deletes every row matching `(conversion_id, username)` from `unsaved_item_conversions`.
+  - **Reverse (post-save)** creates a brand new conversion with a fresh `conversion_id`, opposite role assignments and signs. The original saved conversion remains; reversal is additive, fully reflected in the running sum used by the effective-cases calculation. This is the v1 stance for undo per Q2 in open questions; a future "voided" flag would change this.
+  
+  ## Liquibase migration plan
+  
+  All schema changes ship as one new changelog file, slotted at the next sequential number per the naming convention.
+  
+  ```xml
+  // src/main/resources/db/migrations/020-item-conversion-tables.xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <databaseChangeLog
+      xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+  
+    <!-- 1. enum types -->
+    <changeSet id="020-create-type-item-conversion-role" author="aot">
+      <preConditions onFail="MARK_RAN">
+        <sqlCheck expectedResult="0">
+          SELECT COUNT(*) FROM pg_type WHERE typname = 'item_conversion_role'
+        </sqlCheck>
+      </preConditions>
+      <sql>
+        CREATE TYPE app_data.item_conversion_role AS ENUM ('FROM', 'TO');
+      </sql>
+    </changeSet>
+  
+    <changeSet id="020-create-type-projection-source" author="aot">
+      <preConditions onFail="MARK_RAN">
+        <sqlCheck expectedResult="0">
+          SELECT COUNT(*) FROM pg_type WHERE typname = 'projection_source'
+        </sqlCheck>
+      </preConditions>
+      <sql>
+        CREATE TYPE item_relationships.projection_source AS ENUM (
+          'opco_observed', 'cross_opco_harmonic_mean',
+          'hierarchy_average', 'network_average', 'none'
+        );
+      </sql>
+    </changeSet>
+  
+    <!-- 2. unsaved_item_conversions (table + constraints + indexes) -->
+    <changeSet id="020-create-table-unsaved-item-conversions" author="aot"> … </changeSet>
+  
+    <!-- 3. saved_item_conversions -->
+    <changeSet id="020-create-table-saved-item-conversions" author="aot"> … </changeSet>
+  
+    <!-- 4. latest_unsaved_item_conversions view -->
+    <changeSet id="020-create-view-latest-unsaved-item-conversions" author="aot"> … </changeSet>
+  
+    <!-- 5. supc_projected_opco_metrics -->
+    <changeSet id="020-create-table-supc-projected-opco-metrics" author="aot"> … </changeSet>
+  
+    <!-- 6. cross_purchase_ratio on item_pair_relationships -->
+    <changeSet id="020-add-cross-purchase-ratio-to-item-pair-relationships" author="aot"> … </changeSet>
+  
+  </databaseChangeLog>
+  ```
+  
+  > [!NOTE] Why one changelog file
+  > The six changes form one logical migration ("introduce item conversion persistence"). Rolling out partial state (e.g. tables without the view) would leave the API in a broken intermediate. Liquibase still permits per-changeSet rollback within the file.
+  
+  - [ ] Each `createTable` changeSet writes the table, primary key, foreign keys, check constraints, and indexes in the order they appear in the DDL above.
+  - [ ] Add `rollback` blocks to every changeSet (Liquibase requirement for non-auto-rollbackable changes like `CREATE TYPE` and views).
+  - [ ] The view changeSet uses `<createView>` with `replaceIfExists="true"` so re-applies are safe.
+  - [ ] Run Spotless after authoring (per `aot-api/AGENTS.md`): `./gradlew.bat spotlessApply`.
+  
+  ## Index strategy
+  
+  | Query pattern | Index used |
+  | --- | --- |
+  | Load Alice's pending conversions for timeframe 12 | `idx_unsaved_item_conversions_user_timeframe(username, timeframe_id)` |
+  | What conversions touch opco_itm_id 554321 (any user, any state)? | `idx_unsaved_item_conversions_opco_itm` + `idx_saved_item_conversions_opco_itm` (partial WHERE NOT NULL) |
+  | Show all conversions affecting SUPC 0013060 in opco 042 | `idx_unsaved_item_conversions_supc_opco` + `idx_saved_item_conversions_supc_opco` |
+  | Saved conversions for timeframe 12 (e.g. simulation aggregate roll-up) | `idx_saved_item_conversions_timeframe` |
+  | Latest version per conversion_id (used by view) | Composite PK `(conversion_id, role, version)` serves as the index — DISTINCT ON walks it in reverse |
+  
+  ## Java / JPA mapping notes
+  
+  One entity per table. Style mirrors `UnsavedChange.java` / `SavedChange.java`. Sketches:
+  
+  ```java
+  // ItemConversionRole.java
+  package com.sysco.eat.api.data.embeddable;
+  
+  public enum ItemConversionRole {
+      FROM,
+      TO
+  }
+  ```
+  
+  ```java
+  // UnsavedItemConversion.java (skeleton)
+  @Entity
+  @Table(name = "unsaved_item_conversions", schema = "app_data")
+  @IdClass(UnsavedItemConversion.UnsavedItemConversionId.class)
+  @Builder @AllArgsConstructor @NoArgsConstructor @Data
+  public class UnsavedItemConversion {
+  
+      @Id @Column(name = "conversion_id", columnDefinition = "uuid")
+      private UUID conversionId;
+  
+      @Id
+      @Enumerated(EnumType.STRING)
+      @Column(name = "role", columnDefinition = "app_data.item_conversion_role")
+      private ItemConversionRole role;
+  
+      @Id
+      @Column(name = "version")
+      private Integer version;
+  
+      @Column(name = "timeframe_id") private Integer timeframeId;
+      @Column(name = "username")     private String  username;
+      @Column(name = "opco_id")      private String  opcoId;
+      @Column(name = "supc")         private String  supc;
+      @Column(name = "opco_itm_id")  private Long    opcoItmId;     // nullable
+      @Column(name = "delta_cases")  private Integer deltaCases;
+      @Column(name = "sa_type")      private String  saType;
+      @Column(name = "cross_purchase_ratio")
+      private BigDecimal crossPurchaseRatio;
+  
+      @Column(name = "created_at", updatable = false)
+      private OffsetDateTime createdAt;
+  
+      @Column(name = "updated_at")
+      private OffsetDateTime updatedAt;
+  
+      @Data @NoArgsConstructor @AllArgsConstructor
+      public static class UnsavedItemConversionId implements Serializable {
+          private UUID conversionId;
+          private ItemConversionRole role;
+          private Integer version;
+      }
+  }
+  ```
+  
+  ```java
+  // SavedItemConversion.java (skeleton)
+  @Entity
+  @Table(name = "saved_item_conversions", schema = "app_data")
+  @IdClass(SavedItemConversion.SavedItemConversionId.class)
+  public class SavedItemConversion {
+      @Id private UUID conversionId;
+      @Id @Enumerated(EnumType.STRING) private ItemConversionRole role;
+      // … same columns minus username + version …
+  }
+  ```
+  
+  ```java
+  // LatestUnsavedItemConversion.java (view-backed, immutable)
+  @Entity
+  @Immutable
+  @Table(name = "latest_unsaved_item_conversions", schema = "app_data")
+  @IdClass(LatestUnsavedItemConversion.LatestUnsavedItemConversionId.class)
+  public class LatestUnsavedItemConversion {
+      @Id private UUID conversionId;
+      @Id @Enumerated(EnumType.STRING) private ItemConversionRole role;
+      @Id private String username;
+      // … rest of columns …
+  }
+  ```
+  
+  ## Open questions tracked here
+  
+  - Should we keep a `saved_item_conversions_history` table, mirroring `saved_changes_history`? Useful for audit; out of v1 unless we hear a concrete ask.
+  - Conversions without an IRP candidate (user free-types a TO SUPC) — does the FROM row carry `sa_type = NULL`, or do we reject the conversion at the API? Closely tied to whether v1 supports IRP-less conversions at all.
+  - Indexing the `(conversion_id)` alone for "fetch both sides of a conversion" — the PK index serves it, but a covering index could speed up the API's most common read. Defer until we measure.
+  - Does `conversion_id` need a uniqueness check against `saved_item_conversions` when promoting? Today the save flow is "delete unsaved, insert saved" in one transaction; a unique constraint on (conversion_id, role) in saved naturally rejects double-saves. Verify in implementation.
+  
+  ## Cross-references
+  
+  - **How projected per-case metrics are computed** — [03 · Projection engine](./03-projection-engine.md)
+  - **How the API reads/writes these tables and where the conversion lifecycle lives** — [04 · System design](./04-system-design.md)
+  - **Unresolved schema-touching decisions** — [Q1, Q2 in open questions](./05-open-questions.md#blockers)
+  - **The decisions that produced this design** — [D-1 … D-7 in index](./index.md#decisions)
+  
+  
+  '''
+# ---
+# name: test_export_md_single_file[diagram.html][diagram.html-envelope]
+  dict({
+    'assets': 0,
+    'book': False,
+    'chapters': list([
+      'out.md',
+    ]),
+    'dropped': list([
+    ]),
+    'input': 'diagram.html',
+    'missing': list([
+    ]),
+    'mode': 'single',
+    'ok': True,
+    'output': 'out.md',
+  })
+# ---
+# name: test_export_md_single_file[diagram.html][diagram.html-md]
+  '''
+  # One element, every diagram language.
+  
+  *Component reference · <rd-diagram lang='…'> covers ~25 diagram types via Kroki. Source goes out, SVG comes back — no client-side renderer libraries. · Component: rd-diagram*
+  
+  > [!IMPORTANT] Trust contract
+  > Every diagram POSTs its source to a Kroki endpoint. The default is the public `https://kroki.io`. Override per-element with `endpoint="…"` or doc-wide with `<rd-page diagram-endpoint="…">`. For sensitive content, point at a self-hosted Kroki or PlantUML server.
+  
+  ## Mermaid — flowcharts and sequences
+  
+  The most familiar of the bunch. Flowcharts, sequence diagrams, ER diagrams, gantts, state machines.
+  
+  ```mermaid
+  flowchart LR
+  	A[Agent writes .html] --> B{richdoc lint}
+  	B -- OK --> C[Open in browser]
+  	B -- errors --> D[Fix and re-run]
+  	D --> B
+  	C --> E[Human review]
+  ```
+  
+  ## PlantUML — UML and sequence detail
+  
+  Wider UML coverage than Mermaid; understands `!theme` directives. Dark-mode docs auto-inject `!theme cyborg-outline` unless you set `theme="…"` or `theme="none"`.
+  
+  ```plantuml
+  @startuml
+  actor Agent
+  participant "richdoc CLI" as CLI
+  database Browser
+  Agent -> CLI : richdoc lint doc.html
+  CLI --> Agent : ok
+  Agent -> Browser : open doc.html
+  Browser --> Agent : rendered page
+  @enduml
+  ```
+  
+  ## D2 — modern architecture diagrams
+  
+  Compact syntax for service / architecture diagrams. Strong defaults, minimal ceremony.
+  
+  ```d2
+  Browser -> API: POST /login
+  API -> DB: verify credentials
+  DB -> API: ok
+  API -> Browser: set session cookie
+  ```
+  
+  ## GraphViz / DOT — directed graphs
+  
+  The classic. Useful when you want explicit node and edge styling.
+  
+  ```graphviz
+  digraph G {
+  	rankdir=LR;
+  	node [shape=box, style=rounded];
+  	Source -> Compile -> Link -> Binary;
+  	Source -> Test -> Binary [style=dashed];
+  }
+  ```
+  
+  ## DBML — database schema
+  
+  Schema as code. Renders an ERD with cardinality.
+  
+  ```dbml
+  Table users {
+    id uuid [pk]
+    email varchar [unique]
+    created_at timestamp
+  }
+  
+  Table posts {
+    id uuid [pk]
+    author_id uuid [ref: > users.id]
+    body text
+  }
+  
+  Table comments {
+    id uuid [pk]
+    post_id uuid [ref: > posts.id]
+    author_id uuid [ref: > users.id]
+    body text
+  }
+  ```
+  
+  ## Pikchr — box-and-arrow figures
+  
+  Compact SQLite-flavoured diagrammer; good for box-and-arrow figures inside technical prose.
+  
+  ```pikchr
+  box "Client"
+  arrow right "request" above
+  box "API"
+  arrow right "query" above
+  box "DB"
+  ```
+  
+  ## Notes
+  
+  If Kroki is unreachable or the browser doesn't support `CompressionStream`, the diagram source renders as a code block so the content still travels. The corner maximize button opens a shared fullscreen SVG pan/zoom viewer (mouse wheel, drag, 0/1/arrows, Esc).
+  
+  
+  '''
+# ---
+# name: test_export_md_single_file[showcase.html][showcase.html-envelope]
+  dict({
+    'assets': 0,
+    'book': False,
+    'chapters': list([
+      'out.md',
+    ]),
+    'dropped': list([
+      'rd-chart',
+      'rd-icon',
+      'rd-toc',
+    ]),
+    'input': 'showcase.html',
+    'missing': list([
+    ]),
+    'mode': 'single',
+    'ok': True,
+    'output': 'out.md',
+  })
+# ---
+# name: test_export_md_single_file[showcase.html][showcase.html-md]
+  '''
+  > [!NOTE]
+  > **DRAFT** — draft
+  
+  # An editorial frame for AI-authored documents.
+  
+  *Component showcase · Every tag, every variant, in one document — the way a real richdoc should be read top-to-bottom. · v0.4 · Updated this build · Platform team*
+  
+  - **Audience:** Agents writing for humans
+  - **Vocabulary:** ~70 tags · 40+ components
+  - **Status:** `[stable]` `[expanded vocabulary]`
+  
+  > [!IMPORTANT] TL;DR
+  > *Richdoc* is a small framework for documents written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should — read top-to-bottom, with occasional asides dropping down to a Notes section at the foot of the page.
+  
+  > [!NOTE] Reader controls (bottom-right cog)
+  > Every richdoc ships with a floating **preview picker** in the bottom-right corner. Open it to switch between the two themes (*Editorial* / *Graphite*), three modes (*Light* / *Dark* / *Auto*), and four page widths (*Narrow* / *Standard* / *Wide* / *Full*). Your choices persist per file. Suppress the picker with `<rd-page prefs="off">`.
+  >
+  > Squeeze the page to **Narrow** in a wide browser to see the multi-column layouts, stat tiles, and TOC adapt to the chosen content width — responsiveness is driven by container queries on `rd-page`, not the viewport.
+  
+  The look is intentionally editorial: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.
+  
+  ## Callouts
+  
+  Five callout types, each with a Lucide icon and tracked small-caps title. They are quieter than the old filled blocks — a tinted background and a 2 px left rule do the work.
+  
+  > [!NOTE] What this is
+  > Callouts break out short asides — context, caveats, or pointers — that you do not want buried in a paragraph.
+  
+  > [!TIP] Recommended
+  > Prefer callouts over bold-italic emphasis for anything more than a sentence.
+  
+  > [!WARNING] Heads up
+  > `rd-cols` collapses to a single column under ~720 px. Do not put more than four columns or content becomes unreadable on tablets.
+  
+  > [!CAUTION] Don't
+  > Never invent new `rd-*` tags. The linter fails and the rendered doc shows empty boxes.
+  
+  > [!NOTE]
+  > Title is optional. Without one, the callout uses the type name as a fallback heading.
+  
+  ## Cards in columns
+  
+  Use `rd-cols` for genuinely parallel content. Cards are the natural child. Each accent value lights up a top rule and a coloured kicker label so the card reads typographically, not as a tinted block.
+  
+  ### Three cards, no accents
+  
+  ### Discovery
+  
+  Find out what exists. Read the code, run small probes, talk to whoever knows the system best.
+  
+  ### Design
+  
+  Decide what to change. Resolve the trade-offs explicitly. Write them down before touching anything.
+  
+  ### Delivery
+  
+  Execute the plan in reviewable units. Keep changes small and traceable. Ship boring code.
+  
+  ### Four cards with accent colours
+  
+  ### Info
+  
+  Neutral context, links, references.
+  
+  ### Success
+  
+  Positive outcomes, recommendations.
+  
+  ### Warn
+  
+  Things to watch out for, fragile areas.
+  
+  ### Danger
+  
+  Hard blockers, breaking changes.
+  
+  ### Asymmetric layout via `template`
+  
+  Set `template` on `rd-cols` for a CSS-Grid string that defines arbitrary column ratios. Below 720 px it still collapses to one column.
+  
+  ### Main column
+  
+  Use the wide column for the primary thought. Use the narrow column for a related card, a quote, or a small comparison.
+  
+  This pattern is editorial-native: think of it as a body column with a sidebar.
+  
+  Muted cards are for asides, footnotes, or quiet credits. No border; italic by default.
+  
+  ## Stats
+  
+  Use `rd-stat` for dashboard tiles. The numeral is set in Fraunces at optical size 144 with tabular figures, sitting under a hairline rule — confident, not boxy.
+  
+  **42.6K** — Requests / day (▲ +8.2%)
+  
+  **184 ms** — p95 latency (▼ -12 ms)
+  
+  **0.31%** — Error rate (▲ +0.04 pp)
+  
+  **3** — Open incidents (→ no change)
+  
+  ## Pull-quotes
+  
+  Pull-quotes use the native `<blockquote>` element — styled by `richdoc.css` with an oversized opening glyph, Fraunces italic, and small-caps attribution via `<cite>` or `<footer>`.
+  
+  > Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.
+  >
+  >  Donald Knuth — Literate Programming, 1984
+  
+  ## Comparison tables
+  
+  For decision matrices. Tones get a coloured dot prefix and a low-opacity stripe — readable in print, distinctive on screen.
+  
+  | Aspect | Markdown | Pure HTML | richdoc |
+  | --- | --- | --- | --- |
+  | Layout primitives | ✗ No multi-column, no cards | · Possible, verbose | ✓ Built in |
+  | Authoring vocabulary | ✓ Tiny, universal | ✗ Unbounded — drifts | ✓ Closed, linted |
+  | LLM authoring reliability | · Good | ✗ Drifts under load | ✓ Validated at write time |
+  | Render anywhere | ✓ Yes — GitHub renders it | ✓ Yes — any browser | · Browser only |
+  
+  ## Key/value metadata
+  
+  Use `rd-kv` for short status blocks at the top of a doc. No outer box, just hairlines.
+  
+  - **Owner:** platform team
+  - **Status:** `[in progress]`
+  - **Priority:** `[P0]`
+  - **Tags:** `[infra]` `[auth]` `[security]`
+  - **Notes:** Values can contain inline HTML, badges, links — anything inline.
+  
+  ## Code blocks
+  
+  Code lives in `rd-code`. The bar at the top shows the language as a tracked small-caps kicker and an optional title in Fraunces italic. Syntax highlighting loads on demand from highlight.js and is themed against the editorial palette — no third-party stylesheet.
+  
+  ```typescript
+  // auth.ts
+  import { signToken } from "./jwt.ts";
+  import type { TokenPayload } from "./types.ts";
+  
+  export async function authenticate(payload: TokenPayload): Promise<string> {
+  	const key = await loadSigningKey();
+  	if (!key) {
+  		throw new Error("signing key unavailable");
+  	}
+  	return signToken(payload, key, { algorithm: "EdDSA" });
+  }
+  ```
+  
+  ```bash
+  # Initialize a richdoc next to your file
+  cd docs/
+  richdoc init .
+  richdoc new plan.html --template plan
+  ```
+  
+  ## Diffs
+  
+  `rd-diff` renders a unified diff with additions and deletions colour-coded. If `lang` is set, the line bodies are syntax-highlighted by the same engine that powers `rd-code`.
+  
+  ```diff
+  // auth.ts
+  @@ -3,5 +3,10 @@
+   import { signToken } from "./jwt.ts";
+   import type { TokenPayload } from "./types.ts";
+  
+  -export async function authenticate(payload: TokenPayload): Promise<string> {
+  -	const key = await loadSigningKey();
+  -	return signToken(payload, key, { algorithm: "EdDSA" });
+  +export async function authenticate(
+  +	payload: TokenPayload,
+  +	opts: AuthOptions = {},
+  +): Promise<Token> {
+  +	const key = await loadSigningKey(opts.keyId);
+  +	if (!key) throw new AuthError("signing key unavailable");
+  +	return signToken(payload, key, { algorithm: opts.algorithm ?? "EdDSA" });
+   }
+  ```
+  
+  ## Math
+  
+  Use `rd-math` for KaTeX-rendered formulas. Block display by default; pass `display="inline"` for inline use, e.g. the relation $E = mc^2$ can sit inside a sentence. Block displays render between hairline rules:
+  
+  $$
+  P(A \mid B) = \frac{P(B \mid A)\, P(A)}{P(B)}
+  $$
+  
+  $$
+  \frac{\partial}{\partial t}\Psi(\mathbf{r}, t) = -\frac{i}{\hbar} \hat{H}\, \Psi(\mathbf{r}, t)
+  $$
+  
+  ## Icons
+  
+  Inline SVG glyphs from the full Lucide library (~1,900 names at the pinned `lucide-static` version). A core set ships inline in `richdoc.js`; everything else is lazy-loaded from jsDelivr on first reference and cached. Run `richdoc components --tag rd-icon` for the authoritative list.
+  
+  ### Status
+  
+  check  x  warn  info
+  
+  ### Direction
+  
+  up  down  next  out
+  
+  ### Editorial
+  
+  sparkles  zap  star  bookmark
+  
+  ### Lazy (CDN)
+  
+  heart  compass  cloud  database  cpu  package  rocket  telescope
+  
+  Sizes:  small,  medium,  large.
+  
+  ## Tabs
+  
+  Tabbed content for the same idea expressed three ways. First tab is active; arrow keys navigate.
+  
+  ### Overview
+  
+  Tabs are good for the same content rendered three ways: language variants, before/after, examples by stack.
+  
+  They are **not** for hiding important decisions — humans scanning the doc will miss whatever isn't on the active tab.
+  
+  ### When to use
+  
+  - Same example in multiple languages.
+  - Before / after code comparisons.
+  - Optional deep dives that interrupt the main flow.
+  
+  ### When NOT to use
+  
+  - Hiding important steps. Use sections instead.
+  - Long content. Tabs cap at a screenful of comfortable reading.
+  - Search-critical content (only the active tab is visible to Ctrl+F on first load).
+  
+  ## Timeline
+  
+  Sequenced events: release history, project milestones, incident postmortems. Dates in tracked small-caps, titles in Fraunces italic, the rule is dotted.
+  
+  - **2026-05-14** — v0.1 PoC — Initial vocabulary (17 tags), three templates, smoke-tested CLI.
+  - **2026-05-15** — v0.2 framework refactor — Modular source tree, build pipeline, schema co-located with each component, five new tags.
+  - **2026-05-16** — v0.3 editorial redesign — Fraunces + Geist + Fira Code, hairline rules, pull-quotes, oversized stats. Five new tags (`rd-icon`, `rd-math`, `rd-diff`, glossary support via `rd-kv layout="stacked"`); `rd-code` upgraded with syntax highlighting and line numbers.
+  - **TBD** — v1.0 multi-doc sites — `richdoc site` for static collections with sidebar nav and search.
+  
+  ## Diagrams
+  
+  One element, ~25 diagram languages. Source is sent to a Kroki-compatible endpoint (default `kroki.io`) and the rendered SVG embeds inline. Set `endpoint` per-element or `<rd-page diagram-endpoint="…">` for the whole doc; for sensitive content point at a self-hosted Kroki. Hover any diagram and click the corner **maximize** button for the fullscreen pan/zoom viewer (0 fit, 1 reset, arrow keys pan, Esc close).
+  
+  ```mermaid
+  flowchart LR
+  	A[Agent writes .html] --> B{richdoc lint}
+  	B -- OK --> C[Open in browser]
+  	B -- errors --> D[Fix and re-run]
+  	D --> B
+  	C --> E[Human review]
+  ```
+  
+  ```plantuml
+  @startuml
+  actor Agent
+  participant "richdoc CLI" as CLI
+  database Browser
+  Agent -> CLI : richdoc lint doc.html
+  CLI --> Agent : ok
+  Agent -> Browser : open doc.html
+  Browser --> Agent : rendered page
+  @enduml
+  ```
+  
+  ```d2
+  Browser -> API: POST /login
+  API -> DB: verify
+  API -> Browser: set cookie
+  ```
+  
+  ## Figures
+  
+  Wrap an image, SVG, or diagram with a centred caption. The caption is set in Fraunces italic with a "Fig." kicker in the accent colour.
+  
+  ```mermaid
+  flowchart TB
+  	Plan --> Draft --> Validate --> Publish
+  	Validate -- fail --> Draft
+  ```
+  
+  *Document lifecycle: author, validate, render, review.*
+  
+  ## Collapsible details
+  
+  Use `rd-detail` for content that is relevant but not on the main path — appendices, full error logs, derivations. Native `<details>` under the hood, so it works without JS and remains keyboard-accessible.
+  
+  <details>
+  <summary>Why a fixed vocabulary instead of free-form HTML?</summary>
+  
+  Free-form HTML lets agents drift. One doc invents `<callout>`, the next uses `<note>`, the third leaves it as bold-italic prose. The reader experience fragments and the agent has no way to verify their output.
+  
+  A closed vocabulary plus a validator makes both ends of the loop reliable: the agent always knows what is allowed, and the reader always sees the same components.
+  
+  </details>
+  
+  <details open>
+  <summary>Open by default</summary>
+  
+  Pass the `open` attribute to start expanded.
+  
+  </details>
+  
+  ## Checklists
+  
+  For action items with optional assignee and due date. Hairline-separated rows, ticks in display face when complete.
+  
+  - [x] Land v0.1 PoC (@dana, due 2026-05-10)
+  - [x] Split sources into per-component folders (@dana, due 2026-05-13)
+  - [x] Add build pipeline + schema.json (@dana, due 2026-05-14)
+  - [x] Editorial redesign + vocabulary expansion (@dana, due 2026-05-16)
+  - [ ] Static-site mode for multi-doc collections (@kim, due 2026-05-25)
+  
+  ## Badges
+  
+  Inline status pills, prefixed with a coloured dot: `[default]` `[info]` `[success]` `[warn]` `[danger]` `[muted]`
+  
+  ## Glossary
+  
+  Use `rd-kv layout="stacked"` for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines.
+  
+  **Terms used in this document**
+  
+  *richdoc*
+  : A small framework for AI-authored, human-read HTML documents that uses a closed vocabulary of `rd-*` custom elements.
+  
+  *editorial*
+  : A design voice borrowed from print publications: hairline rules, oldstyle figures, drop caps, Fraunces display type, restrained colour.
+  
+  *closed vocabulary*
+  : A fixed list of tags that the agent must choose from. New tags require a deliberate authoring decision and a linter update.
+  
+  *optical size*
+  : A Fraunces variation axis that adjusts letterforms for the size at which they will appear. Set higher (`72`, `144`) for display.
+  
+  ## TL;DR strip
+  
+  Use `<rd-callout type="tldr">` as the first block after the hero. It's a focal summary band with an oversized eyebrow and slightly larger body type than the surrounding prose. See the very top of this page.
+  
+  ## Hero
+  
+  Use `rd-hero` instead of an ad-hoc `<h1>` + `rd-kv` opener. It coordinates eyebrow, title, lede, and meta into one display block, and accepts any inline children (e.g. an `rd-kv`) as an "extras" strip below the meta line. The top of this page demonstrates the full structure.
+  
+  ## Banner
+  
+  Doc-status ribbons sit at the top of the page. Five types:
+  
+  > [!NOTE]
+  > **DRAFT** — draft
+  
+  > [!NOTE]
+  > **FROZEN** — frozen
+  
+  > [!NOTE]
+  > **ARCHIVED** — archived
+  
+  > [!NOTE]
+  > **CONFIDENTIAL** — confidential
+  
+  > [!NOTE]
+  > **INFO** — Custom message overrides the default text for the type.
+  
+  ## Progress
+  
+  Linear progress / capacity bar. Accepts a 0..1 decimal, `N%`, or `N/M` fraction. The fill animates from 0 to the target on entry.
+  
+  **Migration complete:** 78%
+  
+  **Tests passing:** 12 / 20
+  
+  **Disk used:** 35%
+  
+  **Project budget consumed:** 45%
+  
+  ## Steps
+  
+  Numbered procedural steps with a rich body per step. Use this for runbooks, onboarding flows, migration guides. Distinct from `rd-timeline` (dated history) and `rd-checklist` (task tracking).
+  
+  1. **~~Drop the assets next to your doc~~**
+     Run `richdoc init docs` once in the directory that will hold your `.html` file.
+  2. **~~Scaffold a new document~~**
+     Pick a template: `richdoc new docs/plan.html -t plan`.
+  3. **Write the document**
+     Use only the `rd-*` tags from the vocabulary. Plain HTML is welcome inside any block.
+  4. **Validate before sharing**
+     Run `richdoc lint docs/plan.html`. Linting cleanly is part of "done".
+  
+  ## Pros and cons
+  
+  Two-column ✓/✗ grid for decision documents. Distinct from `rd-compare` — that's a matrix; this is one-sided evaluation of a single option.
+  
+  #### Reasons to adopt
+  - Already-shipped pattern in the existing vocabulary.
+  - No new external dependencies in Phase 1.
+  - Linter enforces shape on existing rule engine.
+  
+  #### Reasons to wait
+  - Vocabulary grows from ~30 → ~70 entries.
+  - Authors must learn the new tags.
+  
+  ## Decision records
+  
+  ADR-style decision header + rationale. Four statuses control the left rule colour and the status pill.
+  
+  ### ADR-014: Adopt Observable Plot for charting
+  
+  *`[ACCEPTED]` · 2026-05-14 · platform team*
+  
+  Bundle size is not a concern for documentation artefacts. Plot's grammar-of-graphics defaults match the editorial voice better than anything we'd hand-roll, and one library covers every chart type plus sparklines.
+  
+  ### ADR-015: Tufte-style margin notes as a separate component
+  
+  *`[REJECTED]` · 2026-05-14*
+  
+  A floating-gutter sidenote (`rd-margin`) was prototyped but rejected: the page column is centred at 1280px with no reserved gutter, so the negative-margin float overflowed off-screen on 1024–1500px viewports — the exact range the wide-mode media query targeted. `rd-cite` with `rd-ref` already covers the related authoring case on every viewport.
+  
+  ### ADR-007: Original hand-rolled SVG chart approach
+  
+  *`[SUPERSEDED]` · 2026-02-01*
+  
+  Superseded by ADR-014.
+  
+  ### ADR-008: Embedding D3 directly for every chart
+  
+  *`[REJECTED]` · 2026-02-15*
+  
+  Too much per-chart code; Plot covers the same surface with a much smaller author API.
+  
+  ## Status updates
+  
+  Dated reverse-chron entries for changelogs, release notes, status reports. The kind glyph and tint differ between release / change / note.
+  
+  ### 2026-05-14 — v0.4 — expanded vocabulary
+  
+  *release · platform team*
+  
+  Expanded the framework's structural vocabulary — hero, banner, progress, steps, pros/cons, decision records, updates, terminal sessions, API blocks, and rubrics all landed in one release.
+  
+  ### 2026-05-12 — Schema groups reorganised
+  
+  *change · dana*
+  
+  Introduced *Decision & planning* and *Reference* groupings in the schema registry. Mirrored in the SKILL.md tag tables.
+  
+  ### 2026-05-09 — Discovery doc accepted
+  
+  *note*
+  
+  The 20-component plan was reviewed and accepted. Implementation phases queued.
+  
+  ## FAQ
+  
+  Question/answer disclosure uses `rd-detail variant="question"` — questions render in display Fraunces, answers in body Inter, with hairline separators between entries.
+  
+  <details open>
+  <summary>Do I have to use richdoc instead of Markdown?</summary>
+  
+  Use Markdown where the renderer might be anything (GitHub, chat, CLI). For documents read in a browser, richdoc gives a much richer presentation with no extra effort.
+  
+  </details>
+  
+  <details>
+  <summary>Can I add my own tags?</summary>
+  
+  No — the linter will reject unknown `rd-*` tags. The fixed vocabulary is the point. Extensions ship through a new release.
+  
+  </details>
+  
+  <details>
+  <summary>Does it work offline?</summary>
+  
+  Yes. The two shipped assets (`richdoc.css`, `richdoc.js`) work over `file://`. Components that need a CDN library (mermaid, KaTeX, charts) degrade to a readable fallback when offline.
+  
+  </details>
+  
+  ## Shell sessions
+  
+  Terminal transcripts for runbooks and tutorials. Distinct from `rd-code` — no syntax highlighting, no copy button, just prompt → output.
+  
+  ```bash
+  // ~/Projects/agent-skills
+  $ richdoc init docs
+  copied richdoc.css → docs/richdoc.css
+  copied richdoc.js  → docs/richdoc.js
+  $ richdoc new docs/plan.html -t plan
+  wrote docs/plan.html (1245 bytes)
+  $ richdoc lint docs/plan.html
+  {"ok": true, "issues": []}
+  ```
+  
+  ## API reference
+  
+  Single-endpoint reference block. Method pill is coloured per HTTP verb; status pills tint themselves based on the 2xx/4xx/5xx class.
+  
+  ### `POST` `/v1/documents/{id}/validate` — Lint a single richdoc against the schema
+  
+  *auth:* `Bearer token`
+  
+  | Param | In | Required | Type | Default | Description |
+  | --- | --- | --- | --- | --- | --- |
+  | `id` | path | ✓ | uuid |  | Document identifier. |
+  | `strict` | query |  | boolean | false | Treat warnings as errors. |
+  | `X-Trace-Id` | header |  | string |  | Optional client-supplied trace identifier. |
+  | `body` | body | ✓ | text/html |  | The document to lint. |
+  
+  | Status | Type | Description |
+  | --- | --- | --- |
+  | `200` | application/json | Lint succeeded. Body is `{ ok, issues[] }`. |
+  | `400` | application/json | Malformed input. |
+  | `422` | application/json | Schema validation failed; `issues[]` contains details. |
+  
+  ## Rubric (weighted scoring)
+  
+  Weighted scoring grid for comparison documents — like `rd-compare` but with numeric scores, weights, and an automatic totals row. The winning column highlights.
+  
+  ### Chart engine evaluation
+  
+  |   | Observable Plot | ApexCharts | Hand-rolled SVG |
+  | --- | --- | --- | --- |
+  | Editorial fit (×3) | 5 — FT/Economist defaults | 3 — SaaS dashboard | 5 — total control |
+  | Chart types (×2) | 5 | 5 | 2 — bar/line/area/donut |
+  | Author API (×2) | 4 | 5 | 3 |
+  | Offline fallback (×1) | 4 | 4 | 5 — no CDN |
+  | **Total** | **37** | **33** | **30** |
+  
+  ## Citations and references
+  
+  Bibliography support follows the footnote pattern but with square-bracketed numbers and a separate collector. Authors write `rd-cite` markers inline[1] and `rd-ref` entries anywhere in the doc[2]. The system numbers citations in document order, builds the bibliography below, and shows the entry as a tooltip when hovering a marker.
+  
+  Multiple cites to the same key share a number[1]. Entries not cited still appear in the bibliography, after the cited ones[3].
+  
+  ## Charts
+  
+  SVG charts via Observable Plot, lazy-loaded from jsDelivr on first use. Six kinds out of the box. If Plot can't load (offline, blocked CDN), each chart falls back to a clean table of the underlying data.
+  
+  **Monthly revenue ($K)**
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 12 |
+  | 2 | 15 |
+  | 3 | 9 |
+  | 4 | 18 |
+  | 5 | 21 |
+  | 6 | 17 |
+  
+  **Active users (thousands)**
+  
+  | month | users |
+  | --- | --- |
+  | Jan | 42 |
+  | Feb | 58 |
+  | Mar | 61 |
+  | Apr | 79 |
+  | May | 92 |
+  | Jun | 104 |
+  
+  **API requests / day (M)**
+  
+  | month | requests |
+  | --- | --- |
+  | Jan | 1.2 |
+  | Feb | 1.8 |
+  | Mar | 2.1 |
+  | Apr | 2.6 |
+  | May | 3.0 |
+  | Jun | 3.4 |
+  
+  **Docs by template**
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 42 |
+  | 2 | 28 |
+  | 3 | 18 |
+  | 4 | 12 |
+  
+  **Revenue by region and product**
+  
+  | region | product | value |
+  | --- | --- | --- |
+  | North | Core | 18 |
+  | North | Add-on | 7 |
+  | South | Core | 14 |
+  | South | Add-on | 9 |
+  | East | Core | 22 |
+  | East | Add-on | 5 |
+  | West | Core | 16 |
+  | West | Add-on | 11 |
+  
+  ## Sparklines
+  
+  Tiny inline trends share the chart engine via `<rd-chart variant="sparkline">` — stripped of axes, titles, legends. They render in tables, in prose, or inside `rd-stat`. Latency last 30 days:
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 4 |
+  | 2 | 3 |
+  | 3 | 5 |
+  | 4 | 3 |
+  | 5 | 4 |
+  | 6 | 2 |
+  | 7 | 3 |
+  | 8 | 5 |
+  | 9 | 6 |
+  | 10 | 4 |
+  | 11 | 3 |
+  | 12 | 2 |
+  | 13 | 3 |
+  | 14 | 4 |
+  | 15 | 5 |
+  | 16 | 3 |
+  | 17 | 2 |
+  | 18 | 4 |
+  | 19 | 3 |
+  | 20 | 2 |
+  | 21 | 3 |
+  | 22 | 4 |
+  | 23 | 3 |
+  | 24 | 5 |
+  | 25 | 4 |
+  | 26 | 3 |
+  | 27 | 2 |
+  | 28 | 3 |
+  | 29 | 4 |
+  | 30 | 3 |
+  
+  . Signups:
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 2 |
+  | 2 | 4 |
+  | 3 | 3 |
+  | 4 | 6 |
+  | 5 | 8 |
+  | 6 | 5 |
+  | 7 | 9 |
+  | 8 | 7 |
+  | 9 | 10 |
+  | 10 | 12 |
+  
+  .
+  
+  **42K** — Active users (▲ +12% MoM)
+  
+  **99.94** — Uptime % (→)
+  
+  **$12.4M** — ARR (▲ +18% YoY)
+  
+  ## Spoilers
+  
+  Spoilers use `rd-detail variant="reveal"` — content hides behind an eye-icon button until the reader is ready. Useful for runbook solutions, exam answers, or any "think before you peek" pattern.
+  
+  <details>
+  <summary>Show the answer</summary>
+  
+  The same component can also wrap multiple paragraphs, callouts, or even code blocks — anything that should not be eye-deep on first read.
+  
+  > [!TIP] Inside the spoiler
+  > Hidden content can include any other component.
+  
+  </details>
+  
+  ## Plain prose, lists, and HTML
+  
+  You can still use everyday semantic HTML inside any component or directly inside `rd-page`:
+  
+  - **Bold**, *italic*, `code`, and [links](https://example.com) all work.
+  - Standard `<ul>` lists pick up an en-dash bullet.
+  - Ordered lists pick up zero-padded numerals in the gutter.
+  
+  1. First step in a sequence.
+  2. Second step.
+  3. Third step.
+  
+  > "The best documentation is the kind you actually read." — anonymous
+  
+  ---
+  
+  Horizontal rules separate sections of free-form prose where `rd-section` would feel heavy.
+  
+  
+  ## References
+  
+  1. Tufte, Edward R.. "[The Visual Display of Quantitative Information](https://www.edwardtufte.com/tufte/books_vdqi)". Graphics Press. 2001. Reference work for editorial data graphics; cited in this doc for sparkline philosophy and the footnote-as-aside pattern.
+  2. Bringhurst, Robert. "The Elements of Typographic Style". Hartley & Marks. 2004.
+  3. Strunk, William and White, E.B.. "The Elements of Style". 2000.
+  4. Hochuli, Jost. "Detail in Typography". 2008. Uncited — still appears in the bibliography after the cited works.
+  
+  '''
+# ---
+# name: test_export_md_single_file[status-onepager.html][status-onepager.html-envelope]
+  dict({
+    'assets': 0,
+    'book': False,
+    'chapters': list([
+      'out.md',
+    ]),
+    'dropped': list([
+    ]),
+    'input': 'status-onepager.html',
+    'missing': list([
+    ]),
+    'mode': 'single',
+    'ok': True,
+    'output': 'out.md',
+  })
+# ---
+# name: test_export_md_single_file[status-onepager.html][status-onepager.html-md]
+  '''
+  # Auth service — weekly status
+  
+  Week ending **2026-05-12**. Owner: platform team. `[on track]`
+  
+  - **On-call:** @dana (primary), @kim (secondary)
+  - **Region:** us-east-1, eu-west-1
+  - **SLO target:** 99.95% monthly
+  - **Last incident:** 2026-05-04 (12m, post-mortem complete)
+  
+  ## Health snapshot
+  
+  **42.6K** — Requests / day (▲ +8.2%)
+  
+  **184 ms** — p95 latency (▼ -12 ms)
+  
+  **0.31%** — Error rate (▲ +0.04 pp)
+  
+  **92.1%** — SLO budget (→ of monthly)
+  
+  **1.2M** — Tokens issued (▲ +14%)
+  
+  **412** — Refresh failures (▲ +27%)
+  
+  **48.9K** — Active sessions (→ ±0.5%)
+  
+  **3,841** — Auth attempts blocked (▲ +62%)
+  
+  ## What shipped this week
+  
+  - [x] EdDSA key rotation runbook tested in staging (@dana, due 2026-05-08)
+  - [x] Refresh-token reuse detection (RFC 6749 §10.4) (@kim, due 2026-05-09)
+  - [x] Move /auth/login to the new rate limiter (@dana, due 2026-05-10)
+  - [x] Add p99 latency dashboard (@kim, due 2026-05-12)
+  
+  ## In progress
+  
+  - [ ] Refresh-failure spike investigation (see callout below) (@dana, due 2026-05-15)
+  - [ ] Webauthn support behind a feature flag (@kim, due 2026-05-17)
+  - [ ] Migrate session store to Postgres 16 (@dana, due 2026-05-20)
+  
+  > [!WARNING] Refresh-failure spike
+  > Refresh failures climbed from ~320/day to 412/day this week (+27%). Early signal: about 60% of failures share a small set of UA strings consistent with one mobile build that's caching tokens past expiry.
+  >
+  > **Plan:** reach out to the mobile lead, gather build numbers, and decide whether to ship a server-side mitigation or wait for the next mobile release.
+  
+  ## Risks
+  
+  ### Key-rotation downtime window
+  
+  Production rotation is scheduled for 2026-05-21 03:00 UTC. JWKS cache TTL is 5 min; we expect a ≤5min window where some clients still trust the old key. Mitigation: pre-warm the new key at JWKS for 24h ahead.
+  
+  ### Postgres 16 migration
+  
+  Cutover is dual-write for 48h then primary switch. Rollback path: flip a single DSN and replay the WAL.
+  
+  ## Decisions logged
+  
+  <details>
+  <summary>Refresh-token rotation: opaque vs JWT</summary>
+  
+  We picked **opaque** refresh tokens stored server-side. Reasoning: refresh tokens get reused, replayed, and revoked far more than access tokens; the size and signature cost of JWT buys us nothing for that role.
+  
+  Access tokens remain JWT (EdDSA) so service-to-service paths stay stateless.
+  
+  </details>
+  
+  <details>
+  <summary>Why we deferred OAuth device flow</summary>
+  
+  One first-party client requested device flow for a CLI tool. We deferred — the use case is satisfied by a long-lived API token with scope restrictions, which is simpler and already supported. Revisit in Q3 if a second client asks.
+  
+  </details>
+  
+  ## Next two weeks
+  
+  - **2026-05-15** — Refresh-failure mitigation decided — Either ship server-side fix or commit to mobile-only fix and accept the spike.
+  - **2026-05-17** — Webauthn behind flag — Internal users only. Public flip targeted for the following sprint.
+  - **2026-05-20** — Postgres 16 dual-write begins — 48h soak. Cutover the morning of 2026-05-22.
+  - **2026-05-21 03:00 UTC** — Key rotation in production — JWKS pre-warmed since 2026-05-20.
+  
+  
+  '''
+# ---
+# name: test_export_md_to_stdout
+  '''
+  > [!NOTE]
+  > **DRAFT** — draft
+  
+  # An editorial frame for AI-authored documents.
+  
+  *Component showcase · Every tag, every variant, in one document — the way a real richdoc should be read top-to-bottom. · v0.4 · Updated this build · Platform team*
+  
+  - **Audience:** Agents writing for humans
+  - **Vocabulary:** ~70 tags · 40+ components
+  - **Status:** `[stable]` `[expanded vocabulary]`
+  
+  > [!IMPORTANT] TL;DR
+  > *Richdoc* is a small framework for documents written by an agent and read by a person in a browser. This page exercises every tag in the vocabulary the way a real document should — read top-to-bottom, with occasional asides dropping down to a Notes section at the foot of the page.
+  
+  > [!NOTE] Reader controls (bottom-right cog)
+  > Every richdoc ships with a floating **preview picker** in the bottom-right corner. Open it to switch between the two themes (*Editorial* / *Graphite*), three modes (*Light* / *Dark* / *Auto*), and four page widths (*Narrow* / *Standard* / *Wide* / *Full*). Your choices persist per file. Suppress the picker with `<rd-page prefs="off">`.
+  >
+  > Squeeze the page to **Narrow** in a wide browser to see the multi-column layouts, stat tiles, and TOC adapt to the chosen content width — responsiveness is driven by container queries on `rd-page`, not the viewport.
+  
+  The look is intentionally editorial: warm paper, Fraunces display, Geist body, hairlines instead of cards, oldstyle figures, and the occasional pull-quote.
+  
+  ## Callouts
+  
+  Five callout types, each with a Lucide icon and tracked small-caps title. They are quieter than the old filled blocks — a tinted background and a 2 px left rule do the work.
+  
+  > [!NOTE] What this is
+  > Callouts break out short asides — context, caveats, or pointers — that you do not want buried in a paragraph.
+  
+  > [!TIP] Recommended
+  > Prefer callouts over bold-italic emphasis for anything more than a sentence.
+  
+  > [!WARNING] Heads up
+  > `rd-cols` collapses to a single column under ~720 px. Do not put more than four columns or content becomes unreadable on tablets.
+  
+  > [!CAUTION] Don't
+  > Never invent new `rd-*` tags. The linter fails and the rendered doc shows empty boxes.
+  
+  > [!NOTE]
+  > Title is optional. Without one, the callout uses the type name as a fallback heading.
+  
+  ## Cards in columns
+  
+  Use `rd-cols` for genuinely parallel content. Cards are the natural child. Each accent value lights up a top rule and a coloured kicker label so the card reads typographically, not as a tinted block.
+  
+  ### Three cards, no accents
+  
+  ### Discovery
+  
+  Find out what exists. Read the code, run small probes, talk to whoever knows the system best.
+  
+  ### Design
+  
+  Decide what to change. Resolve the trade-offs explicitly. Write them down before touching anything.
+  
+  ### Delivery
+  
+  Execute the plan in reviewable units. Keep changes small and traceable. Ship boring code.
+  
+  ### Four cards with accent colours
+  
+  ### Info
+  
+  Neutral context, links, references.
+  
+  ### Success
+  
+  Positive outcomes, recommendations.
+  
+  ### Warn
+  
+  Things to watch out for, fragile areas.
+  
+  ### Danger
+  
+  Hard blockers, breaking changes.
+  
+  ### Asymmetric layout via `template`
+  
+  Set `template` on `rd-cols` for a CSS-Grid string that defines arbitrary column ratios. Below 720 px it still collapses to one column.
+  
+  ### Main column
+  
+  Use the wide column for the primary thought. Use the narrow column for a related card, a quote, or a small comparison.
+  
+  This pattern is editorial-native: think of it as a body column with a sidebar.
+  
+  Muted cards are for asides, footnotes, or quiet credits. No border; italic by default.
+  
+  ## Stats
+  
+  Use `rd-stat` for dashboard tiles. The numeral is set in Fraunces at optical size 144 with tabular figures, sitting under a hairline rule — confident, not boxy.
+  
+  **42.6K** — Requests / day (▲ +8.2%)
+  
+  **184 ms** — p95 latency (▼ -12 ms)
+  
+  **0.31%** — Error rate (▲ +0.04 pp)
+  
+  **3** — Open incidents (→ no change)
+  
+  ## Pull-quotes
+  
+  Pull-quotes use the native `<blockquote>` element — styled by `richdoc.css` with an oversized opening glyph, Fraunces italic, and small-caps attribution via `<cite>` or `<footer>`.
+  
+  > Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.
+  >
+  >  Donald Knuth — Literate Programming, 1984
+  
+  ## Comparison tables
+  
+  For decision matrices. Tones get a coloured dot prefix and a low-opacity stripe — readable in print, distinctive on screen.
+  
+  | Aspect | Markdown | Pure HTML | richdoc |
+  | --- | --- | --- | --- |
+  | Layout primitives | ✗ No multi-column, no cards | · Possible, verbose | ✓ Built in |
+  | Authoring vocabulary | ✓ Tiny, universal | ✗ Unbounded — drifts | ✓ Closed, linted |
+  | LLM authoring reliability | · Good | ✗ Drifts under load | ✓ Validated at write time |
+  | Render anywhere | ✓ Yes — GitHub renders it | ✓ Yes — any browser | · Browser only |
+  
+  ## Key/value metadata
+  
+  Use `rd-kv` for short status blocks at the top of a doc. No outer box, just hairlines.
+  
+  - **Owner:** platform team
+  - **Status:** `[in progress]`
+  - **Priority:** `[P0]`
+  - **Tags:** `[infra]` `[auth]` `[security]`
+  - **Notes:** Values can contain inline HTML, badges, links — anything inline.
+  
+  ## Code blocks
+  
+  Code lives in `rd-code`. The bar at the top shows the language as a tracked small-caps kicker and an optional title in Fraunces italic. Syntax highlighting loads on demand from highlight.js and is themed against the editorial palette — no third-party stylesheet.
+  
+  ```typescript
+  // auth.ts
+  import { signToken } from "./jwt.ts";
+  import type { TokenPayload } from "./types.ts";
+  
+  export async function authenticate(payload: TokenPayload): Promise<string> {
+  	const key = await loadSigningKey();
+  	if (!key) {
+  		throw new Error("signing key unavailable");
+  	}
+  	return signToken(payload, key, { algorithm: "EdDSA" });
+  }
+  ```
+  
+  ```bash
+  # Initialize a richdoc next to your file
+  cd docs/
+  richdoc init .
+  richdoc new plan.html --template plan
+  ```
+  
+  ## Diffs
+  
+  `rd-diff` renders a unified diff with additions and deletions colour-coded. If `lang` is set, the line bodies are syntax-highlighted by the same engine that powers `rd-code`.
+  
+  ```diff
+  // auth.ts
+  @@ -3,5 +3,10 @@
+   import { signToken } from "./jwt.ts";
+   import type { TokenPayload } from "./types.ts";
+  
+  -export async function authenticate(payload: TokenPayload): Promise<string> {
+  -	const key = await loadSigningKey();
+  -	return signToken(payload, key, { algorithm: "EdDSA" });
+  +export async function authenticate(
+  +	payload: TokenPayload,
+  +	opts: AuthOptions = {},
+  +): Promise<Token> {
+  +	const key = await loadSigningKey(opts.keyId);
+  +	if (!key) throw new AuthError("signing key unavailable");
+  +	return signToken(payload, key, { algorithm: opts.algorithm ?? "EdDSA" });
+   }
+  ```
+  
+  ## Math
+  
+  Use `rd-math` for KaTeX-rendered formulas. Block display by default; pass `display="inline"` for inline use, e.g. the relation $E = mc^2$ can sit inside a sentence. Block displays render between hairline rules:
+  
+  $$
+  P(A \mid B) = \frac{P(B \mid A)\, P(A)}{P(B)}
+  $$
+  
+  $$
+  \frac{\partial}{\partial t}\Psi(\mathbf{r}, t) = -\frac{i}{\hbar} \hat{H}\, \Psi(\mathbf{r}, t)
+  $$
+  
+  ## Icons
+  
+  Inline SVG glyphs from the full Lucide library (~1,900 names at the pinned `lucide-static` version). A core set ships inline in `richdoc.js`; everything else is lazy-loaded from jsDelivr on first reference and cached. Run `richdoc components --tag rd-icon` for the authoritative list.
+  
+  ### Status
+  
+  check  x  warn  info
+  
+  ### Direction
+  
+  up  down  next  out
+  
+  ### Editorial
+  
+  sparkles  zap  star  bookmark
+  
+  ### Lazy (CDN)
+  
+  heart  compass  cloud  database  cpu  package  rocket  telescope
+  
+  Sizes:  small,  medium,  large.
+  
+  ## Tabs
+  
+  Tabbed content for the same idea expressed three ways. First tab is active; arrow keys navigate.
+  
+  ### Overview
+  
+  Tabs are good for the same content rendered three ways: language variants, before/after, examples by stack.
+  
+  They are **not** for hiding important decisions — humans scanning the doc will miss whatever isn't on the active tab.
+  
+  ### When to use
+  
+  - Same example in multiple languages.
+  - Before / after code comparisons.
+  - Optional deep dives that interrupt the main flow.
+  
+  ### When NOT to use
+  
+  - Hiding important steps. Use sections instead.
+  - Long content. Tabs cap at a screenful of comfortable reading.
+  - Search-critical content (only the active tab is visible to Ctrl+F on first load).
+  
+  ## Timeline
+  
+  Sequenced events: release history, project milestones, incident postmortems. Dates in tracked small-caps, titles in Fraunces italic, the rule is dotted.
+  
+  - **2026-05-14** — v0.1 PoC — Initial vocabulary (17 tags), three templates, smoke-tested CLI.
+  - **2026-05-15** — v0.2 framework refactor — Modular source tree, build pipeline, schema co-located with each component, five new tags.
+  - **2026-05-16** — v0.3 editorial redesign — Fraunces + Geist + Fira Code, hairline rules, pull-quotes, oversized stats. Five new tags (`rd-icon`, `rd-math`, `rd-diff`, glossary support via `rd-kv layout="stacked"`); `rd-code` upgraded with syntax highlighting and line numbers.
+  - **TBD** — v1.0 multi-doc sites — `richdoc site` for static collections with sidebar nav and search.
+  
+  ## Diagrams
+  
+  One element, ~25 diagram languages. Source is sent to a Kroki-compatible endpoint (default `kroki.io`) and the rendered SVG embeds inline. Set `endpoint` per-element or `<rd-page diagram-endpoint="…">` for the whole doc; for sensitive content point at a self-hosted Kroki. Hover any diagram and click the corner **maximize** button for the fullscreen pan/zoom viewer (0 fit, 1 reset, arrow keys pan, Esc close).
+  
+  ```mermaid
+  flowchart LR
+  	A[Agent writes .html] --> B{richdoc lint}
+  	B -- OK --> C[Open in browser]
+  	B -- errors --> D[Fix and re-run]
+  	D --> B
+  	C --> E[Human review]
+  ```
+  
+  ```plantuml
+  @startuml
+  actor Agent
+  participant "richdoc CLI" as CLI
+  database Browser
+  Agent -> CLI : richdoc lint doc.html
+  CLI --> Agent : ok
+  Agent -> Browser : open doc.html
+  Browser --> Agent : rendered page
+  @enduml
+  ```
+  
+  ```d2
+  Browser -> API: POST /login
+  API -> DB: verify
+  API -> Browser: set cookie
+  ```
+  
+  ## Figures
+  
+  Wrap an image, SVG, or diagram with a centred caption. The caption is set in Fraunces italic with a "Fig." kicker in the accent colour.
+  
+  ```mermaid
+  flowchart TB
+  	Plan --> Draft --> Validate --> Publish
+  	Validate -- fail --> Draft
+  ```
+  
+  *Document lifecycle: author, validate, render, review.*
+  
+  ## Collapsible details
+  
+  Use `rd-detail` for content that is relevant but not on the main path — appendices, full error logs, derivations. Native `<details>` under the hood, so it works without JS and remains keyboard-accessible.
+  
+  <details>
+  <summary>Why a fixed vocabulary instead of free-form HTML?</summary>
+  
+  Free-form HTML lets agents drift. One doc invents `<callout>`, the next uses `<note>`, the third leaves it as bold-italic prose. The reader experience fragments and the agent has no way to verify their output.
+  
+  A closed vocabulary plus a validator makes both ends of the loop reliable: the agent always knows what is allowed, and the reader always sees the same components.
+  
+  </details>
+  
+  <details open>
+  <summary>Open by default</summary>
+  
+  Pass the `open` attribute to start expanded.
+  
+  </details>
+  
+  ## Checklists
+  
+  For action items with optional assignee and due date. Hairline-separated rows, ticks in display face when complete.
+  
+  - [x] Land v0.1 PoC (@dana, due 2026-05-10)
+  - [x] Split sources into per-component folders (@dana, due 2026-05-13)
+  - [x] Add build pipeline + schema.json (@dana, due 2026-05-14)
+  - [x] Editorial redesign + vocabulary expansion (@dana, due 2026-05-16)
+  - [ ] Static-site mode for multi-doc collections (@kim, due 2026-05-25)
+  
+  ## Badges
+  
+  Inline status pills, prefixed with a coloured dot: `[default]` `[info]` `[success]` `[warn]` `[danger]` `[muted]`
+  
+  ## Glossary
+  
+  Use `rd-kv layout="stacked"` for a definition list. Terms are set in Fraunces italic, the block is bracketed by hairline rules, rows separated by dotted lines.
+  
+  **Terms used in this document**
+  
+  *richdoc*
+  : A small framework for AI-authored, human-read HTML documents that uses a closed vocabulary of `rd-*` custom elements.
+  
+  *editorial*
+  : A design voice borrowed from print publications: hairline rules, oldstyle figures, drop caps, Fraunces display type, restrained colour.
+  
+  *closed vocabulary*
+  : A fixed list of tags that the agent must choose from. New tags require a deliberate authoring decision and a linter update.
+  
+  *optical size*
+  : A Fraunces variation axis that adjusts letterforms for the size at which they will appear. Set higher (`72`, `144`) for display.
+  
+  ## TL;DR strip
+  
+  Use `<rd-callout type="tldr">` as the first block after the hero. It's a focal summary band with an oversized eyebrow and slightly larger body type than the surrounding prose. See the very top of this page.
+  
+  ## Hero
+  
+  Use `rd-hero` instead of an ad-hoc `<h1>` + `rd-kv` opener. It coordinates eyebrow, title, lede, and meta into one display block, and accepts any inline children (e.g. an `rd-kv`) as an "extras" strip below the meta line. The top of this page demonstrates the full structure.
+  
+  ## Banner
+  
+  Doc-status ribbons sit at the top of the page. Five types:
+  
+  > [!NOTE]
+  > **DRAFT** — draft
+  
+  > [!NOTE]
+  > **FROZEN** — frozen
+  
+  > [!NOTE]
+  > **ARCHIVED** — archived
+  
+  > [!NOTE]
+  > **CONFIDENTIAL** — confidential
+  
+  > [!NOTE]
+  > **INFO** — Custom message overrides the default text for the type.
+  
+  ## Progress
+  
+  Linear progress / capacity bar. Accepts a 0..1 decimal, `N%`, or `N/M` fraction. The fill animates from 0 to the target on entry.
+  
+  **Migration complete:** 78%
+  
+  **Tests passing:** 12 / 20
+  
+  **Disk used:** 35%
+  
+  **Project budget consumed:** 45%
+  
+  ## Steps
+  
+  Numbered procedural steps with a rich body per step. Use this for runbooks, onboarding flows, migration guides. Distinct from `rd-timeline` (dated history) and `rd-checklist` (task tracking).
+  
+  1. **~~Drop the assets next to your doc~~**
+     Run `richdoc init docs` once in the directory that will hold your `.html` file.
+  2. **~~Scaffold a new document~~**
+     Pick a template: `richdoc new docs/plan.html -t plan`.
+  3. **Write the document**
+     Use only the `rd-*` tags from the vocabulary. Plain HTML is welcome inside any block.
+  4. **Validate before sharing**
+     Run `richdoc lint docs/plan.html`. Linting cleanly is part of "done".
+  
+  ## Pros and cons
+  
+  Two-column ✓/✗ grid for decision documents. Distinct from `rd-compare` — that's a matrix; this is one-sided evaluation of a single option.
+  
+  #### Reasons to adopt
+  - Already-shipped pattern in the existing vocabulary.
+  - No new external dependencies in Phase 1.
+  - Linter enforces shape on existing rule engine.
+  
+  #### Reasons to wait
+  - Vocabulary grows from ~30 → ~70 entries.
+  - Authors must learn the new tags.
+  
+  ## Decision records
+  
+  ADR-style decision header + rationale. Four statuses control the left rule colour and the status pill.
+  
+  ### ADR-014: Adopt Observable Plot for charting
+  
+  *`[ACCEPTED]` · 2026-05-14 · platform team*
+  
+  Bundle size is not a concern for documentation artefacts. Plot's grammar-of-graphics defaults match the editorial voice better than anything we'd hand-roll, and one library covers every chart type plus sparklines.
+  
+  ### ADR-015: Tufte-style margin notes as a separate component
+  
+  *`[REJECTED]` · 2026-05-14*
+  
+  A floating-gutter sidenote (`rd-margin`) was prototyped but rejected: the page column is centred at 1280px with no reserved gutter, so the negative-margin float overflowed off-screen on 1024–1500px viewports — the exact range the wide-mode media query targeted. `rd-cite` with `rd-ref` already covers the related authoring case on every viewport.
+  
+  ### ADR-007: Original hand-rolled SVG chart approach
+  
+  *`[SUPERSEDED]` · 2026-02-01*
+  
+  Superseded by ADR-014.
+  
+  ### ADR-008: Embedding D3 directly for every chart
+  
+  *`[REJECTED]` · 2026-02-15*
+  
+  Too much per-chart code; Plot covers the same surface with a much smaller author API.
+  
+  ## Status updates
+  
+  Dated reverse-chron entries for changelogs, release notes, status reports. The kind glyph and tint differ between release / change / note.
+  
+  ### 2026-05-14 — v0.4 — expanded vocabulary
+  
+  *release · platform team*
+  
+  Expanded the framework's structural vocabulary — hero, banner, progress, steps, pros/cons, decision records, updates, terminal sessions, API blocks, and rubrics all landed in one release.
+  
+  ### 2026-05-12 — Schema groups reorganised
+  
+  *change · dana*
+  
+  Introduced *Decision & planning* and *Reference* groupings in the schema registry. Mirrored in the SKILL.md tag tables.
+  
+  ### 2026-05-09 — Discovery doc accepted
+  
+  *note*
+  
+  The 20-component plan was reviewed and accepted. Implementation phases queued.
+  
+  ## FAQ
+  
+  Question/answer disclosure uses `rd-detail variant="question"` — questions render in display Fraunces, answers in body Inter, with hairline separators between entries.
+  
+  <details open>
+  <summary>Do I have to use richdoc instead of Markdown?</summary>
+  
+  Use Markdown where the renderer might be anything (GitHub, chat, CLI). For documents read in a browser, richdoc gives a much richer presentation with no extra effort.
+  
+  </details>
+  
+  <details>
+  <summary>Can I add my own tags?</summary>
+  
+  No — the linter will reject unknown `rd-*` tags. The fixed vocabulary is the point. Extensions ship through a new release.
+  
+  </details>
+  
+  <details>
+  <summary>Does it work offline?</summary>
+  
+  Yes. The two shipped assets (`richdoc.css`, `richdoc.js`) work over `file://`. Components that need a CDN library (mermaid, KaTeX, charts) degrade to a readable fallback when offline.
+  
+  </details>
+  
+  ## Shell sessions
+  
+  Terminal transcripts for runbooks and tutorials. Distinct from `rd-code` — no syntax highlighting, no copy button, just prompt → output.
+  
+  ```bash
+  // ~/Projects/agent-skills
+  $ richdoc init docs
+  copied richdoc.css → docs/richdoc.css
+  copied richdoc.js  → docs/richdoc.js
+  $ richdoc new docs/plan.html -t plan
+  wrote docs/plan.html (1245 bytes)
+  $ richdoc lint docs/plan.html
+  {"ok": true, "issues": []}
+  ```
+  
+  ## API reference
+  
+  Single-endpoint reference block. Method pill is coloured per HTTP verb; status pills tint themselves based on the 2xx/4xx/5xx class.
+  
+  ### `POST` `/v1/documents/{id}/validate` — Lint a single richdoc against the schema
+  
+  *auth:* `Bearer token`
+  
+  | Param | In | Required | Type | Default | Description |
+  | --- | --- | --- | --- | --- | --- |
+  | `id` | path | ✓ | uuid |  | Document identifier. |
+  | `strict` | query |  | boolean | false | Treat warnings as errors. |
+  | `X-Trace-Id` | header |  | string |  | Optional client-supplied trace identifier. |
+  | `body` | body | ✓ | text/html |  | The document to lint. |
+  
+  | Status | Type | Description |
+  | --- | --- | --- |
+  | `200` | application/json | Lint succeeded. Body is `{ ok, issues[] }`. |
+  | `400` | application/json | Malformed input. |
+  | `422` | application/json | Schema validation failed; `issues[]` contains details. |
+  
+  ## Rubric (weighted scoring)
+  
+  Weighted scoring grid for comparison documents — like `rd-compare` but with numeric scores, weights, and an automatic totals row. The winning column highlights.
+  
+  ### Chart engine evaluation
+  
+  |   | Observable Plot | ApexCharts | Hand-rolled SVG |
+  | --- | --- | --- | --- |
+  | Editorial fit (×3) | 5 — FT/Economist defaults | 3 — SaaS dashboard | 5 — total control |
+  | Chart types (×2) | 5 | 5 | 2 — bar/line/area/donut |
+  | Author API (×2) | 4 | 5 | 3 |
+  | Offline fallback (×1) | 4 | 4 | 5 — no CDN |
+  | **Total** | **37** | **33** | **30** |
+  
+  ## Citations and references
+  
+  Bibliography support follows the footnote pattern but with square-bracketed numbers and a separate collector. Authors write `rd-cite` markers inline[1] and `rd-ref` entries anywhere in the doc[2]. The system numbers citations in document order, builds the bibliography below, and shows the entry as a tooltip when hovering a marker.
+  
+  Multiple cites to the same key share a number[1]. Entries not cited still appear in the bibliography, after the cited ones[3].
+  
+  ## Charts
+  
+  SVG charts via Observable Plot, lazy-loaded from jsDelivr on first use. Six kinds out of the box. If Plot can't load (offline, blocked CDN), each chart falls back to a clean table of the underlying data.
+  
+  **Monthly revenue ($K)**
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 12 |
+  | 2 | 15 |
+  | 3 | 9 |
+  | 4 | 18 |
+  | 5 | 21 |
+  | 6 | 17 |
+  
+  **Active users (thousands)**
+  
+  | month | users |
+  | --- | --- |
+  | Jan | 42 |
+  | Feb | 58 |
+  | Mar | 61 |
+  | Apr | 79 |
+  | May | 92 |
+  | Jun | 104 |
+  
+  **API requests / day (M)**
+  
+  | month | requests |
+  | --- | --- |
+  | Jan | 1.2 |
+  | Feb | 1.8 |
+  | Mar | 2.1 |
+  | Apr | 2.6 |
+  | May | 3.0 |
+  | Jun | 3.4 |
+  
+  **Docs by template**
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 42 |
+  | 2 | 28 |
+  | 3 | 18 |
+  | 4 | 12 |
+  
+  **Revenue by region and product**
+  
+  | region | product | value |
+  | --- | --- | --- |
+  | North | Core | 18 |
+  | North | Add-on | 7 |
+  | South | Core | 14 |
+  | South | Add-on | 9 |
+  | East | Core | 22 |
+  | East | Add-on | 5 |
+  | West | Core | 16 |
+  | West | Add-on | 11 |
+  
+  ## Sparklines
+  
+  Tiny inline trends share the chart engine via `<rd-chart variant="sparkline">` — stripped of axes, titles, legends. They render in tables, in prose, or inside `rd-stat`. Latency last 30 days:
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 4 |
+  | 2 | 3 |
+  | 3 | 5 |
+  | 4 | 3 |
+  | 5 | 4 |
+  | 6 | 2 |
+  | 7 | 3 |
+  | 8 | 5 |
+  | 9 | 6 |
+  | 10 | 4 |
+  | 11 | 3 |
+  | 12 | 2 |
+  | 13 | 3 |
+  | 14 | 4 |
+  | 15 | 5 |
+  | 16 | 3 |
+  | 17 | 2 |
+  | 18 | 4 |
+  | 19 | 3 |
+  | 20 | 2 |
+  | 21 | 3 |
+  | 22 | 4 |
+  | 23 | 3 |
+  | 24 | 5 |
+  | 25 | 4 |
+  | 26 | 3 |
+  | 27 | 2 |
+  | 28 | 3 |
+  | 29 | 4 |
+  | 30 | 3 |
+  
+  . Signups:
+  
+  | # | value |
+  | --- | --- |
+  | 1 | 2 |
+  | 2 | 4 |
+  | 3 | 3 |
+  | 4 | 6 |
+  | 5 | 8 |
+  | 6 | 5 |
+  | 7 | 9 |
+  | 8 | 7 |
+  | 9 | 10 |
+  | 10 | 12 |
+  
+  .
+  
+  **42K** — Active users (▲ +12% MoM)
+  
+  **99.94** — Uptime % (→)
+  
+  **$12.4M** — ARR (▲ +18% YoY)
+  
+  ## Spoilers
+  
+  Spoilers use `rd-detail variant="reveal"` — content hides behind an eye-icon button until the reader is ready. Useful for runbook solutions, exam answers, or any "think before you peek" pattern.
+  
+  <details>
+  <summary>Show the answer</summary>
+  
+  The same component can also wrap multiple paragraphs, callouts, or even code blocks — anything that should not be eye-deep on first read.
+  
+  > [!TIP] Inside the spoiler
+  > Hidden content can include any other component.
+  
+  </details>
+  
+  ## Plain prose, lists, and HTML
+  
+  You can still use everyday semantic HTML inside any component or directly inside `rd-page`:
+  
+  - **Bold**, *italic*, `code`, and [links](https://example.com) all work.
+  - Standard `<ul>` lists pick up an en-dash bullet.
+  - Ordered lists pick up zero-padded numerals in the gutter.
+  
+  1. First step in a sequence.
+  2. Second step.
+  3. Third step.
+  
+  > "The best documentation is the kind you actually read." — anonymous
+  
+  ---
+  
+  Horizontal rules separate sections of free-form prose where `rd-section` would feel heavy.
+  
+  
+  ## References
+  
+  1. Tufte, Edward R.. "[The Visual Display of Quantitative Information](https://www.edwardtufte.com/tufte/books_vdqi)". Graphics Press. 2001. Reference work for editorial data graphics; cited in this doc for sparkline philosophy and the footnote-as-aside pattern.
+  2. Bringhurst, Robert. "The Elements of Typographic Style". Hartley & Marks. 2004.
+  3. Strunk, William and White, E.B.. "The Elements of Style". 2000.
+  4. Hochuli, Jost. "Detail in Typography". 2008. Uncited — still appears in the bibliography after the cited works.
+  
+  '''
+# ---

@@ -10,6 +10,7 @@ import click
 from ..assets import ASSET_FILES
 from ..output import json_error, json_ok
 from ..templates import list_templates, template_exists, template_path
+from ._safe import safe_command, write_or_error
 
 DEFAULT_TEMPLATE = "plan"
 
@@ -33,6 +34,7 @@ DEFAULT_TEMPLATE = "plan"
     is_flag=True,
     help="Overwrite the output file if it exists.",
 )
+@safe_command
 def cmd(output: Path, template: str, force: bool) -> None:
     """Scaffold a new richdoc .html file from a template."""
     available = list_templates()
@@ -59,14 +61,11 @@ def cmd(output: Path, template: str, force: bool) -> None:
             file=str(out_path),
         )
 
-    try:
+    def _write() -> None:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(template_path(template), out_path)
-    except OSError as exc:
-        json_error(
-            f"Could not write output: {exc}",
-            code="OUTPUT_ERROR",
-        )
+
+    write_or_error(_write)
 
     # Whether the linked assets are present next to the output file.
     parent = out_path.parent

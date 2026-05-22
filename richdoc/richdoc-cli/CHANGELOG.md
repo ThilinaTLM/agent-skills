@@ -2,6 +2,120 @@
 
 ## Unreleased
 
+### Developer experience
+
+- **Test + lint baseline.** Adds a `[project.optional-dependencies]
+dev` group (pytest, syrupy, ruff, mypy, lxml-stubs) plus ruff, mypy,
+and pytest config in `pyproject.toml`. Run the gates with
+`uv run ruff check src tests`, `uv run mypy src`, and
+`uv run pytest`. See `tests/README.md` for the snapshot conventions.
+- **Snapshot test suite (91 tests / 49 snapshots).** Locks every
+  command's JSON envelope against the reference fixtures in
+  `richdoc/examples/`, plus broken / drift / autofix fixtures in
+  `richdoc-cli/tests/fixtures/`. DOCX output is captured as a
+  semantic summary; Confluence storage XML is pretty-printed and
+  local-ids stabilised before comparison. Dry-run publish tests
+  patch the client to keep CI offline.
+- **GitHub Actions CI** (`.github/workflows/ci.yml`). Two parallel
+  jobs: CLI runs ruff + mypy + pytest under `uv run`, lib runs
+  biome + tsc + build (with the CLI synced so the build's sanity
+  check passes).
+- **Lib-side tooling parity.** `richdoc-lib/package.json` gains a
+  `typecheck` script and vitest as a dev dep, plus a smoke test
+  for the schema registry. `pnpm test`, `pnpm typecheck`, and
+  `pnpm lint` are all run in CI alongside `pnpm build`.
+
+### Changed
+
+- **`<rd-prefs>` schema.** `customChildren` was set to the literal
+  string `"none"`, which fell outside the documented TagSpec union
+  and was silently ignored by the linter. It's now an empty array
+  `[]`, which makes the linter enforce "no rd-* children allowed"
+  on `<rd-prefs>`. The element is JS-injected and has no children
+  in any known document, so this is a no-op for existing usage.
+- **Lib registry consolidation.** `schema-registry.ts` no longer
+  hand-lists every child tag (`kv.rowSpec`, `compare.cellSpec`, …).
+  Each component's `.schema.ts` now exports a `bundle: SchemaBundle`
+  that carries the parent tag plus a declarative `childTags` array;
+  `schema-registry.ts` flat-maps the bundles in canonical vocabulary
+  order. Adding or renaming a child tag touches exactly one file.
+  The emitted `assets/schema.json` is byte-identical to the previous
+  build.
+- **`commands/lint.py` split into `lint/` package** (949 → 10 focused
+  files). `commands/lint.py` is now a 3-line shim re-exporting
+  `lint_path` / `cmd`. The real implementation lives behind:
+  - `lint/cli.py` (click wiring),
+  - `lint/runner.py` (file walker + per-file envelope),
+  - `lint/issues.py` (`add_issue` helper + project-wide constants),
+  - `lint/rules/{document,attributes,book,hero_nav}.py` (per-rule
+    modules; each rule appends to a shared ``issues`` list),
+  - `lint/autofix.py` (the source rewriter used by `--fix`).
+  No file in the new package exceeds 320 lines; rule additions touch
+  exactly one file.
+- **`publish/confluence/converter.py` split** (725 → 214 + 6 focused
+  sidecars). The converter state machine is now in `state.py`; XML
+  escape helpers in `xml.py`; layout post-processing in `layout.py`;
+  the book-mode prev/next nav in `nav.py`; bibliography rendering in
+  `refs.py`; title resolution in `titles.py`. `converter.py` keeps
+  the public `html_to_storage` entry, the `StorageResult` /
+  `PendingAttachment` / `TocEntry` dataclasses, and `dedent`, and
+  re-exports the most-used names so handler files keep their
+  existing imports.
+- **Confluence subcommands moved to `publish/confluence/cli.py`**
+  (442 → 23 + 440). `commands/publish.py` is now just the top-level
+  click group; the four Confluence subcommands (`spaces`, `pages`,
+  `page-by-id`, `push`) live next to the rest of the Confluence
+  integration so changes to the publisher don't have to round-trip
+  through `commands/`. New publish targets follow the same pattern
+  (create `publish/<target>/cli.py` and attach the group).
+
+- **Shared exporter utilities** (`export.common`). The three exporter
+  pipelines (md / docx / publish-confluence) had accumulated
+  near-duplicate copies of foundational helpers; consolidating them
+  removes ~150 lines of drift-prone code:
+  - `export/common/href.py` — single `is_external_href` implementation
+    (replaces the duplicate `_is_external` in
+    `publish/confluence/pipeline.py`).
+  - `export/common/text.py` — single `dedent` (replaces three
+    near-identical local copies in md / docx / confluence).
+  - `export/common/titles.py` — single `resolve_doc_title` +
+    `chapter_label` (replaces four near-identical copies). The
+    Confluence publisher passes
+    `normalize_whitespace_in_hero=True` because page titles must be
+    single-line; everyone else gets the raw author-typed value.
+  - `export/common/references.py` — single `format_ref` with a
+    pluggable `RefRenderer` (replaces the md and Confluence copies).
+    The docx exporter still builds runs directly and is not consumed.
+- **`commands/_safe.py` decorator** (`safe_command` + `write_or_error`).
+  Every click command now ends in a single ``@safe_command`` decorator
+  that catches ``FileExistsError`` (→ ``FILE_EXISTS``),
+  ``SchemaLoadError`` (→ ``INPUT_ERROR``),
+  ``ConfluenceError`` (→ its own ``code``), and bare ``OSError``
+  (→ ``INPUT_ERROR``). Write-step ``OSError``s that need ``OUTPUT_ERROR``
+  route through ``write_or_error(action)``. Removed roughly 80 lines
+  of repeated ``try`` / ``except`` boilerplate across
+  ``new`` / ``init`` / ``components`` / ``update`` / ``lint`` /
+  ``export md`` / ``export docx`` and all four ``publish confluence``
+  subcommands.
+
+### Deferred follow-ups
+
+Family-by-family splits of `publish/confluence/handlers_rd.py`
+(1346 L), `export/docx/handlers_rd.py` (748 L), and
+`export/md/handlers_rd.py` (648 L) were considered but skipped:
+each file is already grouped by explicit section markers and the
+handlers are self-contained per-section. The remaining LOC count
+is defensible reading material, not coupled complexity. Revisit
+after Phase 7's converter consolidation.
+- **Schema-cache helper.** `richdoc_cli.schema.load_schema` is now
+  `@functools.cache`-d; tests that need a fresh read call
+  `load_schema.cache_clear()`.
+- **`text_of`, `iter_text`, `sourceline_of` helpers** in
+  `export.common.walker` replace ad-hoc `"".join(el.itertext())` /
+  `el.sourceline` reads. The new helpers narrow lxml's
+  `Iterator[str | bytes]` and `EllipsisType` types so call sites stay
+  type-clean.
+
 ### Added
 
 - **`book-toc-drift` lint rule.** When a file's `<rd-toc>` lists other

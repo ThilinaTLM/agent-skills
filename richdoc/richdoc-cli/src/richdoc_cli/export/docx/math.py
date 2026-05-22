@@ -26,7 +26,6 @@ from pathlib import Path
 import latex2mathml.converter as _latex
 import lxml.etree as ET
 
-
 _M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
 _XSLT_PATH = Path(__file__).with_name("mml2omml.xsl")
 
@@ -36,7 +35,7 @@ def _transformer() -> ET.XSLT:
     return ET.XSLT(ET.parse(str(_XSLT_PATH)))
 
 
-def latex_to_omath(source: str) -> ET._Element | None:  # noqa: SLF001
+def latex_to_omath(source: str) -> ET._Element | None:
     """Convert a LaTeX math expression into an ``<m:oMath>`` element.
 
     Returns ``None`` if the LaTeX cannot be parsed or the XSLT produces
@@ -48,7 +47,7 @@ def latex_to_omath(source: str) -> ET._Element | None:  # noqa: SLF001
         return None
     try:
         mathml = _latex.convert(source)
-    except Exception:  # noqa: BLE001 — latex2mathml raises broad exceptions
+    except Exception:
         return None
     try:
         mml_doc = ET.fromstring(mathml.encode("utf-8"))
@@ -68,7 +67,7 @@ def latex_to_omath(source: str) -> ET._Element | None:  # noqa: SLF001
     return root
 
 
-def wrap_block(omath: ET._Element) -> ET._Element:  # noqa: SLF001
+def wrap_block(omath: ET._Element) -> ET._Element:
     """Wrap an ``<m:oMath>`` in an ``<m:oMathPara>`` for display-mode use.
 
     A bare ``<m:oMath>`` renders inline; ``<m:oMathPara>`` is Word's

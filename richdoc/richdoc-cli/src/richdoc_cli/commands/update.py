@@ -24,6 +24,7 @@ from ..assets import (
     shipped_version_info,
 )
 from ..output import json_error, json_ok
+from ._safe import safe_command
 
 # Directories pruned from recursive walks unless --include-hidden is set.
 # .git is always pruned (even with --include-hidden) to avoid pathological
@@ -111,6 +112,7 @@ def _discover(root: Path, recursive: bool, include_hidden: bool) -> list[Path]:
     is_flag=True,
     help="Do not skip junk directories (node_modules, .venv, dist, ...).",
 )
+@safe_command
 def cmd(root: Path, apply_: bool, recursive: bool, include_hidden: bool) -> None:
     """Check / refresh shipped assets in existing richdoc folders."""
     if not assets_exist():

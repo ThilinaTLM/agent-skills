@@ -10,24 +10,23 @@ from docx.shared import Inches, Pt, RGBColor
 
 from ..common.chart_data import parse_chart
 from ..common.diagrams import render_to_png
+from ..common.walker import iter_text, text_of
 from .references import _collect_ref, _emit_references
 from .runs import (
-    _Run,
     _emit_runs,
     _flatten_inline,
     _inline_runs,
+    _Run,
 )
 from .state import _State
 from .tables import _fill_row, _set_cell_border, _set_cell_shading
 from .walker import (
     _dedent,
     _element_source,
-    _embed_image,
     _emit_code,
     render_block,
     render_children,
 )
-
 
 # ---------------------------------------------------------------------------
 # Structural
@@ -208,7 +207,7 @@ def _h_rd_stat(state: _State, el: ET._Element) -> None:
 
 
 def _h_rd_progress(state: _State, el: ET._Element) -> None:
-    from ..common.progress import parse_progress  # noqa: PLC0415
+    from ..common.progress import parse_progress
 
     parsed = parse_progress(el.get("value"))
     label = el.get("label") or ""
@@ -286,7 +285,7 @@ def _h_rd_shell(state: _State, el: ET._Element) -> None:
         if not isinstance(child.tag, str):
             continue
         tag = child.tag.lower()
-        text = " ".join("".join(child.itertext()).split())
+        text = " ".join(text_of(child).split())
         if tag == "rd-prompt":
             cwd = child.get("cwd")
             if cwd:
@@ -299,7 +298,7 @@ def _h_rd_shell(state: _State, el: ET._Element) -> None:
 
 
 def _h_rd_math(state: _State, el: ET._Element) -> None:
-    from .math import latex_to_omath, wrap_block  # noqa: PLC0415 — keep import local
+    from .math import latex_to_omath, wrap_block
 
     text = _dedent(_element_source(el))
     if not text.strip():
@@ -357,7 +356,7 @@ def _h_rd_chart(state: _State, el: ET._Element) -> None:
         r.font.size = Pt(9)
 
 
-def _chart_to_table(state: _State, raw: str) -> bool:  # noqa: SLF001
+def _chart_to_table(state: _State, raw: str) -> bool:
     chart = parse_chart(raw)
     if chart is None:
         return False
@@ -439,9 +438,8 @@ def _split_step_body(state: _State, step: ET._Element) -> tuple[list, list[ET._E
     one run list. Block children (`<p>`, `<ul>`, `<rd-code>`, …) are
     rendered separately as follow-on paragraphs.
     """
-    from .runs import _Run, _inline_runs  # noqa: PLC0415
-
-    from .walker import _inline_text  # noqa: PLC0415
+    from .runs import _inline_runs, _Run
+    from .walker import _inline_text
 
     runs: list[_Run] = []
     blocks: list[ET._Element] = []
@@ -517,7 +515,7 @@ def _render_diagram(state: _State, text: str, *, kind: str) -> None:
     if not text.strip():
         return
     if state.render_diagrams:
-        png = render_to_png(text, kind=kind, endpoint=state.diagram_endpoint)  # type: ignore[arg-type]
+        png = render_to_png(text, kind=kind, endpoint=state.diagram_endpoint)
         if png is not None:
             state.doc.add_picture(BytesIO(png), width=Inches(6.0))
             state.diagrams_rendered += 1
@@ -561,7 +559,7 @@ def _emit_chapter_list(state: _State, chapters, depth: int) -> None:
             _emit_chapter_list(state, nested, depth + 1)
 
 
-def _chapter_text(node: ET._Element) -> str:  # noqa: SLF001
+def _chapter_text(node: ET._Element) -> str:
     parts: list[str] = []
     if node.text:
         parts.append(node.text)
@@ -570,7 +568,7 @@ def _chapter_text(node: ET._Element) -> str:  # noqa: SLF001
             if child.tail:
                 parts.append(child.tail)
             continue
-        parts.extend(child.itertext())
+        parts.extend(iter_text(child))
         if child.tail:
             parts.append(child.tail)
     return " ".join("".join(parts).split()).strip()
