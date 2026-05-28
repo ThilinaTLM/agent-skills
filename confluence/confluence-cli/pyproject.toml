@@ -15,6 +15,9 @@ dev = [
 keyring = [
     "keyring>=25",
 ]
+markdown = [
+    "markdownify>=0.13",
+]
 
 [project.scripts]
 confluence = "confluence_cli.cli:entrypoint"

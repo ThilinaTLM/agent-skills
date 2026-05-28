@@ -19,12 +19,15 @@ from .auth import AuthError
 from .bundle import BundleError
 from .client import ConfluenceError
 from .commands.auth import group as auth_group
+from .commands.download import cmd_download
 from .commands.pages import cmd_page_by_id, cmd_pages, page_group
 from .commands.publish_bundle import cmd_publish_bundle
 from .commands.spaces import cmd_spaces
 from .config import ConfigError
+from .markdown import MarkdownError
 from .output import json_error
 from .publish import PublishError
+from .refs import RefParseError
 
 
 @click.group(
@@ -46,6 +49,7 @@ main.add_command(cmd_pages)
 main.add_command(cmd_page_by_id)
 main.add_command(page_group)
 main.add_command(cmd_publish_bundle)
+main.add_command(cmd_download)
 
 
 # ---------------------------------------------------------------------------
@@ -69,6 +73,10 @@ def safe_command(fn: Callable[P, R]) -> Callable[P, R]:
             if exc.missing:
                 extras["missing"] = exc.missing
             json_error(str(exc), code=exc.code, hint=exc.hint, **extras)
+        except RefParseError as exc:
+            json_error(str(exc), code=exc.code, hint=exc.hint)
+        except MarkdownError as exc:
+            json_error(str(exc), code=exc.code, hint=exc.hint)
         except ConfigError as exc:
             json_error(str(exc), code="INVALID_PARAMS")
         except BundleError as exc:

@@ -170,7 +170,11 @@ fastest way to verify the hierarchy before publishing.
 
 - **Cloud only.** The v2 REST endpoints the client uses are
   Cloud-only; Data Center is not supported.
-- **Push only.** No content sync back from Confluence.
+- **Bundle publishing is push-only.** Bundles always flow
+  richdoc → Confluence; the publisher never reads existing page
+  bodies back into a bundle. For pulling existing Confluence content
+  locally (so you can edit it and push back via `page update`), see
+  `confluence download` and [download.md](download.md).
 - **No auto-deletion.** Removing a chapter from the bundle does not
   delete the matching Confluence page.
 - **Single-namespace tokens.** Only `@@ATTACHMENT:...@@` and

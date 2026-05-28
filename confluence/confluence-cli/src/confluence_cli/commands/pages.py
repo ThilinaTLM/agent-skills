@@ -7,6 +7,7 @@ import click
 from ..auth import CredentialRequest, resolve_credentials
 from ..client import ConfluenceClient
 from ..output import json_ok
+from ..refs import parse_page_ref
 
 # ---------------------------------------------------------------------------
 # Shared option decorator
@@ -113,16 +114,16 @@ def cmd_pages(
 
 @click.command("page-by-id")
 @_common_creds_opts
-@click.argument("page_id", metavar="PAGE_ID")
+@click.argument("page_ref", metavar="PAGE_ID_OR_URL")
 def cmd_page_by_id(
     profile: str | None,
     site: str | None,
     email: str | None,
     token_env: str | None,
-    page_id: str,
+    page_ref: str,
 ) -> None:
-    """Resolve a Confluence page id to its metadata."""
-    _page_get_impl(profile, site, email, token_env, page_id, body=False)
+    """Resolve a Confluence page id or URL to its metadata."""
+    _page_get_impl(profile, site, email, token_env, page_ref, body=False)
 
 
 # ---------------------------------------------------------------------------
@@ -137,21 +138,31 @@ def page_group() -> None:
 
 @page_group.command("get")
 @_common_creds_opts
-@click.argument("page_id", metavar="PAGE_ID")
+@click.argument("page_ref", metavar="PAGE_ID_OR_URL")
 @click.option(
     "--body", "include_body", is_flag=True,
     help="Include the page's storage-format body in the envelope.",
+)
+@click.option(
+    "--format", "body_format",
+    type=click.Choice(["storage", "adf"], case_sensitive=False),
+    default="storage", show_default=True,
+    help="Body representation when --body is set. Only 'storage' is implemented.",
 )
 def cmd_page_get(
     profile: str | None,
     site: str | None,
     email: str | None,
     token_env: str | None,
-    page_id: str,
+    page_ref: str,
     include_body: bool,
+    body_format: str,
 ) -> None:
     """Fetch one page's metadata (and optionally its body)."""
-    _page_get_impl(profile, site, email, token_env, page_id, body=include_body)
+    _page_get_impl(
+        profile, site, email, token_env, page_ref,
+        body=include_body, body_format=body_format,
+    )
 
 
 def _page_get_impl(
@@ -159,14 +170,23 @@ def _page_get_impl(
     site: str | None,
     email: str | None,
     token_env: str | None,
-    page_id: str,
+    page_ref: str,
     *,
     body: bool,
+    body_format: str = "storage",
 ) -> None:
     from ..cli import safe_command
+    from ..output import json_error
 
     @safe_command
     def run() -> None:
+        page_id = parse_page_ref(page_ref)
+        if body and body_format.lower() == "adf":
+            json_error(
+                "ADF body format is not implemented yet.",
+                code="UNSUPPORTED",
+                hint="Re-run without --format adf to fetch the storage body.",
+            )
         creds = resolve_credentials(
             CredentialRequest(
                 profile=profile, site=site, email=email, token_env=token_env,
@@ -175,7 +195,13 @@ def _page_get_impl(
         client = ConfluenceClient(
             site=creds.site, email=creds.email, token=creds.token,
         )
-        page = client.get_page(page_id)
+        if body:
+            page, body_value = client.get_page_body(
+                page_id, representation="storage",
+            )
+        else:
+            page = client.get_page(page_id)
+            body_value = None
         public = (
             f"{client.site}/wiki{page.webui}"
             if page.webui
@@ -193,14 +219,10 @@ def _page_get_impl(
             "profile": creds.profile,
         }
         if body:
-            # Body fetch needs a separate v2 call with `body-format=storage`.
-            # The current client doesn't expose it as a method — emit a
-            # placeholder so the envelope shape stays predictable.
-            payload["body"] = None
-            payload["body_note"] = (
-                "Body fetch is not yet implemented. Use the v2 REST API "
-                "directly or extend ConfluenceClient.get_page_body."
-            )
+            payload["body"] = {
+                "representation": "storage",
+                "value": body_value or "",
+            }
         json_ok(**payload)
 
     run()
@@ -272,7 +294,7 @@ def cmd_page_create(
 
 @page_group.command("update")
 @_common_creds_opts
-@click.argument("page_id", metavar="PAGE_ID")
+@click.argument("page_ref", metavar="PAGE_ID_OR_URL")
 @click.option("--title", "title", type=str, default=None)
 @click.option(
     "--body-file", "body_file", type=click.Path(exists=True, dir_okay=False),
@@ -285,7 +307,7 @@ def cmd_page_update(
     site: str | None,
     email: str | None,
     token_env: str | None,
-    page_id: str,
+    page_ref: str,
     title: str | None,
     body_file: str,
     comment: str,
@@ -297,6 +319,7 @@ def cmd_page_update(
 
     @safe_command
     def run() -> None:
+        page_id = parse_page_ref(page_ref)
         creds = resolve_credentials(
             CredentialRequest(
                 profile=profile, site=site, email=email, token_env=token_env,
