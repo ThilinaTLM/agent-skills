@@ -22,6 +22,7 @@ import io
 import json
 import mimetypes
 import uuid
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import Any, cast
 from urllib.error import HTTPError, URLError
@@ -51,6 +52,9 @@ class Page:
     parent_id: str | None
     version: int
     webui: str  # relative
+    created_at: str | None = None
+    updated_at: str | None = None
+    author_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -59,6 +63,8 @@ class Attachment:
     title: str       # filename
     media_type: str  # mime
     file_id: str | None = None
+    download_url: str | None = None  # absolute or relative (under {site}/wiki)
+    file_size: int | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +227,74 @@ class ConfluenceClient:
         payload = self._request("GET", f"/wiki/api/v2/pages/{page_id}")
         return _page_from_json(payload)
 
+    def get_page_body(
+        self,
+        page_id: str,
+        *,
+        representation: str = "storage",
+    ) -> tuple[Page, str]:
+        """Fetch a page including its body in the requested representation.
+
+        Currently only ``storage`` is exposed by the CLI. Returns the
+        parsed :class:`Page` plus the raw body string (XHTML for
+        storage).
+        """
+        qs = urlencode({"body-format": representation})
+        payload = self._request("GET", f"/wiki/api/v2/pages/{page_id}?{qs}")
+        page = _page_from_json(payload)
+        body = (payload.get("body") or {}).get(representation) or {}
+        value = str(body.get("value") or "")
+        return page, value
+
+    def iter_descendants(
+        self,
+        page_id: str,
+        *,
+        depth: int | None = None,
+        limit: int = 1000,
+    ) -> Iterator[Page]:
+        """Depth-first walk over the descendants of ``page_id``.
+
+        ``depth`` is the maximum nesting below the starting page (1 =
+        direct children only). ``None`` means unlimited. ``limit`` is a
+        hard cap on the number of pages yielded — the walk stops as
+        soon as it is reached.
+        """
+        if limit <= 0:
+            return
+        yielded = 0
+        # Stack of (page_id, depth-below-root). DFS via reversed extend.
+        stack: list[tuple[str, int]] = [(page_id, 0)]
+        while stack:
+            current_id, current_depth = stack.pop()
+            if depth is not None and current_depth >= depth:
+                continue
+            children = list(self._list_direct_children(current_id))
+            # Yield in API order: push reversed so we pop in order.
+            for child in children:
+                if yielded >= limit:
+                    return
+                yield child
+                yielded += 1
+            for child in reversed(children):
+                stack.append((child.id, current_depth + 1))
+
+    def _list_direct_children(self, page_id: str) -> Iterator[Page]:
+        """Paginate ``/pages/{id}/children`` returning :class:`Page` rows."""
+        cursor: str | None = None
+        while True:
+            qs = {"limit": "100"}
+            if cursor:
+                qs["cursor"] = cursor
+            payload = self._request(
+                "GET", f"/wiki/api/v2/pages/{page_id}/children?{urlencode(qs)}"
+            )
+            for entry in payload.get("results", []):
+                yield _page_from_json(entry)
+            cursor = _cursor_from_links(payload.get("_links", {}))
+            if not cursor:
+                return
+
     def find_page_by_title(
         self,
         *,
@@ -330,12 +404,17 @@ class ConfluenceClient:
                 "GET", f"/wiki/api/v2/pages/{page_id}/attachments?{urlencode(qs)}"
             )
             for entry in payload.get("results", []):
+                links = entry.get("_links") or {}
+                download = links.get("download")
+                file_size = entry.get("fileSize")
                 atts.append(
                     Attachment(
                         id=str(entry.get("id", "")),
                         title=str(entry.get("title", "")),
                         media_type=str(entry.get("mediaType", "")),
                         file_id=str(entry.get("fileId") or "") or None,
+                        download_url=str(download) if download else None,
+                        file_size=int(file_size) if isinstance(file_size, int) else None,
                     )
                 )
             cursor = _cursor_from_links(payload.get("_links", {}))
@@ -391,7 +470,48 @@ class ConfluenceClient:
             ),
         )
 
+    def fetch_attachment(
+        self, attachment: Attachment, *, page_id: str,
+    ) -> bytes:
+        """Download attachment bytes.
+
+        Confluence Cloud's ``/wiki/download/attachments/…`` path that
+        ``_links.download`` points at requires OAuth and rejects the
+        Basic-auth header the rest of the API accepts. We work around
+        that by going through the v1 content endpoint
+        ``/wiki/rest/api/content/{pageId}/child/attachment/{attId}/download``
+        which honours Basic auth and returns the bytes (or a 302 to a
+        signed URL that ``urllib`` follows automatically).
+        """
+        if not page_id:
+            raise ConfluenceClientError(
+                "fetch_attachment requires page_id.",
+            )
+        path = (
+            f"/wiki/rest/api/content/{page_id}/child/attachment/"
+            f"{attachment.id}/download"
+        )
+        return self._download(self.site + path)
+
     # ---- HTTP plumbing ---------------------------------------------------
+
+    def _download(self, url: str) -> bytes:
+        """Issue a GET and return the raw response body. Auth header reused."""
+        headers = {
+            "Authorization": self._auth,
+            "Accept": "*/*",
+            "User-Agent": self.user_agent,
+        }
+        req = Request(url, method="GET", headers=headers)
+        try:
+            with urlopen(req, timeout=self.timeout) as resp:
+                return resp.read()
+        except HTTPError as exc:
+            raise _classify_http_error(exc) from None
+        except (URLError, TimeoutError, OSError) as exc:
+            raise ConfluenceUpstreamError(
+                f"Network error fetching {url}: {exc}",
+            ) from exc
 
     def _request(
         self,
@@ -464,6 +584,9 @@ def _page_from_json(entry: dict[str, Any], *, default_space_id: str = "") -> Pag
     links = entry.get("_links") or {}
     version = entry.get("version") or {}
     parent_id = entry.get("parentId")
+    created_at = entry.get("createdAt")
+    author_id = entry.get("authorId") or version.get("authorId")
+    updated_at = version.get("createdAt")
     return Page(
         id=str(entry.get("id", "")),
         title=str(entry.get("title", "")),
@@ -471,6 +594,9 @@ def _page_from_json(entry: dict[str, Any], *, default_space_id: str = "") -> Pag
         parent_id=str(parent_id) if parent_id else None,
         version=int(version.get("number") or 1),
         webui=str(links.get("webui") or ""),
+        created_at=str(created_at) if created_at else None,
+        updated_at=str(updated_at) if updated_at else None,
+        author_id=str(author_id) if author_id else None,
     )
 
 
