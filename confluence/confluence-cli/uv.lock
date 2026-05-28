@@ -96,6 +96,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
+    { name = "markdownify" },
 ]
 
 [package.optional-dependencies]
@@ -105,18 +106,15 @@ dev = [
 keyring = [
     { name = "keyring" },
 ]
-markdown = [
-    { name = "markdownify" },
-]
 
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.1" },
     { name = "keyring", marker = "extra == 'keyring'", specifier = ">=25" },
-    { name = "markdownify", marker = "extra == 'markdown'", specifier = ">=0.13" },
+    { name = "markdownify", specifier = ">=0.13" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },
 ]
-provides-extras = ["dev", "keyring", "markdown"]
+provides-extras = ["dev", "keyring"]
 
 [[package]]
 name = "cryptography"

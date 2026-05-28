@@ -29,6 +29,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
+from .tls import SSL_CONTEXT
+
 # ---------------------------------------------------------------------------
 # Data types
 # ---------------------------------------------------------------------------
@@ -504,7 +506,7 @@ class ConfluenceClient:
         }
         req = Request(url, method="GET", headers=headers)
         try:
-            with urlopen(req, timeout=self.timeout) as resp:
+            with urlopen(req, timeout=self.timeout, context=SSL_CONTEXT) as resp:
                 return resp.read()
         except HTTPError as exc:
             raise _classify_http_error(exc) from None
@@ -544,7 +546,7 @@ class ConfluenceClient:
 
         req = Request(url, data=data, method=method, headers=headers)
         try:
-            with urlopen(req, timeout=self.timeout) as resp:
+            with urlopen(req, timeout=self.timeout, context=SSL_CONTEXT) as resp:
                 raw = resp.read()
         except HTTPError as exc:
             raise _classify_http_error(exc) from None
