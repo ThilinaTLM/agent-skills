@@ -291,6 +291,13 @@ Resolves credentials end-to-end. Reports:
 - `secureNotes[]` — explanation when `secure` is `false`.
 - `reachable` — `true` when the read-only probe succeeded. Skip with
   `--no-verify`.
+- `tls.mode` — `system-default` (no override), `custom-ca-bundle`
+  (loaded from one of the env vars below), or `insecure-opt-in`
+  (`CONFLUENCE_INSECURE=1`). See **TLS / corporate proxies** below.
+- `tls.source` — the env-var name the bundle came from, e.g.
+  `env:SSL_CERT_FILE`, or `null` for `system-default`.
+- `tls.caBundle` — absolute path of the loaded bundle, when
+  `mode == custom-ca-bundle`.
 
 With `--strict`, exits non-zero when `secure` is `false`. Agent
 harnesses can use this at session start to refuse to operate against
@@ -312,3 +319,51 @@ keyring entries — the CLI never owned them.
 | `INVALID_PARAMS` | Malformed config (bad JSON or wrong shape). |
 | `FILE_EXISTS` | `auth init` would overwrite an existing profile without `--force`. |
 | `NOT_FOUND` | `auth use` / `auth logout` targeted a profile that does not exist. |
+
+## TLS / corporate proxies
+
+When the CLI runs behind a TLS-intercepting corporate proxy
+(Netskope, Zscaler, Palo Alto, …), Python's default trust store does
+not include the proxy's root CA. Every request fails with
+`SSL: CERTIFICATE_VERIFY_FAILED` until the CLI is pointed at the
+corporate bundle.
+
+`confluence-cli` consults the following env vars, in this precedence
+order, and loads the first one whose value points at an existing
+file:
+
+| # | Env var | Notes |
+|---|---|---|
+| 1 | `CONFLUENCE_CA_BUNDLE` | CLI-specific override. Use this when you want to scope a bundle to just this tool without touching globals. |
+| 2 | `SSL_CERT_FILE` | Stdlib-standard. |
+| 3 | `REQUESTS_CA_BUNDLE` | What `requests` honors. |
+| 4 | `CURL_CA_BUNDLE` | What `curl` honors. |
+
+Use `confluence auth status` to confirm which bundle (if any) was
+loaded: the `tls` block reports `mode`, `source`, and `caBundle`.
+
+### Python 3.13 strict X.509 validation
+
+Python 3.13 + OpenSSL 3.x default `ssl.create_default_context()` to
+include `VERIFY_X509_STRICT`, which rejects CA certs whose
+`Basic Constraints` extension is not marked `critical`. Most
+TLS-intercepting corporate roots in the wild are not marked critical,
+so strict mode rejects them outright even after loading.
+
+When `confluence-cli` builds a context from one of the env vars
+above, it clears `VERIFY_X509_STRICT` to match pre-3.13 stdlib
+behavior and what `requests` ships with today. This relaxation only
+applies when a custom bundle is in play; the system-default path is
+untouched.
+
+### `CONFLUENCE_INSECURE=1` (escape hatch)
+
+Setting `CONFLUENCE_INSECURE=1` disables certificate verification
+entirely for the process. The CLI prints a one-line warning to
+stderr at start-up and `auth status` reports
+`tls.mode: "insecure-opt-in"`.
+
+**Do not use this in production.** It mirrors `curl -k` and exists
+only for triage on machines where the right CA bundle cannot be
+located quickly.
+

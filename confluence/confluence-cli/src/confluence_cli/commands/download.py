@@ -82,8 +82,7 @@ def _creds_opts(fn):
 )
 @click.option(
     "--markdown", "markdown", is_flag=True,
-    help="Also write a best-effort markdown rendering per page. "
-         "Requires the [markdown] extra (markdownify).",
+    help="Also write a best-effort markdown rendering per page.",
 )
 @click.option(
     "--attachments", "attachments", is_flag=True,

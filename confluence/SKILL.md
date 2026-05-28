@@ -189,7 +189,7 @@ success: `{"ok": true, ...}`. On failure: `{"ok": false, "code": "...",
 
 ## See also
 
-- [references/auth.md](references/auth.md) — profile / env / keyring precedence.
+- [references/auth.md](references/auth.md) — profile / env / keyring precedence; corporate-proxy TLS / CA-bundle env vars.
 - [references/download.md](references/download.md) — JSONL / manifest schema for `confluence download`, markdown caveats, edit-and-reupload recipe.
 - [references/richdoc-bundles.md](references/richdoc-bundles.md) — bundle schema and publish algorithm.
 - `richdoc/SKILL.md` — authoring polished HTML documents and producing Confluence bundles.

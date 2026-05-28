@@ -40,11 +40,26 @@ src/confluence_cli/
     publish_bundle.py #   confluence publish-bundle
     download.py       #   confluence download (page → JSONL + optional markdown)
   refs.py             # parse page ids / URLs / ?pageId= query strings
-  markdown.py         # best-effort storage XML → markdown (optional dep)
+  markdown.py         # best-effort storage XML → markdown
+  tls.py              # shared SSL context (corporate CA bundle env vars)
 ```
 
-Optional extras: install `[markdown]` to enable `--markdown` on
-`download` (`uv pip install -e .[markdown]`).
+## Behind a corporate TLS proxy
+
+If you sit behind a TLS-intercepting proxy (Netskope, Zscaler, Palo
+Alto, …) the CLI honors the same CA-bundle env vars `curl` /
+`requests` honor, in this precedence order:
+
+1. `CONFLUENCE_CA_BUNDLE` — CLI-specific override.
+2. `SSL_CERT_FILE` — stdlib-standard.
+3. `REQUESTS_CA_BUNDLE` — what `requests` honors.
+4. `CURL_CA_BUNDLE` — what `curl` honors.
+
+As a last-resort triage knob, `CONFLUENCE_INSECURE=1` disables
+certificate verification entirely (loud stderr warning; do not use in
+production). Run `confluence auth status` to see which bundle was
+loaded; see [`../references/auth.md`](../references/auth.md) for the
+full explanation.
 
 ## Development
 

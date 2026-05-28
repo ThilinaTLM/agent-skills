@@ -26,6 +26,8 @@ from dataclasses import dataclass
 from typing import Any
 from xml.etree import ElementTree as ET
 
+from markdownify import markdownify as _md
+
 __all__ = [
     "MarkdownError",
     "PageRef",
@@ -98,18 +100,6 @@ def storage_to_markdown(
         Optional ``https://acme.atlassian.net`` for falling back to
         public attachment URLs when local files aren't available.
     """
-    try:
-        import markdownify  # noqa: F401  \u2014 imported for ImportError side-effect
-    except ImportError as exc:
-        raise MarkdownError(
-            "markdownify is not installed.",
-            code="MISSING_DEPENDENCY",
-            hint=(
-                "Install with `uv pip install -e .[markdown]` "
-                "(or `pip install markdownify`)."
-            ),
-        ) from exc
-
     html = _to_intermediate_html(
         storage_xml,
         page_id=page_id,
@@ -118,8 +108,6 @@ def storage_to_markdown(
         attachments_base=attachments_base,
         site_url=site_url,
     )
-
-    from markdownify import markdownify as _md
 
     def _code_language(el: Any) -> str:
         # markdownify passes the BeautifulSoup <code> element. Pull a

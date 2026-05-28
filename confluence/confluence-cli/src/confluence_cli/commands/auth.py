@@ -389,6 +389,25 @@ def cmd_status(profile: str | None, strict: bool, no_verify: bool) -> None:
         if secure_notes:
             payload["secureNotes"] = secure_notes
 
+        from ..tls import _resolve_cafile
+
+        if os.environ.get("CONFLUENCE_INSECURE") == "1":
+            payload["tls"] = {
+                "mode": "insecure-opt-in",
+                "source": "CONFLUENCE_INSECURE",
+            }
+        else:
+            resolved = _resolve_cafile()
+            if resolved is None:
+                payload["tls"] = {"mode": "system-default", "source": None}
+            else:
+                env_name, ca_path = resolved
+                payload["tls"] = {
+                    "mode": "custom-ca-bundle",
+                    "source": f"env:{env_name}",
+                    "caBundle": ca_path,
+                }
+
         if not no_verify:
             client = ConfluenceClient(
                 site=creds.site, email=creds.email, token=creds.token,
